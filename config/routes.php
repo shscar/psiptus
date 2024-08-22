@@ -4,10 +4,29 @@
 $routes = [
     '/' => '/dashboard/index.php',
     '/login' => '/dashboard/login.php',
+    '/guru-karyawan' => '/users/guru-karyawan.php',
+    '/user' => '/users/administrator/index.php',
+    '/siswa' => '/users/peserta_didik.php',
 ];
 
-// Mendapatkan URI yang diminta
+// Mendapatkan URI saat ini
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+
+// Fungsi untuk menentukan apakah link atau menu dropdown sedang aktif
+function isActive($route, $requestUri) {
+    return $route === $requestUri ? 'active' : '';
+}
+
+// Fungsi untuk memeriksa apakah salah satu rute dalam array aktif
+function isAnyActive($routes, $requestUri) {
+    foreach ($routes as $route) {
+        if (isActive($route, $requestUri) === 'active') {
+            return true;
+        }
+    }
+    return false;
+}
 
 // Mengatur rute yang ditemukan
 if (array_key_exists($requestUri, $routes)) {

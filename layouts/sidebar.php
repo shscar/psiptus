@@ -1,10 +1,27 @@
+<?php
+
+// Menu aktif untuk dropdown
+$dropdownRoutes = [
+    'dd1' => ['/guru-karyawan','/siswa'],
+    'role' => []
+];
+
+$activeDropdown = null;
+foreach ($dropdownRoutes as $key => $routes) {
+    if (isAnyActive($routes, $requestUri)) {
+        $activeDropdown = $key;
+        break;
+    }
+}
+?>
+
 <!-- Main Sidebar Container -->
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
     <a href="index3.html" class="brand-link">
         <img src="../assets/dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
             style="opacity: .8">
-        <span class="brand-text font-weight-light">AdminLTE 3</span>
+        <span class="brand-text font-weight-light">SMKS AZZAHRO</span>
     </a>
 
     <!-- Sidebar -->
@@ -24,83 +41,55 @@
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
-                <li class="nav-item menu-open">
-                    <a href="#" class="nav-link active">
+
+               <li class="nav-item">
+                    <a href="/" class="nav-link <?php echo isActive('/', $requestUri); ?>">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
-                        <p>
-                            Dashboard
-                        </p>
+                        <p>Dashboard</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="pages/widgets.html" class="nav-link">
-                        <i class="nav-icon fas fa-th"></i>
-                        <p>
-                            Widgets
-                            <span class="right badge badge-danger">New</span>
-                        </p>
+                    <a href="/user" class="nav-link <?php echo isActive('/user', $requestUri); ?>">
+                        <i class="nav-icon fas fa-user"></i>
+                        <p>User</p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-copy"></i>
+                <li class="nav-item dropdown <?php echo $activeDropdown === 'dd1' ? 'menu-open' : ''; ?>">
+                    <a href="#" class="nav-link <?php echo $activeDropdown === 'dd1' ? 'active' : ''; ?>">
+                        <i class="nav-icon fas fa-users"></i>
                         <p>
-                            Layout Options
+                            Staff dan Siswa
                             <i class="fas fa-angle-left right"></i>
-                            <span class="badge badge-info right">6</span>
                         </p>
                     </a>
-                    <ul class="nav nav-treeview">
+                    <ul class="nav nav-treeview" style="<?php echo $activeDropdown === 'dd1' ? 'display: block;' : 'display: none;'; ?>">
                         <li class="nav-item">
-                            <a href="pages/layout/top-nav.html" class="nav-link">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Top Navigation</p>
+                            <a href="/guru-karyawan" class="nav-link <?php echo isActive('/guru-karyawan', $requestUri); ?>">
+                                <i class="nav-icon far fa-circle"></i>
+                                <p>Guru/Karyawan</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="pages/layout/top-nav-sidebar.html" class="nav-link">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Top Navigation + Sidebar</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="pages/layout/boxed.html" class="nav-link">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Boxed</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="pages/layout/fixed-sidebar.html" class="nav-link">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Fixed Sidebar</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="pages/layout/fixed-sidebar-custom.html" class="nav-link">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Fixed Sidebar <small>+ Custom Area</small></p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="pages/layout/fixed-topnav.html" class="nav-link">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Fixed Navbar</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="pages/layout/fixed-footer.html" class="nav-link">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Fixed Footer</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="pages/layout/collapsed-sidebar.html" class="nav-link">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Collapsed Sidebar</p>
+                            <a href="/siswa" class="nav-link <?php echo isActive('/siswa', $requestUri); ?>">
+                                <i class="nav-icon far fa-circle"></i>
+                                <p>Siswa</p>
                             </a>
                         </li>
                     </ul>
                 </li>
+                <li class="nav-item dropdown <?php echo $activeDropdown === 'role' ? 'menu-open' : ''; ?>">
+                    <a href="#" class="nav-link <?php echo $activeDropdown === 'role' ? 'active' : ''; ?>">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>
+                            Role
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview" style="<?php echo $activeDropdown === 'role' ? 'display: block;' : 'display: none;'; ?>">
+                    </ul>
+                </li>
+
+                <!-- 
                 <li class="nav-item">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-chart-pie"></i>
@@ -536,7 +525,7 @@
                             </a>
                         </li>
                     </ul>
-                </li>
+                </li> -->
             </ul>
         </nav>
         <!-- /.sidebar-menu -->
