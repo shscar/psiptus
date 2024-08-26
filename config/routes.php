@@ -7,6 +7,7 @@ $routes = [
     '/guru-karyawan' => '/users/guru-karyawan.php',
     '/user' => '/users/administrator/index.php',
     '/siswa' => '/users/peserta_didik.php',
+    '/student/peserta' => '/students/peserta/index.php',
 ];
 
 // Mendapatkan URI saat ini

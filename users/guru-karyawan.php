@@ -44,7 +44,20 @@
                                     </div>
                                     <div class="col-12">
                                         <h2 class="lead text-center"><b>Nicole Pearson</b></h2>
-                                        <p class="text-muted text-sm"><b>About: </b> Web Designer / UX / Graphic Artist / Coffee Lover</p>
+                                        <div class="text-muted">
+                                            <p class="mb-0">
+                                                <b>Mobile: </b> 
+                                                081298347652
+                                            </p>
+                                            <p class="mb-0">
+                                                <b>Email: </b> 
+                                                example@gmail.id
+                                            </p>
+                                            <p class="mb-0">
+                                                <b>About: </b> 
+                                                Web Designer / UX / Graphic Artist
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -55,7 +68,7 @@
             <!-- /.card-body -->
             <div class="card-footer">
                 <nav aria-label="Contacts Page Navigation">
-                    <ul class="pagination justify-content-center m-0">
+                    <!-- <ul class="pagination justify-content-center m-0">
                         <li class="page-item active"><a class="page-link" href="#">1</a></li>
                         <li class="page-item"><a class="page-link" href="#">2</a></li>
                         <li class="page-item"><a class="page-link" href="#">3</a></li>
@@ -64,7 +77,7 @@
                         <li class="page-item"><a class="page-link" href="#">6</a></li>
                         <li class="page-item"><a class="page-link" href="#">7</a></li>
                         <li class="page-item"><a class="page-link" href="#">8</a></li>
-                    </ul>
+                    </ul> -->
                 </nav>
             </div>
             <!-- /.card-footer -->

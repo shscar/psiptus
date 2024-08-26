@@ -1,6 +1,11 @@
 <?php
 
-include __DIR__ . '/../../layouts/master.php';
+    include __DIR__ . '/../../layouts/master.php';
+
+    // Menggunakan class Database untuk query
+    $db = Database::getInstance();
+    // Mengambil data dari tabel users
+    $users = $db->query("SELECT id, username, email, last_login, status, role FROM users");
 ?>
 
 <!-- Content Wrapper. Contains page content -->
@@ -31,12 +36,10 @@ include __DIR__ . '/../../layouts/master.php';
                 <h3 class="card-title">Administrator</h3>
 
                 <div class="card-tools">
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
-                        <i class="fas fa-minus"></i>
+                    <button type="button" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i>
+                        Tambah
                     </button>
-                    <!-- <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove">
-                        <i class="fas fa-times"></i>
-                    </button> -->
                 </div>
             </div>
             <div class="card-body p-0">
@@ -44,17 +47,66 @@ include __DIR__ . '/../../layouts/master.php';
                     <thead>
                         <tr>
                             <th style="width: 1%">#</th>
-                            <th style="width: 8%">Members</th>
-                            <th style="width: 40%">Project Name</th>
-                            <th>Project Progress</th>
+                            <th style="width: 20%">Username</th>
+                            <th style="width: 20%">Email</th>
+                            <th style="width: 20%">Last Login</th>
                             <th style="width: 10%" class="text-center">Status</th>
+                            <th style="width: 10%">Role</th>
                             <th style="width: 20%" class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
+                    <?php if (empty($users)): ?>
+                    <tr>
+                        <td colspan="8" class="text-center">-</td>
+                    </tr>
+                    <?php else: ?>
+                        <?php foreach ($users as $user): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($user['id']) ?: '-'; ?></td>
+                            <td><?php echo htmlspecialchars($user['username']) ?: '-'; ?></td>
+                            <td><?php echo htmlspecialchars($user['email']) ?: '-'; ?></td>
+                            <td><?php echo htmlspecialchars($user['last_login']) ?: '-'; ?></td>
+                            <td class="project-state">
+                                <?php
+                                    $status = htmlspecialchars($user['status']) ?: '-';
+                                    switch ($status) {
+                                        case 'active':
+                                            $badgeClass = 'badge-success';
+                                            $statusText = 'Active';
+                                            break;
+                                        case 'inactive':
+                                            $badgeClass = 'badge-warning';
+                                            $statusText = 'Inactive';
+                                            break;
+                                        case 'blocked':
+                                            $badgeClass = 'badge-danger';
+                                            $statusText = 'Blocked';
+                                            break;
+                                        default:
+                                            $badgeClass = 'badge-secondary';
+                                            $statusText = 'Unknown';
+                                    }
+                                ?>
+                                <span class="badge <?php echo $badgeClass; ?>"><?php echo $statusText; ?></span>
+                            </td>
+                            <td><?php echo htmlspecialchars($user['role']) ?: '-'; ?></td>
+                            <td class="project-actions text-right">
+                                <a class="btn btn-info btn-sm" href="edit_user.php?id=<?php echo urlencode($user['id']); ?>">
+                                    <i class="fas fa-pencil-alt"></i> Edit
+                                </a>
+                                <a class="btn btn-danger btn-sm" href="delete_user.php?id=<?php echo urlencode($user['id']); ?>">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                    </tbody>
+                    <!-- <tbody>
                         <tr>
                             <td>
-                                #
+                                01
                             </td>
                             <td>
                                 <ul class="list-inline">
@@ -86,24 +138,17 @@ include __DIR__ . '/../../layouts/master.php';
                                 <span class="badge badge-success">Success</span>
                             </td>
                             <td class="project-actions text-right">
-                                <a class="btn btn-primary btn-sm" href="#">
-                                    <i class="fas fa-folder">
-                                    </i>
-                                    View
-                                </a>
                                 <a class="btn btn-info btn-sm" href="#">
-                                    <i class="fas fa-pencil-alt">
-                                    </i>
+                                    <i class="fas fa-pencil-alt"></i>
                                     Edit
                                 </a>
                                 <a class="btn btn-danger btn-sm" href="#">
-                                    <i class="fas fa-trash">
-                                    </i>
+                                    <i class="fas fa-trash"></i>
                                     Delete
                                 </a>
                             </td>
                         </tr>
-                    </tbody>
+                    </tbody> -->
                 </table>
             </div>
             <!-- /.card-body -->
