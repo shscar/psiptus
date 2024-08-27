@@ -2,9 +2,7 @@
 
     include __DIR__ . '/../../layouts/master.php';
 
-    // Menggunakan class Database untuk query
     $db = Database::getInstance();
-    // Mengambil data dari tabel users
     $users = $db->query("SELECT id, username, email, last_login, status, role FROM users");
 ?>
 
@@ -38,7 +36,7 @@
                 <div class="card-tools">
                     <button type="button" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i>
-                        Tambah
+                        Tambah Admin
                     </button>
                 </div>
             </div>
