@@ -1,6 +1,13 @@
 <?php
+    include __DIR__ . '/../layouts/master.php';
+    
+    $db = Database::getInstance();
+    $sql = "SELECT s.id, s.nama_lengkap, s.nis, s.nisn, s.jenis_kelamin, k.email, k.telepon, s.status FROM siswa s
+        LEFT JOIN siswa_kontak k ON s.id = k.siswa_id
+        -- ORDER BY s.id ASC
+    ";
 
-include __DIR__ . '/../layouts/master.php';
+    $results = $db->query($sql);
 ?>
 
 <!-- Content Wrapper. Contains page content -->
@@ -37,33 +44,35 @@ include __DIR__ . '/../layouts/master.php';
                             <table id="example1" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
-                                        <th style="width: 1%">No</th>
-                                        <th>Nama</th>
                                         <th>NISN</th>
-                                        <th>Email</th>
-                                        <th>Phone</th>
+                                        <th>Nama</th>
+                                        <th>Gender</th>
+                                        <th>Tahun Ajaran</th>
                                         <th style="width: 10%">Kelas</th>
-                                        <th style="width: 8%">Aksi</th>
+                                        <th style="width: 8%">Jurusan</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>shscar haidar
-                                        </td>
-                                        <td>8375</td>
-                                        <td>shscar@gmail.com</td>
-                                        <td>0812345678912</td>
-                                        <td>RPL 01</td>
-                                        <td class="project-actions text-right">
-                                            <a class="btn btn-info btn-sm" href="#">
-                                                <i class="fas fa-pencil-alt"></i>
-                                            </a>
-                                            <a class="btn btn-danger btn-sm" href="#">
-                                                <i class="fas fa-trash"> </i>
-                                            </a>
-                                        </td>
-                                    </tr>
+                                    <?php if (count($results) > 0): ?>
+                                        <?php foreach ($results as $row): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($row['nisn']) ?: '-';?></td>
+                                                <td><?= htmlspecialchars($row['nama_lengkap']) ?: '-'; ?></td>
+                                                <td><?= htmlspecialchars($row['jenis_kelamin']) ?: '-'; ?></td>
+                                                <td><?= htmlspecialchars($row['tahun_ajar']) ?: '-'; ?></td>
+                                                <td><?= htmlspecialchars($row['kelas']) ?: '-'; ?></td>
+                                                <td class="project-actions text-right">
+                                                    <a class="btn btn-info btn-sm" href="edit.php?id=<?= htmlspecialchars($row['id']); ?>">
+                                                        <i class="fas fa-pencil-alt"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="7" class="text-center">Tidak ada data siswa</td>
+                                        </tr>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>

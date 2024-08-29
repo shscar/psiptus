@@ -613,13 +613,10 @@ include __DIR__ . '/../../layouts/master.php';
                                 documentation</a> for more examples and information about the plugin.
                         </div>
                     </div>
-                    <!-- /.card -->
                 </div>
             </div>
         </div>
-        <!-- /.container-fluid -->
     </section>
-    <!-- /.content -->
 </div>
 <!-- /.content-wrapper -->
 

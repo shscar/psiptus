@@ -6,3 +6,4 @@
 
 *vendor
 *config/connection.php
+*phinx.php

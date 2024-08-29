@@ -54,12 +54,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                    <?php if (empty($users)): ?>
-                    <tr>
-                        <td colspan="8" class="text-center">-</td>
-                    </tr>
-                    <?php else: ?>
-                        <?php foreach ($users as $user): ?>
+                        <?php if (empty($users)): ?>
+                        <tr>
+                            <td colspan="8" class="text-center">-</td>
+                        </tr>
+                        <?php else: 
+                            foreach ($users as $user): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($user['id']) ?: '-'; ?></td>
                             <td><?php echo htmlspecialchars($user['username']) ?: '-'; ?></td>
@@ -101,59 +101,9 @@
                         <?php endforeach; ?>
                     <?php endif; ?>
                     </tbody>
-                    <!-- <tbody>
-                        <tr>
-                            <td>
-                                01
-                            </td>
-                            <td>
-                                <ul class="list-inline">
-                                    <li class="list-inline-item">
-                                        <img alt="Avatar" class="table-avatar" src="../../assets/dist/img/avatar.png">
-                                    </li>
-                                </ul>
-                            </td>
-                            <td>
-                                <a>
-                                    AdminLTE v3
-                                </a>
-                                <br />
-                                <small>
-                                    Follow 01.01.2019
-                                </small>
-                            </td>
-                            <td class="project_progress">
-                                <div class="progress progress-sm">
-                                    <div class="progress-bar bg-green" role="progressbar" aria-valuenow="57"
-                                        aria-valuemin="0" aria-valuemax="100" style="width: 57%">
-                                    </div>
-                                </div>
-                                <small>
-                                    57% Complete
-                                </small>
-                            </td>
-                            <td class="project-state">
-                                <span class="badge badge-success">Success</span>
-                            </td>
-                            <td class="project-actions text-right">
-                                <a class="btn btn-info btn-sm" href="#">
-                                    <i class="fas fa-pencil-alt"></i>
-                                    Edit
-                                </a>
-                                <a class="btn btn-danger btn-sm" href="#">
-                                    <i class="fas fa-trash"></i>
-                                    Delete
-                                </a>
-                            </td>
-                        </tr>
-                    </tbody> -->
                 </table>
             </div>
-            <!-- /.card-body -->
         </div>
-        <!-- /.card -->
-
     </section>
-    <!-- /.content -->
 </div>
 <!-- /.content-wrapper -->

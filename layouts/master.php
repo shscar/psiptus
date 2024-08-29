@@ -20,7 +20,7 @@
     <!-- iCheck -->
     <link rel="stylesheet" href="../assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
     <!-- JQVMap -->
-    <link rel="stylesheet" href="../assets/plugins/jqvmap/jqvmap.min.css">
+    <!-- <link rel="stylesheet" href="../assets/plugins/jqvmap/jqvmap.min.css"> -->
     <!-- Theme style -->
     <link rel="stylesheet" href="../assets/dist/css/adminlte.min.css">
     <!-- overlayScrollbars -->
@@ -61,8 +61,7 @@
 
 
     <!-- REQUIRED SCRIPTS -->
-
-
+     
     <!-- jQuery -->
     <script src="../assets/plugins/jquery/jquery.min.js"></script>
     <!-- jQuery UI 1.11.4 -->
@@ -78,8 +77,8 @@
     <!-- Sparkline -->
     <script src="../assets/plugins/sparklines/sparkline.js"></script>
     <!-- JQVMap -->
-    <script src="../assets/plugins/jqvmap/jquery.vmap.min.js"></script>
-    <script src="../assets/plugins/jqvmap/maps/jquery.vmap.usa.js"></script>
+    <!-- <script src="../assets/plugins/jqvmap/jquery.vmap.min.js"></script>
+    <script src="../assets/plugins/jqvmap/maps/jquery.vmap.usa.js"></script> -->
     <!-- jQuery Knob Chart -->
     <script src="../assets/plugins/jquery-knob/jquery.knob.min.js"></script>
     <!-- daterangepicker -->
@@ -94,7 +93,7 @@
     <!-- AdminLTE App -->
     <script src="../assets/dist/js/adminlte.js"></script>
     <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-    <script src="../assets/dist/js/pages/dashboard.js"></script>
+    <!-- <script src="../assets/dist/js/pages/dashboard.js"></script> -->
 
     <!-- DataTables  & Plugins -->
     <script src="../assets/plugins/datatables/jquery.dataTables.min.js"></script>
