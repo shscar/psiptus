@@ -1,6 +1,6 @@
 <?php
     include __DIR__ . '/../layouts/master.php';
-    
+
     $db = Database::getInstance();
     $sql = "SELECT s.id, s.nama_lengkap, s.nis, s.nisn, s.jenis_kelamin, k.email, k.telepon, s.status FROM siswa s
         LEFT JOIN siswa_kontak k ON s.id = k.siswa_id
@@ -41,7 +41,7 @@
                         </div>
                         <!-- /.card-header -->
                         <div class="card-body">
-                            <table id="example1" class="table table-bordered table-striped">
+                            <table id="example2" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
                                         <th>NISN</th>
@@ -99,7 +99,7 @@
         }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
         $('#example2').DataTable({
             "paging": true,
-            "lengthChange": false,
+            "lengthChange": true,
             "searching": true,
             "ordering": true,
             "info": true,
