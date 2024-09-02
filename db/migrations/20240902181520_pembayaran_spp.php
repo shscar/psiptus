@@ -20,8 +20,8 @@ final class PembayaranSpp extends AbstractMigration
     public function change(): void
     {
         $table = $this->table('pembayaran_spp');
-        $table->addColumn('id_siswa', 'integer', ['null' => false])
-              ->addColumn('id_tarif', 'integer', ['null' => false])
+        $table->addColumn('siswa_id', 'integer', ['null' => false])
+              ->addColumn('tarif_spp_id', 'integer', ['null' => false])
               ->addColumn('tanggal_pembayaran', 'date', ['null' => false])
               ->addColumn('jumlah_bayar', 'decimal', ['precision' => 10, 'scale' => 2, 'null' => false])
               ->addColumn('metode_pembayaran', 'string', ['limit' => 50, 'null' => true])

@@ -20,10 +20,13 @@ final class RiwayatPembayaran extends AbstractMigration
     public function change(): void
     {
         $table = $this->table('riwayat_pembayaran');
-        $table->addColumn('id_pembayaran', 'integer', ['null' => false])
+        $table->addColumn('pembayaran_id', 'integer', ['null' => false])
+              ->addColumn('siswa_id', 'integer', ['null' => false])
               ->addColumn('aksi', 'string', ['limit' => 50, 'null' => false])
               ->addColumn('tanggal_aksi', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('dilakukan_oleh', 'integer', ['null' => true])
+              ->addColumn('jumlah_bayar', 'decimal', ['precision' => 10, 'scale' => 2, 'null' => false])
+              ->addColumn('metode_pembayaran', 'string', ['limit' => 50, 'null' => true])
               ->addColumn('nomor_kwitansi', 'string', ['limit' => 50, 'null' => true])
             //   ->addForeignKey('id_pembayaran', 'pembayaran_spp', 'id_pembayaran', ['delete'=> 'CASCADE', 'update'=> 'NO_ACTION'])
             //   ->addForeignKey('dilakukan_oleh', 'pengguna', 'id_user', ['delete'=> 'SET_NULL', 'update'=> 'NO_ACTION'])
