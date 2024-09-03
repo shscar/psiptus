@@ -27,6 +27,7 @@ final class Siswa extends AbstractMigration
               ->addColumn('tanggal_lahir', 'date')
               ->addColumn('tempat_lahir', 'string', ['limit' => 50])
               ->addColumn('alamat', 'text', ['null' => true])
+              ->addColumn('kelas_id', 'integer')
               ->addColumn('status', 'enum', ['values' => ['Aktif', 'Tidak Aktif'], 'default' => 'Aktif'])
               ->addTimestamps()
               ->addIndex('nis', ['unique' => true])

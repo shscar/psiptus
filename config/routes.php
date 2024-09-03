@@ -3,11 +3,15 @@
 
 $routes = [
     '/' => '/dashboard/index.php',
+    '/test' => '/test/index.php',
     '/login' => '/dashboard/login.php',
     '/guru-karyawan' => '/users/guru-karyawan.php',
     '/user' => '/users/administrator/index.php',
-    '/siswa' => '/users/peserta_didik.php',
     '/student/peserta' => '/students/peserta/index.php',
+
+    // crud siswa
+    '/siswa' => '/students/peserta_didik.php',
+    '/tambah-siswa' => '/students/tambah_siswa.php',
 ];
 
 // Mendapatkan URI saat ini

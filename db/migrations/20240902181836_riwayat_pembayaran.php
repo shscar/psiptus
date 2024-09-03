@@ -28,6 +28,7 @@ final class RiwayatPembayaran extends AbstractMigration
               ->addColumn('jumlah_bayar', 'decimal', ['precision' => 10, 'scale' => 2, 'null' => false])
               ->addColumn('metode_pembayaran', 'string', ['limit' => 50, 'null' => true])
               ->addColumn('nomor_kwitansi', 'string', ['limit' => 50, 'null' => true])
+              ->addColumn('catatan', 'text', ['null' => true])
             //   ->addForeignKey('id_pembayaran', 'pembayaran_spp', 'id_pembayaran', ['delete'=> 'CASCADE', 'update'=> 'NO_ACTION'])
             //   ->addForeignKey('dilakukan_oleh', 'pengguna', 'id_user', ['delete'=> 'SET_NULL', 'update'=> 'NO_ACTION'])
               ->addTimestamps()
