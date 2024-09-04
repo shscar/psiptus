@@ -1,7 +1,11 @@
 <?php
 include __DIR__ . '/../layouts/master.php';
 
+// Mendapatkan ID siswa dari query string
+$siswa_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Mengambil data dari form
     $nis = $_POST['nis'];
     $nisn = $_POST['nisn'];
     $nama_lengkap = $_POST['nama_lengkap'];
@@ -13,9 +17,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $status = $_POST['status'];
 
     try {
-        // Query untuk menambahkan data ke tabel siswa
-        $sql = "INSERT INTO siswa (nis, nisn, nama_lengkap, jenis_kelamin, tanggal_lahir, tempat_lahir, alamat, kelas_id, status) 
-                VALUES (:nis, :nisn, :nama_lengkap, :jenis_kelamin, :tanggal_lahir, :tempat_lahir, :alamat, :kelas_id, :status)";
+        // Query untuk memperbarui data siswa
+        $sql = "UPDATE siswa SET 
+                nis = :nis, 
+                nisn = :nisn, 
+                nama_lengkap = :nama_lengkap, 
+                jenis_kelamin = :jenis_kelamin, 
+                tanggal_lahir = :tanggal_lahir, 
+                tempat_lahir = :tempat_lahir, 
+                alamat = :alamat, 
+                kelas_id = :kelas_id, 
+                status = :status 
+                WHERE id = :id";
+        
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':nis', $nis, PDO::PARAM_STR);
         $stmt->bindParam(':nisn', $nisn, PDO::PARAM_STR);
@@ -26,15 +40,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(':alamat', $alamat, PDO::PARAM_STR);
         $stmt->bindParam(':kelas_id', $kelas_id, PDO::PARAM_INT);
         $stmt->bindParam(':status', $status, PDO::PARAM_STR);
+        $stmt->bindParam(':id', $siswa_id, PDO::PARAM_INT);
 
         if ($stmt->execute()) {
             echo "<script>
-                    alert('Data siswa berhasil ditambahkan.');
+                    alert('Data siswa berhasil diperbarui.');
                     window.location.href = '/siswa';
                   </script>";
             exit();
         } else {
-            echo "Error: Gagal menambahkan data siswa.";
+            echo "Error: Gagal memperbarui data siswa.";
         }
     } catch (PDOException $e) {
         // Memeriksa apakah error adalah duplikat entri
@@ -51,6 +66,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     $conn = null;
+} else {
+    // Jika menggunakan metode GET, ambil data siswa untuk diisi dalam form
+    try {
+        $sql = "SELECT * FROM siswa WHERE id = :id";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':id', $siswa_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $siswa = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$siswa) {
+            echo "Error: Data siswa tidak ditemukan.";
+            exit();
+        }
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+        exit();
+    }
 }
 ?>
 
@@ -59,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <div class="container-fluid">
-            <h1>Tambah Siswa Baru</h1>
+            <h1>Edit Data Siswa</h1>
         </div>
     </section>
 
@@ -70,11 +102,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="col-md-12">
                     <div class="card card-primary">
                         <div class="card-header">
-                            <h3 class="card-title">Form Tambah Siswa</h3>
+                            <h3 class="card-title">Form Edit Siswa</h3>
                         </div>
                         <?php
                         if (!empty($error)) {
-                            // echo '<div class="alert alert-danger">' . $error . '</div>';
                             echo '<div class="alert alert-danger">' . $error . '</div>';
                         }
                         ?>
@@ -84,51 +115,50 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <div class="form-group col-md-6">
                                         <label for="nis">NIS</label>
                                         <input type="text" class="form-control" id="nis" name="nis" required maxlength="20"
-                                            value="<?php echo $nis; ?>">
+                                            value="<?php echo htmlspecialchars($siswa['nis']); ?>">
                                     </div>
                                     <div class="form-group col-md-6">
                                         <label for="nisn">NISN</label>
                                         <input type="number" class="form-control" id="nisn" name="nisn" required
-                                            value="<?php echo $nisn; ?>">
+                                            value="<?php echo htmlspecialchars($siswa['nisn']); ?>">
                                     </div>
                                     <div class="form-group col-md-8">
                                         <label for="nama_lengkap">Nama Lengkap</label>
                                         <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap"
-                                            required maxlength="100" value="<?php echo $nama_lengkap; ?>">
+                                            required maxlength="100" value="<?php echo htmlspecialchars($siswa['nama_lengkap']); ?>">
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label for="jenis_kelamin">Jenis Kelamin</label>
                                         <select class="form-control" id="jenis_kelamin" name="jenis_kelamin" required>
-                                            <option value="Laki-laki" <?php echo ($jenis_kelamin == 'Laki-laki') ? 'selected' : ''; ?>>Laki-laki</option>
-                                            <option value="Perempuan" <?php echo ($jenis_kelamin == 'Perempuan') ? 'selected' : ''; ?>>Perempuan</option>
+                                            <option value="Laki-laki" <?php echo ($siswa['jenis_kelamin'] == 'Laki-laki') ? 'selected' : ''; ?>>Laki-laki</option>
+                                            <option value="Perempuan" <?php echo ($siswa['jenis_kelamin'] == 'Perempuan') ? 'selected' : ''; ?>>Perempuan</option>
                                         </select>
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label for="tanggal_lahir">Tanggal Lahir</label>
                                         <input type="date" class="form-control" id="tanggal_lahir" name="tanggal_lahir"
-                                            required value="<?php echo $tanggal_lahir; ?>">
+                                            required value="<?php echo htmlspecialchars($siswa['tanggal_lahir']); ?>">
                                     </div>
                                     <div class="form-group col-md-8">
                                         <label for="tempat_lahir">Tempat Lahir</label>
                                         <input type="text" class="form-control" id="tempat_lahir" name="tempat_lahir" maxlength="50" 
-                                            value="<?php echo $tempat_lahir; ?>">
+                                            value="<?php echo htmlspecialchars($siswa['tempat_lahir']); ?>">
                                     </div>
                                     <div class="form-group col-md-12">
                                         <label for="alamat">Alamat</label>
                                         <textarea class="form-control" id="alamat" name="alamat"
-                                            rows="3"><?php echo $alamat; ?></textarea>
+                                            rows="3"><?php echo htmlspecialchars($siswa['alamat']); ?></textarea>
                                     </div>
                                     <div class="form-group col-md-6">
                                         <label for="kelas_id">Kelas ID</label>
                                         <input type="number" class="form-control" id="kelas_id" name="kelas_id" 
-                                            value="<?php echo $kelas_id; ?>">
+                                            value="<?php echo htmlspecialchars($siswa['kelas_id']); ?>">
                                     </div>
                                     <div class="form-group col-md-6">
                                         <label for="status">Status</label>
                                         <select class="form-control" id="status" name="status">
-                                            <option value="Aktif" <?php echo ($status == 'Aktif') ? 'selected' : ''; ?>>Aktif
-                                            </option>
-                                            <option value="Tidak Aktif" <?php echo ($status == 'Tidak Aktif') ? 'selected' : ''; ?>>Tidak Aktif</option>
+                                            <option value="Aktif" <?php echo ($siswa['status'] == 'Aktif') ? 'selected' : ''; ?>>Aktif</option>
+                                            <option value="Tidak Aktif" <?php echo ($siswa['status'] == 'Tidak Aktif') ? 'selected' : ''; ?>>Tidak Aktif</option>
                                         </select>
                                     </div>
                                 </div>
@@ -138,7 +168,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <i class="fas fa-times"></i> Cancel
                                 </button>
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Submit
+                                    <i class="fas fa-save"></i> Update
                                 </button>
                             </div>
                         </form>

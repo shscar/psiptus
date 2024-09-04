@@ -11,7 +11,8 @@ $routes = [
 
     // crud siswa
     '/siswa' => '/students/peserta_didik.php',
-    '/tambah-siswa' => '/students/tambah_siswa.php',
+    '/siswa/tambah-siswa' => '/students/tambah_siswa.php',
+    '/siswa/edit-siswa' => '/students/update_siswa.php',
 ];
 
 // Mendapatkan URI saat ini
