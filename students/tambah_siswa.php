@@ -1,6 +1,20 @@
 <?php
 include __DIR__ . '/../layouts/master.php';
 
+$query = "SELECT 
+            kelas.id, 
+            kelas.nama_kelas, 
+            tingkat_kelas.tingkat, 
+            tahun_ajaran.tahun
+        FROM kelas
+        JOIN tingkat_kelas ON kelas.tingkat_kelas_id = tingkat_kelas.id
+        JOIN tahun_ajaran ON tingkat_kelas.tahun_ajaran_id = tahun_ajaran.id
+        WHERE tahun_ajaran.status_aktif = 1
+    ";
+    $stmt = $conn->prepare($query);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nis = $_POST['nis'];
     $nisn = $_POST['nisn'];
@@ -45,8 +59,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
             // Menampilkan pesan error yang lebih informatif
             $error = "NIS $duplicateNis sudah ada. Silakan gunakan NIS yang berbeda.";
+            exit(); // Menghentikan eksekusi lebih lanjut
         } else {
             $error = "Error: " . $e->getMessage();
+            exit(); // Menghentikan eksekusi lebih lanjut
         }
     }
 
@@ -119,9 +135,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             rows="3"><?php echo $alamat; ?></textarea>
                                     </div>
                                     <div class="form-group col-md-6">
-                                        <label for="kelas_id">Kelas ID</label>
-                                        <input type="number" class="form-control" id="kelas_id" name="kelas_id" 
-                                            value="<?php echo $kelas_id; ?>">
+                                        <label for="kelas_id">Kelas</label>
+                                        <select class="form-control" id="kelas_id" name="kelas_id">
+                                            <option value="">-- Pilih Kelas --</option>
+                                            <?php foreach ($result as $row): ?>
+                                                <option value="<?php echo $row['id']; ?>" 
+                                                    <?php echo ($kelas_id == $row['id']) ? 'selected' : ''; ?>>
+                                                    <?php echo "{$row['tingkat']} {$row['nama_kelas']} - {$row['tahun']}"; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
                                     </div>
                                     <div class="form-group col-md-6">
                                         <label for="status">Status</label>
