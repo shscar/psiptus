@@ -1,24 +1,11 @@
 <?php
-    include __DIR__ . '/../layouts/master.php';
+    include __DIR__ . '/../../layouts/master.php';
 
     $db = Database::getInstance();
     // Concise SQL query with table aliases
-    $sql = "SELECT 
-            s.id,
-            s.nisn,
-            s.nama_lengkap,
-            s.jenis_kelamin,
-            s.status,
-            t.tahun AS tahun_ajaran,
-            CONCAT(tk.tingkat, ' ', k.nama_kelas) AS kelas
-        FROM siswa s
-        LEFT JOIN kelas k ON s.kelas_id = k.id
-        LEFT JOIN tingkat_kelas tk ON k.tingkat_kelas_id = tk.id
-        LEFT JOIN tahun_ajaran t ON tk.tahun_ajaran_id = t.id
-        ORDER BY s.id DESC
-    ";
 
-$results = $db->query($sql);
+    $sql = "SELECT * FROM tahun_ajaran";
+    $results = $db->query($sql);
 // var_dump($results);
 
 ?>
@@ -30,12 +17,12 @@ $results = $db->query($sql);
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Data Siswa/i</h1>
+                    <h1>Data Tahun Ajaran</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active">Data Siswa</li>
+                        <li class="breadcrumb-item active">Data Tahun Ajaran</li>
                     </ol>
                 </div>
             </div>
@@ -69,53 +56,38 @@ $results = $db->query($sql);
                             <table id="example2" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
-                                        <th style="width: 10%">NISN</th>
-                                        <th style="width: 25%">Nama</th>
-                                        <th style="width: 15%">Gender</th>
-                                        <th style="width: 10%">Kelas</th>
-                                        <th style="width: 18%">Tahun Ajaran</th>
-                                        <th style="width: 8%">Status</th>
-                                        <th style="width: 8%">Aksi</th>
+                                        <th>Tahun</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if (count($results) > 0): ?>
                                         <?php foreach ($results as $row): ?>
                                             <tr>
-                                                <td><?= htmlspecialchars($row['nisn']) ?: '-';?></td>
-                                                <td><?= htmlspecialchars($row['nama_lengkap']) ?: '-'; ?></td>
-                                                <td><?= htmlspecialchars($row['jenis_kelamin']) ?: '-'; ?></td>
-                                                <td><?= htmlspecialchars($row['kelas']) ?: '-'; ?></td>
-                                                <td><?= htmlspecialchars($row['tahun_ajaran']) ?: '-'; ?></td>
-                                                <td class="project-state">
+                                                <td><?= htmlspecialchars($row['tahun']); ?></td>
+                                                <td>
                                                     <?php
-                                                        $status = htmlspecialchars($row['status']) ?: '-';
-                                                        switch ($status) {
-                                                            case 'Aktif':
-                                                                $badgeClass = 'badge-success';
-                                                                $statusText = 'Aktif';
-                                                                break;
-                                                            case 'Tidak Aktif':
-                                                                $badgeClass = 'badge-danger';
-                                                                $statusText = 'Tidak Aktif';
-                                                                break;
-                                                            default:
-                                                                $badgeClass = 'badge-secondary';
-                                                                $statusText = 'Unknown';
-                                                        }
+                                                        $status = htmlspecialchars($row['status']);
+                                                        $badgeClass = $status == 'Aktif' ? 'badge-success' : 'badge-danger';
                                                     ?>
-                                                    <span class="badge <?php echo $badgeClass; ?>"><?php echo $statusText; ?></span>
+                                                    <span class="badge <?php echo $badgeClass; ?>">
+                                                        <?php echo $status; ?>
+                                                    </span>
                                                 </td>
-                                                <td class="project-actions text-right">
-                                                    <a class="btn btn-info btn-sm" href="/siswa/edit-siswa?id=<?= htmlspecialchars($row['id']); ?>">
+                                                <td>
+                                                    <a class="btn btn-info btn-sm" href="edit.php?id=<?= htmlspecialchars($row['id']); ?>">
                                                         <i class="fas fa-pencil-alt"></i>
+                                                    </a>
+                                                    <a class="btn btn-danger btn-sm" href="delete.php?id=<?= htmlspecialchars($row['id']); ?>">
+                                                        <i class="fas fa-trash"></i>
                                                     </a>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="7" class="text-center">Tidak ada data siswa</td>
+                                            <td colspan="3" class="text-center">Tidak ada data</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>

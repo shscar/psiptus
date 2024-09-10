@@ -21,7 +21,7 @@ final class TahunAjaran extends AbstractMigration
     {
         $table = $this->table('tahun_ajaran');
         $table->addColumn('tahun', 'string', ['limit' => 9, 'null' => false])
-              ->addColumn('status_aktif', 'boolean', ['default' => true])
+              ->addColumn('status', 'enum', ['values' => ['Aktif', 'Inactive'], 'default' => 'Aktif'])
               ->addIndex(['tahun'], ['unique' => false])
               ->addTimestamps()
               ->create();

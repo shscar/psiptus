@@ -173,7 +173,7 @@ $siswa_kelas_id = isset($siswa['kelas_id']) ? $siswa['kelas_id'] : null;
                                     <div class="form-group col-md-6">
                                         <label for="kelas_id">Kelas</label>
                                         <select class="form-control" id="kelas_id" name="kelas_id">
-                                            <!-- <option value="">-- Pilih Kelas --</option> -->
+                                            <option value="">-- Pilih Kelas --</option>
                                             <?php foreach ($result as $row): ?>
                                                 <option value="<?php echo $row['id']; ?>" 
                                                     <?php echo ($siswa_kelas_id == $row['id']) ? 'selected' : ''; ?>>

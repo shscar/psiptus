@@ -13,6 +13,11 @@ $routes = [
     '/siswa' => '/students/peserta_didik.php',
     '/siswa/tambah-siswa' => '/students/tambah_siswa.php',
     '/siswa/edit-siswa' => '/students/update_siswa.php',
+
+    // crud tahun ajaran
+    'tahun-ajaran' => '/akademiks/tahun_ajaran/index.php',
+    'tahun-ajaran/create' => '/akademiks/tahun_ajaran/create.php',
+    
 ];
 
 // Mendapatkan URI saat ini

@@ -1,86 +1,71 @@
 <?php
-    include __DIR__ . '/../config/connection.php';
-    // $db = Database::getInstance();
-    
 
-
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        // Ambil data dari form
-        $nis = trim($_POST['nis']);
-        $nisn = trim($_POST['nisn']);
-        $nama_lengkap = trim($_POST['nama_lengkap']);
-        $jenis_kelamin = trim($_POST['jenis_kelamin']);
-        $tanggal_lahir = trim($_POST['tanggal_lahir']);
-        $tempat_lahir = trim($_POST['tempat_lahir']);
-        $alamat = trim($_POST['alamat']);
-        $kelas_id = trim($_POST['kelas_id']);
-        $status = trim($_POST['status']);
-        
-        // Validasi data
-        $errors = [];
-        
-        if (empty($nis) || !preg_match('/^[a-zA-Z0-9]+$/', $nis)) {
-            $errors[] = 'NIS harus diisi dan hanya boleh mengandung huruf dan angka.';
-        }
-        
-        if (empty($nisn) || !preg_match('/^[0-9]+$/', $nisn)) {
-            $errors[] = 'NISN harus diisi dan hanya boleh mengandung angka.';
-        }
-        
-        if (empty($nama_lengkap) || strlen($nama_lengkap) > 100) {
-            $errors[] = 'Nama Lengkap harus diisi dan tidak boleh lebih dari 100 karakter.';
-        }
-        
-        if (empty($jenis_kelamin) || !in_array($jenis_kelamin, ['Laki-laki', 'Perempuan'])) {
-            $errors[] = 'Jenis Kelamin harus dipilih.';
-        }
-        
-        if (empty($tanggal_lahir)) {
-            $errors[] = 'Tanggal Lahir harus diisi.';
-        }
-        
-        if (empty($tempat_lahir) || strlen($tempat_lahir) > 50) {
-            $errors[] = 'Tempat Lahir harus diisi dan tidak boleh lebih dari 50 karakter.';
-        }
-        
-        if (empty($alamat)) {
-            $errors[] = 'Alamat harus diisi.';
-        }
-        
-        if (empty($kelas_id) || !is_numeric($kelas_id)) {
-            $errors[] = 'Kelas ID harus diisi dan harus berupa angka.';
-        }
-        
-        if (empty($status) || !in_array($status, ['Aktif', 'Tidak Aktif'])) {
-            $errors[] = 'Status harus dipilih.';
-        }
-        
-        // Jika ada kesalahan
-        if (!empty($errors)) {
-            foreach ($errors as $error) {
-                echo "<p>$error</p>";
-            }
-        } else {
-            // Jika tidak ada kesalahan, lakukan penyimpanan data
-            $sql = "INSERT INTO siswa (nis, nisn, nama_lengkap, jenis_kelamin, tanggal_lahir, tempat_lahir, alamat, kelas_id, status) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            
-            if ($stmt = $conn->prepare($sql)) {
-                // Bind variabel ke parameter
-                $stmt->bindParam("sssssssis", $nis, $nisn, $nama_lengkap, $jenis_kelamin, $tanggal_lahir, $tempat_lahir, $alamat, $kelas_id, $status);
-                
-                // Eksekusi statement
-                if ($stmt->execute()) {
-                    echo "<p>Data berhasil disimpan.</p>";
-                } else {
-                    echo "<p>Terjadi kesalahan saat menyimpan data.</p>";
-                }
-                
-            } else {
-                echo "<p>Terjadi kesalahan dalam persiapan query.</p>";
-            }
-            
-            // Tutup koneksi
-        }
-    }
+    include __DIR__ . '/../layouts/master.php';
 ?>
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Guru dan Karyawan</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">Contacts</li>
+                    </ol>
+                </div>
+            </div>
+        </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+
+        <!-- Default box -->
+        <div class="card card-solid">
+            <div class="card-body pb-0">
+                <div class="row">
+                    <div class="col-12 col-sm-6 col-md-4 d-flex align-items-stretch flex-column">
+                        <div class="card bg-light d-flex flex-fill">
+                            <div class="card-header text-muted border-bottom-0 d-flex justify-content-between align-items-center w-100">
+                                <span>Digital Strategist</span>
+                                <a href="#" class="btn btn-sm btn-primary ml-auto">
+                                    <i class="fas fa-user"></i> View Profile
+                                </a>
+                            </div>
+                            <div class="card-body pt-0">
+                                <div class="row">
+                                    <div class="col-12 text-center">
+                                        <img src="../assets/dist/img/user1-128x128.jpg" alt="user-avatar" class="img-circle img-fluid">
+                                    </div>
+                                    <div class="col-12">
+                                        <h2 class="lead text-center"><b>Nicole Pearson</b></h2>
+                                        <div class="text-muted">
+                                            <p class="mb-0">
+                                                <b>Mobile: </b> 
+                                                081298347652
+                                            </p>
+                                            <p class="mb-0">
+                                                <b>Email: </b> 
+                                                example@gmail.id
+                                            </p>
+                                            <p class="mb-0">
+                                                <b>About: </b> 
+                                                Web Designer / UX / Graphic Artist
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<!-- /.content-wrapper -->

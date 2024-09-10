@@ -2,8 +2,9 @@
 
 // Menu aktif untuk dropdown
 $dropdownRoutes = [
-    'dd1' => ['/guru-karyawan','/siswa'],
-    'role' => []
+    'dd1' => ['/guru-karyawan',],
+    'akademik' => ['/siswa', '/siswa/tambah-siswa', '/siswa/edit-siswa'],
+    'pembayaran_siswas' => []
 ];
 
 $activeDropdown = null;
@@ -58,7 +59,7 @@ foreach ($dropdownRoutes as $key => $routes) {
                     <a href="#" class="nav-link <?php echo $activeDropdown === 'dd1' ? 'active' : ''; ?>">
                         <i class="nav-icon fas fa-users"></i>
                         <p>
-                            Staff dan Siswa
+                            Staff dan Guru
                             <i class="fas fa-angle-left right"></i>
                         </p>
                     </a>
@@ -69,6 +70,17 @@ foreach ($dropdownRoutes as $key => $routes) {
                                 <p>Guru/Karyawan</p>
                             </a>
                         </li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown <?php echo $activeDropdown === 'akademik' ? 'menu-open' : ''; ?>">
+                    <a href="#" class="nav-link <?php echo $activeDropdown === 'akademik' ? 'active' : ''; ?>">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>
+                            Akademik
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview" style="<?php echo $activeDropdown === 'akademik' ? 'display: block;' : 'display: none;'; ?>">
                         <li class="nav-item">
                             <a href="/siswa" class="nav-link <?php echo isActive('/siswa', $requestUri); ?>">
                                 <i class="nav-icon far fa-circle"></i>
@@ -77,15 +89,21 @@ foreach ($dropdownRoutes as $key => $routes) {
                         </li>
                     </ul>
                 </li>
-                <li class="nav-item dropdown <?php echo $activeDropdown === 'role' ? 'menu-open' : ''; ?>">
-                    <a href="#" class="nav-link <?php echo $activeDropdown === 'role' ? 'active' : ''; ?>">
+                <li class="nav-item dropdown <?php echo $activeDropdown === 'pembayaran_siswas' ? 'menu-open' : ''; ?>">
+                    <a href="#" class="nav-link <?php echo $activeDropdown === 'pembayaran_siswas' ? 'active' : ''; ?>">
                         <i class="nav-icon fas fa-users"></i>
                         <p>
-                            Role
+                            TagPaySiswa
                             <i class="fas fa-angle-left right"></i>
                         </p>
                     </a>
-                    <ul class="nav nav-treeview" style="<?php echo $activeDropdown === 'role' ? 'display: block;' : 'display: none;'; ?>">
+                    <ul class="nav nav-treeview" style="<?php echo $activeDropdown === 'pembayaran_siswas' ? 'display: block;' : 'display: none;'; ?>">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link <?php echo isActive('#', $requestUri); ?>">
+                                <i class="nav-icon far fa-circle"></i>
+                                <p>Pembayaran SPP</p>
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
