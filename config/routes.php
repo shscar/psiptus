@@ -3,21 +3,27 @@
 
 $routes = [
     '/' => '/dashboard/index.php',
-    '/test' => '/test/index.php',
-    '/login' => '/dashboard/login.php',
-    '/guru-karyawan' => '/users/guru-karyawan.php',
-    '/user' => '/users/administrator/index.php',
-    '/student/peserta' => '/students/peserta/index.php',
+    // '/test' => '/test/index.php',
+    // '/login' => '/dashboard/login.php',
 
+    // '/guru-karyawan' => '/users/guru-karyawan.php',
+    // '/user' => '/users/administrator/index.php',
+    // '/student/peserta' => '/students/peserta/index.php',
+
+    // akademik
     // crud siswa
-    '/siswa' => '/students/peserta_didik.php',
-    '/siswa/tambah-siswa' => '/students/tambah_siswa.php',
+    '/siswa' => '/academics/students/index.php',
+    '/siswa/tambah-siswa' => '/academics/students/create.php',
     '/siswa/edit-siswa' => '/students/update_siswa.php',
 
-    // crud tahun ajaran
-    'tahun-ajaran' => '/akademiks/tahun_ajaran/index.php',
-    'tahun-ajaran/create' => '/akademiks/tahun_ajaran/create.php',
-    
+    // lain-lain
+    '/tahun-ajaran' => '/academics/school_years/index.php',
+    '/kelas' => '/academics/classrooms/index.php',
+    '/tingkat-kelas' => '/academics/classrooms/grade_lv.php',
+
+    // infoice
+    // pendapatan
+    '/tagihan-siswa' => '/finances/incomes/student_bills.php',
 ];
 
 // Mendapatkan URI saat ini
@@ -25,12 +31,14 @@ $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 
 // Fungsi untuk menentukan apakah link atau menu dropdown sedang aktif
-function isActive($route, $requestUri) {
+function isActive($route, $requestUri)
+{
     return $route === $requestUri ? 'active' : '';
 }
 
 // Fungsi untuk memeriksa apakah salah satu rute dalam array aktif
-function isAnyActive($routes, $requestUri) {
+function isAnyActive($routes, $requestUri)
+{
     foreach ($routes as $route) {
         if (isActive($route, $requestUri) === 'active') {
             return true;
