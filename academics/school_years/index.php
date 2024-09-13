@@ -132,7 +132,7 @@ ob_end_flush(); // Mengakhiri output buffering
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Data Siswa</h3>
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createModal">
+                    <button type="button" class="btn btn-success btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#createModal">
                         <i class="bi bi-plus-lg pe-1"></i> Tambah Data
                     </button>
 
@@ -154,21 +154,21 @@ ob_end_flush(); // Mengakhiri output buffering
                                     <?php foreach ($tahun_ajaran as $index => $row): ?>
                                     <tr>
                                         <td><?= $index + 1; ?></td>
-                                        <td><?= htmlspecialchars($row['tahun']); ?></td>
-                                        <td><?= htmlspecialchars($row['status']); ?></td>
+                                        <td><?= $row['tahun']; ?></td>
+                                        <td><?= $row['status']; ?></td>
                                         <td class="text-center">
                                             <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                                 data-bs-target="#editModal"
-                                                data-bs-id="<?= htmlspecialchars($row['id']) ?>"
-                                                data-bs-tahun="<?= htmlspecialchars($row['tahun']) ?>"
-                                                data-bs-status="<?= htmlspecialchars($row['status']) ?>">
+                                                data-bs-id="<?= $row['id'] ?>"
+                                                data-bs-tahun="<?= $row['tahun'] ?>"
+                                                data-bs-status="<?= $row['status'] ?>">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
                                         </td>
                                         <td class="text-center">
                                             <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
                                                 data-bs-target="#deleteModal"
-                                                data-bs-id="<?= htmlspecialchars($row['id']) ?>">
+                                                data-bs-id="<?= $row['id'] ?>">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
@@ -202,7 +202,6 @@ ob_end_flush(); // Mengakhiri output buffering
                                 <div class="mb-3">
                                     <label for="status" class="form-label">Status</label>
                                     <select class="form-select" id="status" name="status" required>
-                                        <option value="">Pilih Status</option>
                                         <option value="Aktif">Aktif</option>
                                         <option value="Tidak Aktif">Tidak Aktif</option>
                                     </select>

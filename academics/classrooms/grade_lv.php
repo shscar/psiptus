@@ -99,8 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 // Fetch records for display with join
-$sql = "
-    SELECT tk.id, tk.tingkat, tk.keterangan, ta.tahun, ta.status 
+$sql = "SELECT tk.id, tk.tingkat, tk.tahun_ajaran_id, tk.keterangan, ta.tahun, ta.status 
     FROM tingkat_kelas tk
     JOIN tahun_ajaran ta ON tk.tahun_ajaran_id = ta.id
     ORDER BY tk.id DESC
@@ -110,7 +109,8 @@ $tingkat_kelas = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 // Fetch only active form "tahun_ajaran"
 $sql = "SELECT id, tahun FROM tahun_ajaran WHERE status = 'Aktif' ORDER BY tahun DESC";
 $tahun_ajaran = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-// var_dump($tahun_ajaran);
+
+// var_dump($siswa_kelas_id);
 
 ob_end_flush(); // Mengakhiri output buffering
 ?>
@@ -149,7 +149,7 @@ ob_end_flush(); // Mengakhiri output buffering
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Grade Level </h3>
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createModal">
+                    <button type="button" class="btn btn-success btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#createModal">
                         <i class="bi bi-plus-lg pe-1"></i> Tambah Data
                     </button>
 
@@ -171,23 +171,20 @@ ob_end_flush(); // Mengakhiri output buffering
                                     <?php foreach ($tingkat_kelas as $index => $row): ?>
                                     <tr>
                                         <td><?= $index + 1; ?></td>
-                                        <td><?php echo htmlspecialchars($row['tingkat']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['tahun']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
+                                        <td><?= $row['tingkat'] ?? '-'; ?></td>
+                                        <td><?= $row['tahun'] ?? '-'; ?></td>
+                                        <td><?= $row['keterangan'] ?? '-'; ?></td>
                                         <td class="text-center">
-
-                                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#editModal"
-                                                data-id="<?php echo htmlspecialchars($row['id']); ?>"
-                                                data-tahun_ajaran_id="<?php echo htmlspecialchars($row['tahun_ajaran_id']); ?>"
-                                                data-tingkat="<?php echo htmlspecialchars($row['tingkat']); ?>"
-                                                data-keterangan="<?php echo htmlspecialchars($row['keterangan']); ?>">
+                                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal"
+                                                data-id="<?= $row['id'] ?? '-'; ?>"
+                                                data-tahun_ajaran_id="<?= $row['tahun_ajaran_id'] ?? '-'; ?>"
+                                                data-tingkat="<?= $row['tingkat'] ?? '-'; ?>"
+                                                data-keterangan="<?= $row['keterangan'] ?? '-'; ?>">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
-
                                             <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
                                                 data-bs-target="#deleteModal"
-                                                data-bs-id="<?= htmlspecialchars($row['id']) ?>">
+                                                data-bs-id="<?= $row['id'] ?? '-'; ?>">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
@@ -218,8 +215,8 @@ ob_end_flush(); // Mengakhiri output buffering
                                     <select class="form-select" id="tahun_ajaran_id" name="tahun_ajaran_id" required>
                                         <option value="">Pilih Tahun Ajaran</option>
                                         <?php foreach ($tahun_ajaran as $ta): ?>
-                                        <option value="<?php echo htmlspecialchars($ta['id']); ?>">
-                                            <?php echo htmlspecialchars($ta['tahun']); ?>
+                                        <option value="<?php echo $ta['id']; ?>">
+                                            <?php echo $ta['tahun']; ?>
                                         </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -244,7 +241,7 @@ ob_end_flush(); // Mengakhiri output buffering
                 </div>
             </div>
 
-            <!-- /.modal-dialog update -->
+            <!-- /.modal-dialog update --><!-- Edit Modal -->
             <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -261,26 +258,26 @@ ob_end_flush(); // Mengakhiri output buffering
                                 <!-- Dropdown for Tahun Ajaran -->
                                 <div class="mb-3">
                                     <label for="edit_tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
-                                    <select class="form-select" id="edit_tahun_ajaran_id" name="tahun_ajaran_id"
-                                        required>
-                                        <option value="">Pilih Tahun Ajaran</option>
+                                    <select class="form-select" id="edit_tahun_ajaran_id" name="tahun_ajaran_id" required>
+                                    <option value="">Pilih Tahun Ajaran</option>
                                         <?php foreach ($tahun_ajaran as $ta): ?>
-                                        <option value="<?php echo htmlspecialchars($ta['id']); ?>">
-                                            <?php echo htmlspecialchars($ta['tahun']); ?>
-                                        </option>
+                                            <option value="<?= $ta['id']; ?>">
+                                                <?= $ta['tahun']; ?>
+                                            </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
 
+                                <!-- Input for Tingkat -->
                                 <div class="mb-3">
                                     <label for="edit_tingkat" class="form-label">Tingkat</label>
                                     <input type="text" class="form-control" id="edit_tingkat" name="tingkat" required>
                                 </div>
 
+                                <!-- Textarea for Keterangan -->
                                 <div class="mb-3">
                                     <label for="edit_keterangan" class="form-label">Keterangan</label>
-                                    <textarea class="form-control" id="edit_keterangan" name="keterangan"
-                                        rows="3"></textarea>
+                                    <textarea class="form-control" id="edit_keterangan" name="keterangan" rows="3"></textarea>
                                 </div>
                             </form>
                         </div>
@@ -291,6 +288,7 @@ ob_end_flush(); // Mengakhiri output buffering
                     </div>
                 </div>
             </div>
+
 
             <!-- /.modal-dialog delete -->
             <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
@@ -315,26 +313,6 @@ ob_end_flush(); // Mengakhiri output buffering
                     </div>
                 </div>
             </div>
-            <!-- <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="deleteModalLabel">Hapus Data</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat
-                                dikembalikan.
-                            </p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="button" class="btn btn-danger">Hapus</button>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
 
         </div>
     </div>
@@ -362,30 +340,38 @@ $(document).ready(function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    const editModal = document.getElementById('editModal')
+    const editModal = document.getElementById('editModal');
     if (editModal) {
-        editModal.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget
-            const id = button.getAttribute('data-id')
-            const tahun_ajaran_id = button.getAttribute('data-tahun_ajaran_id')
-            const tingkat = button.getAttribute('data-tingkat')
-            const keterangan = button.getAttribute('data-keterangan')
+        editModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            
+            // Mengambil nilai dari tombol yang ditekan
+            const id = button.getAttribute('data-id');
+            const tahun_ajaran_id = button.getAttribute('data-tahun_ajaran_id');
+            const tingkat = button.getAttribute('data-tingkat');
+            const keterangan = button.getAttribute('data-keterangan');
 
-            // Update modal title
-            const modalTitle = editModal.querySelector('.modal-title')
-            modalTitle.textContent = `Edit Tingkat Kelas ${tingkat}`
+            // Men-debug untuk memastikan nilai diambil dengan benar
+            console.log(`ID: ${id}, Tahun Ajaran ID: ${tahun_ajaran_id}, Tingkat: ${tingkat}, Keterangan: ${keterangan}`);
 
-            // Update form fields with data from button attributes
-            const edit_id = document.getElementById('edit_id')
-            const edit_tahun_ajaran_id = document.getElementById('edit_tahun_ajaran_id')
-            const edit_tingkat = document.getElementById('edit_tingkat')
-            const edit_keterangan = document.getElementById('edit_keterangan')
+            // Mengisi modal form dengan data yang didapat
+            const edit_id = document.getElementById('edit_id');
+            const edit_tahun_ajaran_id = document.getElementById('edit_tahun_ajaran_id');
+            const edit_tingkat = document.getElementById('edit_tingkat');
+            const edit_keterangan = document.getElementById('edit_keterangan');
 
-            edit_id.value = id
-            edit_tahun_ajaran_id.value = tahun_ajaran_id
-            edit_tingkat.value = tingkat
-            edit_keterangan.value = keterangan
-        })
+            edit_id.value = id;
+            edit_tingkat.value = tingkat;
+            edit_keterangan.value = keterangan;
+
+            // Set selected option untuk dropdown Tahun Ajaran
+            Array.from(edit_tahun_ajaran_id.options).forEach(option => {
+                option.selected = (option.value === tahun_ajaran_id);
+            });
+
+            // Men-debug untuk memastikan apakah option yang benar terpilih
+            // console.log(`Tahun Ajaran yang terpilih: ${edit_tahun_ajaran_id.value}`);
+        });
     }
 
     const deleteModal = document.getElementById('deleteModal');
@@ -401,29 +387,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 })
 
-// Edit Modal
-// const editModal = document.getElementById('editModal')
-// if (editModal) {
-//     editModal.addEventListener('show.bs.modal', event => {
-//         const button = event.relatedTarget
-//         const recipient = button.getAttribute('data-bs-whatever')
-//         const modalTitle = editModal.querySelector('.modal-title')
-//         const modalBodyInput = editModal.querySelector('.modal-body input')
-
-//         modalTitle.textContent = `Edit data for ${recipient}`
-//         modalBodyInput.value = recipient
-//     })
-// }
-
-// Delete Modal
-// const deleteModal = document.getElementById('deleteModal')
-// if (deleteModal) {
-//     deleteModal.addEventListener('show.bs.modal', event => {
-//         const button = event.relatedTarget
-//         const recipient = button.getAttribute('data-bs-whatever')
-//         const modalTitle = deleteModal.querySelector('.modal-title')
-
-//         modalTitle.textContent = `Hapus data untuk ${recipient}`
-//     })
-// }
 </script>

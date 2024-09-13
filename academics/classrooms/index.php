@@ -42,7 +42,7 @@ include __DIR__ . '/../../layouts/master.php';
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Data Siswa</h3>
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createModal">
+                    <button type="button" class="btn btn-success btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#createModal">
                         <i class="bi bi-plus-lg pe-1"></i> Tambah Data
                     </button>
 
@@ -53,21 +53,23 @@ include __DIR__ . '/../../layouts/master.php';
                             <table id="datatable" class="table table-striped table-bordered pt-3">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th style="width:7%;">No.</th>
-                                        <th>Nama Kelas</th>
-                                        <th>Jursan</th>
-                                        <th>Tingkat Kelas</th>
-                                        <th>Tahn Ajaran</th>
                                         <th>Gedung</th>
+                                        <th>Kelas</th>
+                                        <th>Wakel</th>
                                         <th>Jumlah Siswa/i</th>
+                                        <th>Jursan</th>
+                                        <th>Tahun Ajaran</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>01</td>
+                                        <td>A</td>
+                                        <td>X RPL 1</td>
+                                        <td>Huda</td>
+                                        <td>27</td>
+                                        <td>Rekayasa Perangkat Lunak</td>
                                         <td>2011/2012</td>
-                                        <td>Aktif</td>
                                         <td class="text-center">
                                             <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                                 data-bs-target="#editModal" data-bs-whatever="Edit Data">

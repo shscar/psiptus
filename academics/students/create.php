@@ -1,7 +1,8 @@
 <?php
 include __DIR__ . '/../../layouts/master.php';
+$db = Database::getInstance();
 
-$query = "SELECT 
+    $query = "SELECT 
             kelas.id, 
             kelas.nama_kelas, 
             tingkat_kelas.tingkat, 
@@ -9,8 +10,9 @@ $query = "SELECT
         FROM kelas
         JOIN tingkat_kelas ON kelas.tingkat_kelas_id = tingkat_kelas.id
         JOIN tahun_ajaran ON tingkat_kelas.tahun_ajaran_id = tahun_ajaran.id
-        WHERE tahun_ajaran.status_aktif = 1
+        WHERE tahun_ajaran.status = 'Aktif'
     ";
+
 $stmt = $conn->prepare($query);
 $stmt->execute();
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);

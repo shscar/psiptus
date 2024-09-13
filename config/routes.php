@@ -6,7 +6,7 @@ $routes = [
     // '/test' => '/test/index.php',
     // '/login' => '/dashboard/login.php',
 
-    // '/guru-karyawan' => '/users/guru-karyawan.php',
+    // '/guru-staff' => '/users/guru-karyawan.php',
     // '/user' => '/users/administrator/index.php',
     // '/student/peserta' => '/students/peserta/index.php',
 
@@ -18,8 +18,8 @@ $routes = [
 
     // lain-lain
     '/tahun-ajaran' => '/academics/school_years/index.php',
-    '/kelas' => '/academics/classrooms/index.php',
     '/tingkat-kelas' => '/academics/classrooms/grade_lv.php',
+    '/kelas' => '/academics/classrooms/index.php',
 
     // infoice
     // pendapatan
