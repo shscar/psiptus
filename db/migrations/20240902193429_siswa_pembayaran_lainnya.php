@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-final class PembayaranLainnya extends AbstractMigration
+final class SiswaPembayaranLainnya extends AbstractMigration
 {
     /**
      * Change Method.
@@ -19,13 +19,13 @@ final class PembayaranLainnya extends AbstractMigration
      */
     public function change(): void
     {
-        $table = $this->table('pembayaran_lainnya');
+        $table = $this->table('siswa_pembayaran_lainnya');
         $table->addColumn('nama_pembayaran', 'string', ['limit' => 100, 'null' => false])
-              ->addColumn('bisa_diangsur', 'boolean', ['default' => true])  // True jika bisa diangsur, False jika sekali lunas
-              ->addColumn('keterangan', 'text', ['null' => true])
-              ->addColumn('status_aktif', 'boolean', ['default' => true])  // Menentukan apakah jenis pembayaran ini aktif
-              ->addTimestamps()
-              ->create();
+            ->addColumn('bisa_diangsur', 'boolean', ['default' => true])  // True jika bisa diangsur, False jika sekali lunas
+            ->addColumn('keterangan', 'text', ['null' => true])
+            ->addColumn('status_aktif', 'boolean', ['default' => true])  // Menentukan apakah jenis pembayaran ini aktif
+            ->addTimestamps()
+            ->create();
 
     }
 }

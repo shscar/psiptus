@@ -21,10 +21,10 @@ final class TingkatKelas extends AbstractMigration
     {
         $table = $this->table('tingkat_kelas');
         $table->addColumn('tahun_ajaran_id', 'integer', ['limit' => 9, 'null' => false])
-              ->addColumn('tingkat', 'string', ['null' => false])                          // Contoh: 10, 11, 12
-              ->addColumn('keterangan', 'text', ['null' => true])                           // Deskripsi tambahan tentang tingkat kelas
-              ->addTimestamps()
-              ->create();
+            ->addColumn('tingkat', 'string', ['null' => false])
+            ->addColumn('keterangan', 'text', ['null' => true])
+            ->addTimestamps()
+            ->create();
 
     }
 }

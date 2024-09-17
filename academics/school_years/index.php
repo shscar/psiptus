@@ -132,7 +132,8 @@ ob_end_flush(); // Mengakhiri output buffering
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Data Siswa</h3>
-                    <button type="button" class="btn btn-success btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#createModal">
+                    <button type="button" class="btn btn-success btn-sm ms-auto" data-bs-toggle="modal"
+                        data-bs-target="#createModal">
                         <i class="bi bi-plus-lg pe-1"></i> Tambah Data
                     </button>
 
@@ -152,27 +153,26 @@ ob_end_flush(); // Mengakhiri output buffering
                                 </thead>
                                 <tbody>
                                     <?php foreach ($tahun_ajaran as $index => $row): ?>
-                                    <tr>
-                                        <td><?= $index + 1; ?></td>
-                                        <td><?= $row['tahun']; ?></td>
-                                        <td><?= $row['status']; ?></td>
-                                        <td class="text-center">
-                                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#editModal"
-                                                data-bs-id="<?= $row['id'] ?>"
-                                                data-bs-tahun="<?= $row['tahun'] ?>"
-                                                data-bs-status="<?= $row['status'] ?>">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                        </td>
-                                        <td class="text-center">
-                                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#deleteModal"
-                                                data-bs-id="<?= $row['id'] ?>">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
+                                        <tr>
+                                            <td><?= $index + 1; ?></td>
+                                            <td><?= $row['tahun']; ?></td>
+                                            <td><?= $row['status']; ?></td>
+                                            <td class="text-center">
+                                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#editModal" data-bs-id="<?= $row['id'] ?>"
+                                                    data-bs-tahun="<?= $row['tahun'] ?>"
+                                                    data-bs-status="<?= $row['status'] ?>">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?>"
+                                                    data-bs-tahun="<?= $row['tahun'] ?>">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
@@ -293,44 +293,49 @@ ob_end_flush(); // Mengakhiri output buffering
 
 <!-- Inisialisasi DataTables -->
 <script>
-$(document).ready(function() {
-    $('#datatable').dataTable();
+    $(document).ready(function () {
+        $('#datatable').dataTable();
 
-    $("[data-toggle=tooltip]").tooltip();
+        $("[data-toggle=tooltip]").tooltip();
 
-});
+    });
 
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
 
-    const editModal = document.getElementById('editModal');
-    if (editModal) {
-        editModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-bs-id');
-            const tahun = button.getAttribute('data-bs-tahun');
-            const status = button.getAttribute('data-bs-status');
+        const editModal = document.getElementById('editModal');
+        if (editModal) {
+            editModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-bs-id');
+                const tahun = button.getAttribute('data-bs-tahun');
+                const status = button.getAttribute('data-bs-status');
 
-            // Update the modal's content.
-            const modalTitle = editModal.querySelector('.modal-title');
-            modalTitle.textContent = `Edit Data ID ${id}`;
+                // Update the modal's content.
+                const modalTitle = editModal.querySelector('.modal-title');
+                modalTitle.textContent = `Edit Data: ${tahun}`;
 
-            const form = editModal.querySelector('#editForm');
-            form.querySelector('#edit-id').value = id;
-            form.querySelector('#edit-tahun').value = tahun;
-            form.querySelector('#edit-status').value = status;
-        });
-    }
+                const form = editModal.querySelector('#editForm');
+                form.querySelector('#edit-id').value = id;
+                form.querySelector('#edit-tahun').value = tahun;
+                form.querySelector('#edit-status').value = status;
+            });
+        }
 
-    const deleteModal = document.getElementById('deleteModal');
-    if (deleteModal) {
-        deleteModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-bs-id');
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-bs-id');
+                const tahun = button.getAttribute('data-bs-tahun');
 
-            // Update the modal's content.
-            const form = deleteModal.querySelector('#deleteForm');
-            form.querySelector('#delete-id').value = id;
-        });
-    }
-});
+                // Update the modal's content.
+                const modalTitle = deleteModal.querySelector('.modal-title');
+                modalTitle.textContent = `Delete Data: ${tahun}`;
+
+                // Update the modal's content.
+                const form = deleteModal.querySelector('#deleteForm');
+                form.querySelector('#delete-id').value = id;
+            });
+        }
+    });
 </script>

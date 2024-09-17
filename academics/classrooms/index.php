@@ -7,6 +7,28 @@
 <?php
 include __DIR__ . '/../../layouts/master.php';
 
+$db = Database::getInstance();
+
+$sql = "SELECT 
+            k.id,
+            k.nama_kelas,
+            k.jurusan,
+            k.jumlah_siswa,
+            k.gedung,
+            k.keterangan,
+            g.nama_lengkap AS guru_staff,
+            t.tahun AS tahun_ajaran,
+            CONCAT(tk.tingkat, ' ', k.nama_kelas) AS kelas
+        FROM kelas k
+        LEFT JOIN guru_staff g ON k.wali_kelas_id = g.id
+        LEFT JOIN tingkat_kelas tk ON k.tingkat_kelas_id = tk.id
+        LEFT JOIN tahun_ajaran t ON tk.tahun_ajaran_id = t.id
+        -- WHERE k.wali_kelas_id IS NOT NULL AND k.tingkat_kelas_id IS NOT NULL
+        ORDER BY k.id DESC
+    ";
+
+$results = $db->query($sql);
+// var_dump($results);
 ?>
 
 <!--begin::App Main-->
@@ -42,7 +64,8 @@ include __DIR__ . '/../../layouts/master.php';
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Data Siswa</h3>
-                    <button type="button" class="btn btn-success btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#createModal">
+                    <button type="button" class="btn btn-success btn-sm ms-auto" data-bs-toggle="modal"
+                        data-bs-target="#createModal">
                         <i class="bi bi-plus-lg pe-1"></i> Tambah Data
                     </button>
 
@@ -50,6 +73,7 @@ include __DIR__ . '/../../layouts/master.php';
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-12">
+                            <?php if (!empty($results)): ?>
                             <table id="datatable" class="table table-striped table-bordered pt-3">
                                 <thead class="table-dark">
                                     <tr>
@@ -57,32 +81,42 @@ include __DIR__ . '/../../layouts/master.php';
                                         <th>Kelas</th>
                                         <th>Wakel</th>
                                         <th>Jumlah Siswa/i</th>
-                                        <th>Jursan</th>
+                                        <th>Jurusan</th>
                                         <th>Tahun Ajaran</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <?php foreach ($results as $index => $row): ?>
                                     <tr>
-                                        <td>A</td>
-                                        <td>X RPL 1</td>
-                                        <td>Huda</td>
-                                        <td>27</td>
-                                        <td>Rekayasa Perangkat Lunak</td>
-                                        <td>2011/2012</td>
+                                        <td><?= $row['gedung'] ?? '-'; ?></td>
+                                        <td><?= $row['tingkat'] . ' ' . $row['nama_kelas'] ?? '-'; ?></td>
+                                        <td><?= $row['wali_kelas'] ?? '-'; ?></td>
+                                        <td><?= $row['jumlah_siswa'] ?? '-'; ?></td>
+                                        <td><?= $row['jurusan'] ?? '-'; ?></td>
+                                        <td><?= $row['tahun_ajaran'] ?? '-'; ?></td>
                                         <td class="text-center">
                                             <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#editModal" data-bs-whatever="Edit Data">
+                                                data-bs-target="#editModal" data-id="<?= $row['id'] ?? '-'; ?>"
+                                                data-nama_kelas="<?= $row['nama_kelas'] ?? '-'; ?>"
+                                                data-jurusan="<?= $row['jurusan'] ?? '-'; ?>"
+                                                data-jumlah_siswa="<?= $row['jumlah_siswa'] ?? '-'; ?>"
+                                                data-gedung="<?= $row['gedung'] ?? '-'; ?>"
+                                                data-keterangan="<?= $row['keterangan'] ?? '-'; ?>">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
                                             <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#deleteModal" data-bs-whatever="Hapus Data">
+                                                data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?? '-'; ?>">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
                                     </tr>
+                                    <?php endforeach; ?>
                                 </tbody>
                             </table>
+                            <?php else: ?>
+                            <p>No data available.</p>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -129,36 +163,36 @@ include __DIR__ . '/../../layouts/master.php';
 
 <!-- Inisialisasi DataTables -->
 <script>
-    $(document).ready(function () {
-        $('#datatable').dataTable();
+$(document).ready(function() {
+    $('#datatable').dataTable();
 
-        $("[data-toggle=tooltip]").tooltip();
+    $("[data-toggle=tooltip]").tooltip();
 
-    });
+});
 
-    // Edit Modal
-    const editModal = document.getElementById('editModal')
-    if (editModal) {
-        editModal.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget
-            const recipient = button.getAttribute('data-bs-whatever')
-            const modalTitle = editModal.querySelector('.modal-title')
-            const modalBodyInput = editModal.querySelector('.modal-body input')
+// Edit Modal
+const editModal = document.getElementById('editModal')
+if (editModal) {
+    editModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const recipient = button.getAttribute('data-bs-whatever')
+        const modalTitle = editModal.querySelector('.modal-title')
+        const modalBodyInput = editModal.querySelector('.modal-body input')
 
-            modalTitle.textContent = `Edit data for ${recipient}`
-            modalBodyInput.value = recipient
-        })
-    }
+        modalTitle.textContent = `Edit data for ${recipient}`
+        modalBodyInput.value = recipient
+    })
+}
 
-    // Delete Modal
-    const deleteModal = document.getElementById('deleteModal')
-    if (deleteModal) {
-        deleteModal.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget
-            const recipient = button.getAttribute('data-bs-whatever')
-            const modalTitle = deleteModal.querySelector('.modal-title')
+// Delete Modal
+const deleteModal = document.getElementById('deleteModal')
+if (deleteModal) {
+    deleteModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const recipient = button.getAttribute('data-bs-whatever')
+        const modalTitle = deleteModal.querySelector('.modal-title')
 
-            modalTitle.textContent = `Hapus data untuk ${recipient}`
-        })
-    }
+        modalTitle.textContent = `Hapus data untuk ${recipient}`
+    })
+}
 </script>

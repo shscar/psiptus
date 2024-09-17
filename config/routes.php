@@ -23,7 +23,9 @@ $routes = [
 
     // infoice
     // pendapatan
-    '/tagihan-siswa' => '/finances/incomes/student_bills.php',
+    '/pendapatan/tagihan-siswa' => '/finances/incomes/student_bills.php',
+    '/pendapatan/tagihan-spp-siswa' => '/finances/incomes/spp_student_bills.php',
+    '/pendapatan/tagihan-lain-siswa' => '/finances/incomes/other_student_bills.php',
 ];
 
 // Mendapatkan URI saat ini

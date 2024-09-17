@@ -27,9 +27,9 @@ final class PembayaranSpp extends AbstractMigration
               ->addColumn('metode_pembayaran', 'string', ['limit' => 50, 'null' => true])
               ->addColumn('nomor_kwitansi', 'string', ['limit' => 50, 'null' => true])
               ->addColumn('catatan', 'text', ['null' => true])
-            //   ->addForeignKey('id_siswa', 'siswa', 'id', ['delete'=> 'CASCADE', 'update'=> 'NO_ACTION'])
-            //   ->addForeignKey('id_tarif', 'tarif_spp', 'id', ['delete'=> 'CASCADE', 'update'=> 'NO_ACTION'])
               ->addTimestamps()
               ->create();
+            //   ->addForeignKey('id_siswa', 'siswa', 'id', ['delete'=> 'CASCADE', 'update'=> 'NO_ACTION'])
+            //   ->addForeignKey('id_tarif', 'tarif_spp', 'id', ['delete'=> 'CASCADE', 'update'=> 'NO_ACTION'])
     }
 }

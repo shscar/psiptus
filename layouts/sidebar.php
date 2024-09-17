@@ -52,7 +52,8 @@ foreach ($dropdownRoutes as $key => $routes) {
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
-                    <ul class="nav nav-treeview" style="<?php echo $activeDropdown === 'sid-01' ? 'display: block;' : 'display: none;'; ?>">
+                    <ul class="nav nav-treeview"
+                        style="<?php echo $activeDropdown === 'sid-01' ? 'display: block;' : 'display: none;'; ?>">
                         <li class="nav-item">
                             <a href="/siswa" class="nav-link <?php echo isActive('/siswa', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
@@ -60,13 +61,15 @@ foreach ($dropdownRoutes as $key => $routes) {
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/tahun-ajaran" class="nav-link <?php echo isActive('/tahun-ajaran', $requestUri); ?>">
+                            <a href="/tahun-ajaran"
+                                class="nav-link <?php echo isActive('/tahun-ajaran', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Tahun Ajaran</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/tingkat-kelas" class="nav-link <?php echo isActive('/tingkat-kelas', $requestUri); ?>">
+                            <a href="/tingkat-kelas"
+                                class="nav-link <?php echo isActive('/tingkat-kelas', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Grub Kelas</p>
                             </a>
@@ -91,7 +94,13 @@ foreach ($dropdownRoutes as $key => $routes) {
                         <li class="nav-item">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon bi bi-circle"></i>
-                                <p>Tagihan SPP</p>
+                                <p>Tagihan SPP Siswa</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Tagihan Lain Siswa</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -100,6 +109,36 @@ foreach ($dropdownRoutes as $key => $routes) {
                                 <p>Pembayaran Siswa</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Dana BOS</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Pendapatan lain-lain</p>
+                            </a>
+                        </li>
+                        <!-- <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Event</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Mitra</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Infaq</p>
+                            </a>
+                        </li> -->
                     </ul>
                 </li>
                 <li class="nav-item">

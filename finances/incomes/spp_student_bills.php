@@ -7,8 +7,6 @@
 ob_start(); // Memulai output buffering
 
 include __DIR__ . '/../../layouts/master.php';
-$db = Database::getInstance();
-// $conn = $db->getConnection(); // Mendapatkan instance koneksi PDO
 
 // Handle Form Submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -16,101 +14,133 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Create Record
     if ($action == 'create') {
+        $nama_tarif = $_POST['nama_tarif'];
+        $nominal = $_POST['nominal'];
         $tahun_ajaran_id = $_POST['tahun_ajaran_id'];
-        $tingkat = $_POST['tingkat'];
-        $keterangan = $_POST['keterangan'];
+        $deskripsi = $_POST['deskripsi'];
+        $status_aktif = isset($_POST['status_aktif']) ? 1 : 0; // Checkbox default to checked
 
         // Validate input
-        if (!empty($tahun_ajaran_id) && !empty($tingkat)) {
-            $sql = "INSERT INTO tingkat_kelas (tahun_ajaran_id, tingkat, keterangan) VALUES (:tahun_ajaran_id, :tingkat, :keterangan)";
+        if (!empty($nama_tarif) && !empty($nominal) && !empty($tahun_ajaran_id)) {
+            // Prepare SQL query
+            $sql = "INSERT INTO tarif_spp (nama_tarif, nominal, tahun_ajaran_id, deskripsi, status_aktif) 
+                    VALUES (:nama_tarif, :nominal, :tahun_ajaran_id, :deskripsi, :status_aktif)";
             $stmt = $conn->prepare($sql);
+
+            // Bind parameters and execute
             if (
                 $stmt->execute([
+                    'nama_tarif' => $nama_tarif,
+                    'nominal' => $nominal,
                     'tahun_ajaran_id' => $tahun_ajaran_id,
-                    'tingkat' => $tingkat,
-                    'keterangan' => $keterangan
+                    'deskripsi' => $deskripsi,
+                    'status_aktif' => $status_aktif
                 ])
             ) {
+                // Redirect to avoid form resubmission
                 echo "<script>
-                        alert('Data tingkat kelas berhasil ditambahkan.');
-                        window.location.href = '/tingkat-kelas';
+                        alert('Data tarif berhasil ditambahkan.');
+                        window.location.href = '/pendapatan/tagihan-spp-siswa';
                     </script>";
                 exit();
             } else {
-                echo "Failed to insert record!";
+                echo "Gagal menyisipkan catatan!";
             }
         } else {
-            echo "Please fill in all required fields!";
+            echo "Silakan isi semua bidang yang wajib diisi!";
         }
     }
+
 
     // Update Record
     if ($action == 'update') {
         $id = $_POST['id'];
+        $nama_tarif = $_POST['nama_tarif'];
+        $nominal = $_POST['nominal'];
         $tahun_ajaran_id = $_POST['tahun_ajaran_id'];
-        $tingkat = $_POST['tingkat'];
-        $keterangan = $_POST['keterangan'];
+        $deskripsi = $_POST['deskripsi'];
+        $status_aktif = isset($_POST['status_aktif']) ? 1 : 0; // Checkbox default to checked
 
         // Validate input
-        if (!empty($id) && !empty($tahun_ajaran_id) && !empty($tingkat)) {
-            $sql = "UPDATE tingkat_kelas SET tahun_ajaran_id = :tahun_ajaran_id, tingkat = :tingkat, keterangan = :keterangan WHERE id = :id";
+        if (!empty($id) && !empty($nama_tarif) && !empty($nominal) && !empty($tahun_ajaran_id)) {
+            // Prepare SQL query
+            $sql = "UPDATE tarif_spp 
+                    SET nama_tarif = :nama_tarif, nominal = :nominal, tahun_ajaran_id = :tahun_ajaran_id, deskripsi = :deskripsi, status_aktif = :status_aktif
+                    WHERE id = :id";
             $stmt = $conn->prepare($sql);
+
+            // Bind parameters and execute
             if (
                 $stmt->execute([
+                    'id' => $id,
+                    'nama_tarif' => $nama_tarif,
+                    'nominal' => $nominal,
                     'tahun_ajaran_id' => $tahun_ajaran_id,
-                    'tingkat' => $tingkat,
-                    'keterangan' => $keterangan,
-                    'id' => $id
+                    'deskripsi' => $deskripsi,
+                    'status_aktif' => $status_aktif
                 ])
             ) {
+                // Redirect to avoid form resubmission
                 echo "<script>
-                        alert('Data berhasil diperbarui.');
-                        window.location.href = '/tingkat-kelas';
+                        alert('Data tarif berhasil diperbarui.');
+                        window.location.href = '/pendapatan/tagihan-spp-siswa';
                     </script>";
                 exit();
             } else {
-                echo "Failed to update record!";
+                echo "Gagal memperbarui Data!";
             }
         } else {
-            echo "Please fill in all required fields!";
+            echo "Silakan isi semua bidang yang wajib diisi!";
         }
     }
+
 
     // Delete Record
     if ($action == 'delete') {
         $id = $_POST['id'];
 
         if (!empty($id)) {
-            $sql = "DELETE FROM tingkat_kelas WHERE id = :id";
+            // Prepare SQL query for deletion
+            $sql = "DELETE FROM tarif_spp WHERE id = :id";
             $stmt = $conn->prepare($sql);
+
+            // Execute the query
             if ($stmt->execute(['id' => $id])) {
+                // Redirect after successful deletion
                 echo "<script>
-                        alert('Data berhasil dihapus.');
-                        window.location.href = '/tingkat-kelas';
+                        alert('Data tarif berhasil dihapus.');
+                        window.location.href = '/pendapatan/tagihan-spp-siswa';
                     </script>";
                 exit();
             } else {
-                echo "Failed to delete record!";
+                echo "Gagal menghapus Data!";
             }
         } else {
-            echo "Invalid ID!";
+            echo "ID is required!";
         }
     }
 }
 
-// Fetch records for display with join
-$sql = "SELECT tk.id, tk.tingkat, tk.tahun_ajaran_id, tk.keterangan, ta.tahun, ta.status 
-    FROM tingkat_kelas tk
-    JOIN tahun_ajaran ta ON tk.tahun_ajaran_id = ta.id
-    ORDER BY tk.id DESC
+$db = Database::getInstance();
+$sql = "SELECT 
+        t.id,
+        t.nama_tarif,
+        t.nominal,
+        t.deskripsi,
+        t.status_aktif,
+        ta.tahun AS tahun_ajaran,
+        t.tahun_ajaran_id
+    FROM tarif_spp t
+    LEFT JOIN tahun_ajaran ta ON t.tahun_ajaran_id = ta.id
+    ORDER BY t.id DESC
 ";
-$tingkat_kelas = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+
+$results = $db->query($sql);
+// var_dump($results);
 
 // Fetch only active form "tahun_ajaran"
 $sql = "SELECT id, tahun FROM tahun_ajaran WHERE status = 'Aktif' ORDER BY tahun DESC";
 $tahun_ajaran = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-
-// var_dump($siswa_kelas_id);
 
 ob_end_flush(); // Mengakhiri output buffering
 ?>
@@ -125,13 +155,13 @@ ob_end_flush(); // Mengakhiri output buffering
             <!--begin::Row-->
             <div class="row">
                 <div class="col-sm-6">
-                    <h3 class="mb-0">Tingkat Kelas</h3>
+                    <h3 class="mb-0">Tagihan SPP Siswa</h3>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            Tingkat Kelas
+                            Tagihan
                         </li>
                     </ol>
                 </div>
@@ -158,33 +188,43 @@ ob_end_flush(); // Mengakhiri output buffering
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-12">
+                            <?php if (!empty($results)): ?>
                             <table id="datatable" class="table table-striped table-bordered pt-3">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>No.</th>
-                                        <th>Grade</th>
+                                        <th>No</th>
+                                        <th>Nama Tarif</th>
+                                        <th>Nominal</th>
                                         <th>Tahun Ajaran</th>
-                                        <th style="width:68%;">Keterangan</th>
-                                        <th style="width:9%;">Aksi</th>
+                                        <th>Deskripsi</th>
+                                        <th>Status Aktif</th>
+                                        <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($tingkat_kelas as $index => $row): ?>
+                                    <?php foreach ($results as $index => $row): ?>
                                     <tr>
                                         <td><?= $index + 1; ?></td>
-                                        <td><?= $row['tingkat'] ?? '-'; ?></td>
-                                        <td><?= $row['tahun'] ?? '-'; ?></td>
-                                        <td><?= $row['keterangan'] ?? '-'; ?></td>
+                                        <td><?= $row['nama_tarif']; ?></td>
+                                        <td>Rp. <?= number_format($row['nominal'], 2, ',', '.'); ?></td>
+                                        <td><?= $row['tahun_ajaran']; ?></td>
+                                        <td><?= $row['deskripsi'] ?? '-'; ?></td>
+                                        <td class="text-center"><?= $row['status_aktif'] ? 'Aktif' : 'Tidak Aktif'; ?>
+                                        </td>
                                         <td class="text-center">
                                             <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                                 data-bs-target="#editModal" data-id="<?= $row['id'] ?? '-'; ?>"
+                                                data-nama_tarif="<?= $row['nama_tarif'] ?? '-'; ?>"
+                                                data-nominal="<?= $row['nominal'] ?? '-'; ?>"
                                                 data-tahun_ajaran_id="<?= $row['tahun_ajaran_id'] ?? '-'; ?>"
-                                                data-tingkat="<?= $row['tingkat'] ?? '-'; ?>"
-                                                data-keterangan="<?= $row['keterangan'] ?? '-'; ?>">
+                                                data-deskripsi="<?= $row['deskripsi'] ?? '-'; ?>"
+                                                data-status_aktif="<?= $row['status_aktif'] ?? '0'; ?>">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
+
                                             <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?? '-'; ?>">
+                                                data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?? '-'; ?>"
+                                                data-nama_tarif="<?= $row['nama_tarif'] ?? '-'; ?>">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
@@ -192,6 +232,9 @@ ob_end_flush(); // Mengakhiri output buffering
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
+                            <?php else: ?>
+                            <p>No data available.</p>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -203,13 +246,27 @@ ob_end_flush(); // Mengakhiri output buffering
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="createModalLabel">Tambah Tingkat Kelas</h5>
+                            <h5 class="modal-title" id="createModalLabel">Tambah Tagihan</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <!-- Form for creating a new record -->
                             <form id="createForm" method="POST">
                                 <input type="hidden" name="action" value="create">
+                                <div class="mb-3">
+                                    <label for="nama_tarif" class="form-label">Nama Tarif</label>
+                                    <input type="text" class="form-control" id="nama_tarif" name="nama_tarif" required
+                                        placeholder="SPP Bulan September">
+                                </div>
+                                <div class="input-group mb-3">
+                                    <label for="nominal" class="form-label">Nominal</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp.</span>
+                                        <input type="text" class="form-control" id="nominal" name="nominal" required
+                                            aria-label="Jumlah (ke rupiah)" />
+                                        <span class="input-group-text">.00</span>
+                                    </div>
+                                </div>
                                 <div class="mb-3">
                                     <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
                                     <select class="form-select" id="tahun_ajaran_id" name="tahun_ajaran_id" required>
@@ -222,14 +279,14 @@ ob_end_flush(); // Mengakhiri output buffering
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="tingkat" class="form-label">Tingkat</label>
-                                    <input type="text" class="form-control" id="tingkat" name="tingkat" required
-                                        placeholder="Masukkan Tingkat (misalnya: XI)">
+                                    <label for="deskripsi" class="form-label">Deskripsi</label>
+                                    <textarea class="form-control" id="deskripsi" name="deskripsi" rows="3"
+                                        placeholder="Masukkan Deskripsi (opsional)"></textarea>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="keterangan" class="form-label">Keterangan</label>
-                                    <textarea class="form-control" id="keterangan" name="keterangan" rows="3"
-                                        placeholder="Masukkan Keterangan (opsional)"></textarea>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="status_aktif"
+                                        name="status_aktif" checked>
+                                    <label class="form-check-label" for="status_aktif">Aktif</label>
                                 </div>
                             </form>
                         </div>
@@ -241,45 +298,53 @@ ob_end_flush(); // Mengakhiri output buffering
                 </div>
             </div>
 
-            <!-- /.modal-dialog update -->
+            <!-- /.modal-dialog edit -->
             <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="editModalLabel">Edit Tingkat Kelas</h5>
+                            <h5 class="modal-title" id="editModalLabel">Edit Tagihan</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <!-- Form for editing an existing record -->
                             <form id="editForm" method="POST">
                                 <input type="hidden" name="action" value="update">
-                                <input type="hidden" name="id" id="edit_id">
-
-                                <!-- Dropdown for Tahun Ajaran -->
+                                <input type="hidden" id="edit_id" name="id">
+                                <div class="mb-3">
+                                    <label for="edit_nama_tarif" class="form-label">Nama Tarif</label>
+                                    <input type="text" class="form-control" id="edit_nama_tarif" name="nama_tarif"
+                                        required placeholder="SPP Bulan September">
+                                </div>
+                                <div class="input-group mb-3">
+                                    <label for="edit_nominal" class="form-label">Nominal</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp.</span>
+                                        <input type="text" class="form-control" id="edit_nominal" name="nominal"
+                                            required aria-label="Jumlah (ke rupiah)" />
+                                        <span class="input-group-text">.00</span>
+                                    </div>
+                                </div>
                                 <div class="mb-3">
                                     <label for="edit_tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
                                     <select class="form-select" id="edit_tahun_ajaran_id" name="tahun_ajaran_id"
                                         required>
                                         <option value="">Pilih Tahun Ajaran</option>
                                         <?php foreach ($tahun_ajaran as $ta): ?>
-                                        <option value="<?= $ta['id']; ?>">
-                                            <?= $ta['tahun']; ?>
+                                        <option value="<?php echo $ta['id']; ?>">
+                                            <?php echo $ta['tahun']; ?>
                                         </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-
-                                <!-- Input for Tingkat -->
                                 <div class="mb-3">
-                                    <label for="edit_tingkat" class="form-label">Tingkat</label>
-                                    <input type="text" class="form-control" id="edit_tingkat" name="tingkat" required>
+                                    <label for="edit_deskripsi" class="form-label">Deskripsi</label>
+                                    <textarea class="form-control" id="edit_deskripsi" name="deskripsi" rows="3"
+                                        placeholder="Masukkan Deskripsi (opsional)"></textarea>
                                 </div>
-
-                                <!-- Textarea for Keterangan -->
-                                <div class="mb-3">
-                                    <label for="edit_keterangan" class="form-label">Keterangan</label>
-                                    <textarea class="form-control" id="edit_keterangan" name="keterangan"
-                                        rows="3"></textarea>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="edit_status_aktif"
+                                        name="status_aktif">
+                                    <label class="form-check-label" for="edit_status_aktif">Aktif</label>
                                 </div>
                             </form>
                         </div>
@@ -291,14 +356,13 @@ ob_end_flush(); // Mengakhiri output buffering
                 </div>
             </div>
 
-
             <!-- /.modal-dialog delete -->
             <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
                 aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="deleteModalLabel">Hapus Data</h1>
+                            <h5 class="modal-title" id="deleteModalLabel">Hapus Tagihan</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -321,9 +385,6 @@ ob_end_flush(); // Mengakhiri output buffering
     <!--end::Container-->
     </div>
     <!--end::App Content-->
-
-
-
 </main>
 <!--end::App Main-->
 
@@ -342,52 +403,53 @@ $(document).ready(function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+
+    // Handling Update
     const editModal = document.getElementById('editModal');
     if (editModal) {
         editModal.addEventListener('show.bs.modal', function(event) {
             const button = event.relatedTarget;
 
-            // Mengambil nilai dari tombol yang ditekan
+            // Get data attributes from the button
             const id = button.getAttribute('data-id');
+            const nama_tarif = button.getAttribute('data-nama_tarif');
+            const nominal = button.getAttribute('data-nominal');
             const tahun_ajaran_id = button.getAttribute('data-tahun_ajaran_id');
-            const tingkat = button.getAttribute('data-tingkat');
-            const keterangan = button.getAttribute('data-keterangan');
+            const deskripsi = button.getAttribute('data-deskripsi');
+            const status_aktif = button.getAttribute('data-status_aktif') === '1';
 
-            // Men-debug untuk memastikan nilai diambil dengan benar
-            console.log(
-                `ID: ${id}, Tahun Ajaran ID: ${tahun_ajaran_id}, Tingkat: ${tingkat}, Keterangan: ${keterangan}`
-                );
+            // Update the modal's content.
+            const modalTitle = editModal.querySelector('.modal-title');
+            modalTitle.textContent = `Edit Data Tagihan: ${nama_tarif}`;
 
-            // Mengisi modal form dengan data yang didapat
-            const edit_id = document.getElementById('edit_id');
-            const edit_tahun_ajaran_id = document.getElementById('edit_tahun_ajaran_id');
-            const edit_tingkat = document.getElementById('edit_tingkat');
-            const edit_keterangan = document.getElementById('edit_keterangan');
-
-            edit_id.value = id;
-            edit_tingkat.value = tingkat;
-            edit_keterangan.value = keterangan;
-
-            // Set selected option untuk dropdown Tahun Ajaran
-            Array.from(edit_tahun_ajaran_id.options).forEach(option => {
-                option.selected = (option.value === tahun_ajaran_id);
-            });
-
-            // Men-debug untuk memastikan apakah option yang benar terpilih
-            // console.log(`Tahun Ajaran yang terpilih: ${edit_tahun_ajaran_id.value}`);
+            // Populate the form in the modal with the data
+            document.getElementById('edit_id').value = id;
+            document.getElementById('edit_nama_tarif').value = nama_tarif;
+            document.getElementById('edit_nominal').value = nominal;
+            document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;
+            document.getElementById('edit_deskripsi').value = deskripsi;
+            document.getElementById('edit_status_aktif').checked = status_aktif;
         });
     }
 
+    // Handling Delete
     const deleteModal = document.getElementById('deleteModal');
     if (deleteModal) {
         deleteModal.addEventListener('show.bs.modal', function(event) {
             const button = event.relatedTarget;
             const id = button.getAttribute('data-bs-id');
+            const nama_tarif = button.getAttribute('data-nama_tarif');
 
             // Update the modal's content.
+            const modalTitle = deleteModal.querySelector('.modal-title');
+            modalTitle.textContent = `Hapus Data Tagihan: ${nama_tarif}`;
+
+            // Populate the form with the id
             const form = deleteModal.querySelector('#deleteForm');
             form.querySelector('#delete-id').value = id;
+
         });
+
     }
 })
 </script>
