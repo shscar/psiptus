@@ -8,7 +8,7 @@
 // Menu aktif untuk dropdown
 $dropdownRoutes = [
     'sid-01' => ['/siswa', '/tahun-ajaran', '/kelas', '/tingkat-kelas'],
-    'sid-02' => [],
+    'sid-02' => ['/pendapatan/tagihan-spp-siswa', '/pendapatan/tagihan-lain-siswa'],
     'sid-03' => [],
 ];
 
@@ -82,17 +82,17 @@ foreach ($dropdownRoutes as $key => $routes) {
                         </li>
                     </ul>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
+                <li class="nav-item dropdown <?php echo $activeDropdown === 'sid-02' ? 'menu-open' : ''; ?>">
+                    <a href="#" class="nav-link <?php echo $activeDropdown === 'sid-02' ? 'active' : ''; ?>">
                         <i class="nav-icon bi bi-box-seam-fill"></i>
                         <p>
                             Pendapatan
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
-                    <ul class="nav nav-treeview">
+                    <ul class="nav nav-treeview" style="<?php echo $activeDropdown === 'sid-02' ? 'display: block;' : 'display: none;'; ?>">
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="/pendapatan/tagihan-spp-siswa" class="nav-link <?php echo isActive('/pendapatan/tagihan-spp-siswa', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Tagihan SPP Siswa</p>
                             </a>

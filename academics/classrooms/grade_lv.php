@@ -116,13 +116,11 @@ ob_end_flush(); // Mengakhiri output buffering
 ?>
 
 
-<!--begin::App Main-->
+<!-- App Main -->
 <main class="app-main">
-    <!--begin::App Content Header-->
+    <!-- begin:: Header -->
     <div class="app-content-header">
-        <!--begin::Container-->
         <div class="container-fluid">
-            <!--begin::Row-->
             <div class="row">
                 <div class="col-sm-6">
                     <h3 class="mb-0">Tingkat Kelas</h3>
@@ -136,16 +134,11 @@ ob_end_flush(); // Mengakhiri output buffering
                     </ol>
                 </div>
             </div>
-            <!--end::Row-->
         </div>
-        <!--end::Container-->
     </div>
-    <!--end::App Content Header-->
-    <!--begin::App Content-->
+    <!-- begin:: Content -->
     <div class="app-content">
-        <!--begin::Container-->
         <div class="container-fluid">
-
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Grade Level </h3>
@@ -184,7 +177,8 @@ ob_end_flush(); // Mengakhiri output buffering
                                                 <i class="bi bi-pencil"></i>
                                             </button>
                                             <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?? '-'; ?>">
+                                                data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?? '-'; ?>"
+                                                data-tingkat="<?= $row['tingkat'] ?? '-'; ?>">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
@@ -207,7 +201,6 @@ ob_end_flush(); // Mengakhiri output buffering
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <!-- Form for creating a new record -->
                             <form id="createForm" method="POST">
                                 <input type="hidden" name="action" value="create">
                                 <div class="mb-3">
@@ -315,15 +308,8 @@ ob_end_flush(); // Mengakhiri output buffering
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
-    <!--end::Container-->
-    </div>
-    <!--end::App Content-->
-
-
-
 </main>
 <!--end::App Main-->
 
@@ -353,17 +339,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const tingkat = button.getAttribute('data-tingkat');
             const keterangan = button.getAttribute('data-keterangan');
 
-            // Men-debug untuk memastikan nilai diambil dengan benar
-            console.log(
-                `ID: ${id}, Tahun Ajaran ID: ${tahun_ajaran_id}, Tingkat: ${tingkat}, Keterangan: ${keterangan}`
-                );
+            // Update the modal's content.
+            const modalTitle = editModal.querySelector('.modal-title');
+            modalTitle.textContent = `Edit Data Kelas: ${tingkat}`;
 
             // Mengisi modal form dengan data yang didapat
             const edit_id = document.getElementById('edit_id');
             const edit_tahun_ajaran_id = document.getElementById('edit_tahun_ajaran_id');
             const edit_tingkat = document.getElementById('edit_tingkat');
             const edit_keterangan = document.getElementById('edit_keterangan');
-
             edit_id.value = id;
             edit_tingkat.value = tingkat;
             edit_keterangan.value = keterangan;
@@ -372,6 +356,11 @@ document.addEventListener('DOMContentLoaded', function() {
             Array.from(edit_tahun_ajaran_id.options).forEach(option => {
                 option.selected = (option.value === tahun_ajaran_id);
             });
+            
+            // Men-debug untuk memastikan nilai diambil dengan benar
+            // console.log(
+            //    `ID: ${id}, Tahun Ajaran ID: ${tahun_ajaran_id}, Tingkat: ${tingkat}, Keterangan: ${keterangan}`
+            // );
 
             // Men-debug untuk memastikan apakah option yang benar terpilih
             // console.log(`Tahun Ajaran yang terpilih: ${edit_tahun_ajaran_id.value}`);
@@ -383,6 +372,11 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteModal.addEventListener('show.bs.modal', function(event) {
             const button = event.relatedTarget;
             const id = button.getAttribute('data-bs-id');
+            const tingkat = button.getAttribute('data-tingkat');
+
+            // Update the modal's content.
+            const modalTitle = deleteModal.querySelector('.modal-title');
+            modalTitle.textContent = `Delete Kelas: ${tingkat}`;
 
             // Update the modal's content.
             const form = deleteModal.querySelector('#deleteForm');

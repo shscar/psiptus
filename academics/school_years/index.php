@@ -191,7 +191,6 @@ ob_end_flush(); // Mengakhiri output buffering
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <!-- Form for creating a new record -->
                             <form id="createForm" method="POST">
                                 <input type="hidden" name="action" value="create">
                                 <div class="mb-3">
@@ -221,7 +220,7 @@ ob_end_flush(); // Mengakhiri output buffering
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="editModalLabel">Edit Data</h1>
+                            <h5 class="modal-title" id="editModalLabel">Edit Data</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -239,7 +238,6 @@ ob_end_flush(); // Mengakhiri output buffering
                                         <option value="Inactive">Inactive</option>
                                     </select>
                                 </div>
-                                <!-- <button type="submit" class="btn btn-primary">Save changes</button> -->
                             </form>
                         </div>
                         <div class="modal-footer">

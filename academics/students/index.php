@@ -27,13 +27,10 @@ $sql = "SELECT
 $results = $db->query($sql);
 ?>
 
-<!--begin::App Main-->
+<!-- App Main -->
 <main class="app-main">
-    <!--begin::App Content Header-->
     <div class="app-content-header">
-        <!--begin::Container-->
         <div class="container-fluid">
-            <!--begin::Row-->
             <div class="row">
                 <div class="col-sm-6">
                     <h3 class="mb-0">Simple Tables</h3>
@@ -47,14 +44,10 @@ $results = $db->query($sql);
                     </ol>
                 </div>
             </div>
-            <!--end::Row-->
         </div>
-        <!--end::Container-->
     </div>
-    <!--end::App Content Header-->
-    <!--begin::App Content-->
+    <!-- App Content -->
     <div class="app-content">
-        <!--begin::Container-->
         <div class="container-fluid">
 
             <div class="row">
@@ -133,13 +126,9 @@ $results = $db->query($sql);
                                 </tbody>
                             </table>
                         </div>
-                        <!-- /.card-body -->
                     </div>
-                    <!-- /.card -->
                 </div>
-                <!-- /.col -->
             </div>
-            <!-- /.row -->
 
             <!-- /.modal-dialog create -->
             <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel"
@@ -224,11 +213,6 @@ $results = $db->query($sql);
 
         </div>
     </div>
-    <!--end::Container-->
-    </div>
-    <!--end::App Content-->
-
-
 
 </main>
 <!--end::App Main-->

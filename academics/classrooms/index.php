@@ -12,6 +12,7 @@ $db = Database::getInstance();
 $sql = "SELECT 
             k.id,
             k.nama_kelas,
+            -- tk.tingkat,
             k.jurusan,
             k.jumlah_siswa,
             k.gedung,
@@ -31,13 +32,10 @@ $results = $db->query($sql);
 // var_dump($results);
 ?>
 
-<!--begin::App Main-->
-<main class="app-main">
-    <!--begin::App Content Header-->
-    <div class="app-content-header">
-        <!--begin::Container-->
-        <div class="container-fluid">
-            <!--begin::Row-->
+<!-- App Main -->
+<main class="app-main"> 
+    <div class="app-content-header"> 
+        <div class="container-fluid"> 
             <div class="row">
                 <div class="col-sm-6">
                     <h3 class="mb-0">Simple Tables</h3>
@@ -50,25 +48,19 @@ $results = $db->query($sql);
                         </li>
                     </ol>
                 </div>
-            </div>
-            <!--end::Row-->
-        </div>
-        <!--end::Container-->
-    </div>
-    <!--end::App Content Header-->
-    <!--begin::App Content-->
-    <div class="app-content">
-        <!--begin::Container-->
-        <div class="container-fluid">
-
+            </div> 
+        </div> 
+    </div> 
+    <!-- App Content -->
+    <div class="app-content"> 
+        <div class="container-fluid"> 
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Data Siswa</h3>
                     <button type="button" class="btn btn-success btn-sm ms-auto" data-bs-toggle="modal"
                         data-bs-target="#createModal">
                         <i class="bi bi-plus-lg pe-1"></i> Tambah Data
-                    </button>
-
+                    </button> 
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -90,7 +82,10 @@ $results = $db->query($sql);
                                     <?php foreach ($results as $index => $row): ?>
                                     <tr>
                                         <td><?= $row['gedung'] ?? '-'; ?></td>
-                                        <td><?= $row['tingkat'] . ' ' . $row['nama_kelas'] ?? '-'; ?></td>
+                                        <!-- test 2 table -->
+                                        <!-- <td><?= $row['tingkat'] . ' ' . $row['nama_kelas'] ?? '-'; ?></td> -->
+
+                                        <td><?= $row['nama_kelas'] ?? '-'; ?></td>
                                         <td><?= $row['wali_kelas'] ?? '-'; ?></td>
                                         <td><?= $row['jumlah_siswa'] ?? '-'; ?></td>
                                         <td><?= $row['jurusan'] ?? '-'; ?></td>
@@ -143,15 +138,8 @@ $results = $db->query($sql);
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
-    <!--end::Container-->
-    </div>
-    <!--end::App Content-->
-
-
-
 </main>
 <!--end::App Main-->
 

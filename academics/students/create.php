@@ -72,13 +72,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
-<!--begin::App Main-->
-<main class="app-main">
-    <!--begin::App Content Header-->
-    <div class="app-content-header">
-        <!--begin::Container-->
-        <div class="container-fluid">
-            <!--begin::Row-->
+<!-- App Main -->
+<main class="app-main"> 
+    <div class="app-content-header"> 
+        <div class="container-fluid"> 
             <div class="row">
                 <div class="col-sm-6">
                     <h3 class="mb-0">General Form</h3>
@@ -91,30 +88,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </li>
                     </ol>
                 </div>
-            </div>
-            <!--end::Row-->
-        </div>
-        <!--end::Container-->
-    </div>
-    <!--end::App Content Header-->
-    <!--begin::App Content-->
-    <div class="app-content">
-        <!--begin::Container-->
-        <div class="container-fluid">
-            <!--begin::Row-->
-            <div class="row g-4">
-                <!--begin::Col-->
-                <div class="col-md-12">
-                    <!--begin::Quick Example-->
-                    <div class="card card-primary card-outline mb-4">
-                        <!--begin::Header-->
+            </div> 
+        </div> 
+    </div> 
+    <!-- App Content -->
+    <div class="app-content"> 
+        <div class="container-fluid"> 
+            <div class="row g-4"> 
+                <div class="col-md-12"> 
+                    <div class="card card-primary card-outline mb-4"> 
                         <div class="card-header">
                             <div class="card-title">Quick Example</div>
-                        </div>
-                        <!--end::Header-->
-                        <!--begin::Form-->
-                        <form>
-                            <!--begin::Body-->
+                        </div> 
+                        <form> 
                             <div class="card-body">
                                 <div class="mb-3">
                                     <label for="exampleInputEmail1" class="form-label">Email address</label>
@@ -136,27 +122,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <input type="checkbox" class="form-check-input" id="exampleCheck1" />
                                     <label class="form-check-label" for="exampleCheck1">Check me out</label>
                                 </div>
-                            </div>
-                            <!--end::Body-->
-                            <!--begin::Footer-->
+                            </div>  
                             <div class="card-footer">
                                 <button type="submit" class="btn btn-primary">
                                     Submit
                                 </button>
-                            </div>
-                            <!--end::Footer-->
-                        </form>
-                        <!--end::Form-->
-                    </div>
-                    <!--end::Quick Example-->
-                </div>
-                <!--end::Col-->
-
-            </div>
-            <!--end::Row-->
-        </div>
-        <!--end::Container-->
+                            </div> 
+                        </form> 
+                    </div> 
+                </div> 
+            </div> 
+        </div> 
     </div>
-    <!--end::App Content-->
 </main>
 <!--end::App Main-->
