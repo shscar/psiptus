@@ -8,7 +8,12 @@
 ob_start(); // Memulai output buffering
 
 include __DIR__ . '/../../layouts/master.php';
-$db = Database::getInstance()->query("SELECT 1");
+$db = Database::getInstance()->getConnection();
+$query = $db->query("SELECT 1");
+
+$stmt = $db->prepare("SELECT * FROM tahun_ajaran ORDER BY id DESC");
+$stmt->execute();
+$tahun_ajaran = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Handle Form Submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -20,14 +25,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $status = $_POST['status'];
 
         $sql = "INSERT INTO tahun_ajaran (tahun, status) VALUES (:tahun, :status)";
-        $stmt = $conn->prepare($sql);
+        $stmt = $db->prepare($sql);
         // $stmt->execute(['tahun' => $tahun, 'status' => $status]);
 
         // Validate input
         if (!empty($tahun) && !empty($status)) {
             // Prepare SQL query
             $sql = "INSERT INTO tahun_ajaran (tahun, status) VALUES (:tahun, :status)";
-            $stmt = $conn->prepare($sql);
+            $stmt = $db->prepare($sql);
             if ($stmt->execute(['tahun' => $tahun, 'status' => $status])) {
                 // Redirect to avoid form resubmission
                 echo "<script>
@@ -53,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (!empty($id) && !empty($tahun) && !empty($status)) {
             // Prepare SQL query
             $sql = "UPDATE tahun_ajaran SET tahun = :tahun, status = :status WHERE id = :id";
-            $stmt = $conn->prepare($sql);
+            $stmt = $db->prepare($sql);
             if ($stmt->execute(['tahun' => $tahun, 'status' => $status, 'id' => $id])) {
                 // Redirect to avoid form resubmission
                 echo "<script>
@@ -75,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if (!empty($id)) {
             $sql = "DELETE FROM tahun_ajaran WHERE id = :id";
-            $stmt = $conn->prepare($sql);
+            $stmt = $db->prepare($sql);
             if ($stmt->execute(['id' => $id])) {
                 echo "<script>
                         alert('Data berhasil dihapus.');
@@ -91,21 +96,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// Fetch records for display
-$sql = "SELECT * FROM tahun_ajaran ORDER BY id DESC";
-$tahun_ajaran = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-// var_dump($tahun_ajaran);
-
-ob_end_flush(); // Mengakhiri output buffering
+// Mengakhiri output buffering
+ob_end_flush();
 ?>
 
 <!--begin::App Main-->
 <main class="app-main">
     <!--begin::App Content Header-->
     <div class="app-content-header">
-        <!--begin::Container-->
         <div class="container-fluid">
-            <!--begin::Row-->
             <div class="row">
                 <div class="col-sm-6">
                     <h3 class="mb-0">Simple Tables</h3>
@@ -119,14 +118,11 @@ ob_end_flush(); // Mengakhiri output buffering
                     </ol>
                 </div>
             </div>
-            <!--end::Row-->
         </div>
-        <!--end::Container-->
     </div>
     <!--end::App Content Header-->
     <!--begin::App Content-->
     <div class="app-content">
-        <!--begin::Container-->
         <div class="container-fluid">
 
             <div class="card">
@@ -274,11 +270,7 @@ ob_end_flush(); // Mengakhiri output buffering
 
         </div>
     </div>
-    <!--end::Container-->
-    </div>
     <!--end::App Content-->
-
-
 
 </main>
 <!--end::App Main-->

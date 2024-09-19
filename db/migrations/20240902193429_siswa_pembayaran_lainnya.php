@@ -22,8 +22,10 @@ final class SiswaPembayaranLainnya extends AbstractMigration
         $table = $this->table('siswa_pembayaran_lainnya');
         $table->addColumn('nama_pembayaran', 'string', ['limit' => 100, 'null' => false])
             ->addColumn('bisa_diangsur', 'boolean', ['default' => true])  // True jika bisa diangsur, False jika sekali lunas
+            ->addColumn('nominal', 'decimal', ['precision' => 10, 'scale' => 2, 'null' => false])
+            ->addColumn('tahun_ajaran_id', 'integer', ['limit' => 9, 'null' => true])
             ->addColumn('keterangan', 'text', ['null' => true])
-            ->addColumn('status_aktif', 'boolean', ['default' => true])  // Menentukan apakah jenis pembayaran ini aktif
+            ->addColumn('status_aktif', 'boolean', ['default' => true])
             ->addTimestamps()
             ->create();
 

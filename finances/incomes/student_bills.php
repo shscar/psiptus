@@ -13,9 +13,7 @@ include __DIR__ . '/../../layouts/master.php';
 <main class="app-main">
     <!--begin::App Content Header-->
     <div class="app-content-header">
-        <!--begin::Container-->
         <div class="container-fluid">
-            <!--begin::Row-->
             <div class="row">
                 <div class="col-sm-6">
                     <h3 class="mb-0">Simple Tables</h3>
@@ -29,14 +27,11 @@ include __DIR__ . '/../../layouts/master.php';
                     </ol>
                 </div>
             </div>
-            <!--end::Row-->
         </div>
-        <!--end::Container-->
     </div>
     <!--end::App Content Header-->
     <!--begin::App Content-->
     <div class="app-content">
-        <!--begin::Container-->
         <div class="container-fluid">
             <!--begin::Row-->
             <div class="row">
@@ -45,7 +40,6 @@ include __DIR__ . '/../../layouts/master.php';
                         <div class="card-header">
                             <h3 class="card-title">Bordered Table</h3>
                         </div>
-                        <!-- /.card-header -->
                         <div class="card-body">
                             <table class="table table-bordered">
                                 <thead>
@@ -175,9 +169,7 @@ include __DIR__ . '/../../layouts/master.php';
                                 </tbody>
                             </table>
                         </div>
-                        <!-- /.card-body -->
                     </div>
-                    <!-- /.card -->
                 </div>
                 <!-- /.col -->
                 <div class="col-md-6">

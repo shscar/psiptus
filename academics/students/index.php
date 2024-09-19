@@ -5,11 +5,13 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css" />
 
 <?php
+// Memulai output buffering
+ob_start();
 include __DIR__ . '/../../layouts/master.php';
+$db = Database::getInstance()->getConnection();
 
-$db = Database::getInstance();
 // Concise SQL query with table aliases
-$sql = "SELECT 
+$stmt = $db->prepare("SELECT 
             s.id,
             s.nisn,
             s.nama_lengkap,
@@ -22,9 +24,12 @@ $sql = "SELECT
         LEFT JOIN tingkat_kelas tk ON k.tingkat_kelas_id = tk.id
         LEFT JOIN tahun_ajaran t ON tk.tahun_ajaran_id = t.id
         ORDER BY s.id DESC
-    ";
+    ");
+$stmt->execute();
+$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$results = $db->query($sql);
+// Mengakhiri output buffering
+ob_end_flush();
 ?>
 
 <!-- App Main -->

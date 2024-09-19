@@ -25,7 +25,7 @@ foreach ($dropdownRoutes as $key => $routes) {
     <div class="sidebar-brand">
         <a href="./index.html" class="brand-link">
             <img src="../assets/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image opacity-75 shadow" />
-            <span class="brand-text fw-light">AdminLTE 4</span>
+            <span class="brand-text fw-light">Admin</span>
         </a>
     </div>
     <div class="sidebar-wrapper">
@@ -90,15 +90,18 @@ foreach ($dropdownRoutes as $key => $routes) {
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
-                    <ul class="nav nav-treeview" style="<?php echo $activeDropdown === 'sid-02' ? 'display: block;' : 'display: none;'; ?>">
+                    <ul class="nav nav-treeview"
+                        style="<?php echo $activeDropdown === 'sid-02' ? 'display: block;' : 'display: none;'; ?>">
                         <li class="nav-item">
-                            <a href="/pendapatan/tagihan-spp-siswa" class="nav-link <?php echo isActive('/pendapatan/tagihan-spp-siswa', $requestUri); ?>">
+                            <a href="/pendapatan/tagihan-spp-siswa"
+                                class="nav-link <?php echo isActive('/pendapatan/tagihan-spp-siswa', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Tagihan SPP Siswa</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="/pendapatan/tagihan-lain-siswa"
+                                class="nav-link <?php echo isActive('/pendapatan/tagihan-lain-siswa', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Tagihan Lain Siswa</p>
                             </a>

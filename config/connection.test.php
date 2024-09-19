@@ -2,17 +2,18 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "nama_database";
+$dbname = "smas";
 
 try {
     $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8mb4", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(PDOException $e) {
+} catch (PDOException $e) {
     die("Connection failed: " . $e->getMessage());
 }
 
 // Fungsi untuk menjalankan query menggunakan PDO
-function query($sql, $params = []) {
+function query($sql, $params = [])
+{
     global $conn;
     try {
         $stmt = $conn->prepare($sql);
@@ -26,28 +27,33 @@ function query($sql, $params = []) {
 }
 
 // Class Database untuk manajemen koneksi
-class Database {
+class Database
+{
     private static $instance = null;
     private $conn;
 
-    private function __construct() {
+    private function __construct()
+    {
         global $servername, $username, $password, $dbname;
         try {
             $this->conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8mb4", $username, $password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             die("Connection failed: " . $e->getMessage());
         }
     }
 
-    public static function getInstance() {
+    public static function getInstance()
+    {
         if (self::$instance === null) {
             self::$instance = new self();
+            // self::$instance = new Database();
         }
         return self::$instance;
     }
 
-    public function query($sql, $params = []) {
+    public function query($sql, $params = [])
+    {
         try {
             $stmt = $this->conn->prepare($sql);
             $stmt->execute($params);
@@ -57,10 +63,16 @@ class Database {
             return [];
         }
     }
+
+    public function getConnection()
+    {
+        return $this->conn;
+    }
 }
 
 // Menutup koneksi (opsional)
-function closeConnection() {
+function closeConnection()
+{
     global $conn;
     $conn = null;
 }

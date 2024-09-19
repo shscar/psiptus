@@ -44,13 +44,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </script>";
                 exit();
             } else {
-                echo "Gagal menyisipkan catatan!";
+                echo "Gagal menyisipkan Data Tagihan!";
             }
         } else {
             echo "Silakan isi semua bidang yang wajib diisi!";
         }
     }
-
 
     // Update Record
     if ($action == 'update') {
@@ -87,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </script>";
                 exit();
             } else {
-                echo "Gagal memperbarui Data!";
+                echo "Gagal memperbarui Data Tagihan!";
             }
         } else {
             echo "Silakan isi semua bidang yang wajib diisi!";
@@ -113,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </script>";
                 exit();
             } else {
-                echo "Gagal menghapus Data!";
+                echo "Gagal menghapus Data Tagihan!";
             }
         } else {
             echo "ID is required!";
@@ -146,13 +145,11 @@ ob_end_flush(); // Mengakhiri output buffering
 ?>
 
 
-<!--begin::App Main-->
+<!-- App Main -->
 <main class="app-main">
-    <!--begin::App Content Header-->
+    <!-- App Content Header -->
     <div class="app-content-header">
-        <!--begin::Container-->
         <div class="container-fluid">
-            <!--begin::Row-->
             <div class="row">
                 <div class="col-sm-6">
                     <h3 class="mb-0">Tagihan SPP Siswa</h3>
@@ -170,10 +167,9 @@ ob_end_flush(); // Mengakhiri output buffering
         </div>
         <!--end::Container-->
     </div>
-    <!--end::App Content Header-->
-    <!--begin::App Content-->
+    <!-- Content Header -->
+    <!-- App Content -->
     <div class="app-content">
-        <!--begin::Container-->
         <div class="container-fluid">
 
             <div class="card">
@@ -189,51 +185,51 @@ ob_end_flush(); // Mengakhiri output buffering
                     <div class="row">
                         <div class="col-md-12">
                             <?php if (!empty($results)): ?>
-                            <table id="datatable" class="table table-striped table-bordered pt-3">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Nama Tarif</th>
-                                        <th>Nominal</th>
-                                        <th>Tahun Ajaran</th>
-                                        <th>Deskripsi</th>
-                                        <th>Status Aktif</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($results as $index => $row): ?>
-                                    <tr>
-                                        <td><?= $index + 1; ?></td>
-                                        <td><?= $row['nama_tarif']; ?></td>
-                                        <td>Rp. <?= number_format($row['nominal'], 2, ',', '.'); ?></td>
-                                        <td><?= $row['tahun_ajaran']; ?></td>
-                                        <td><?= $row['deskripsi'] ?? '-'; ?></td>
-                                        <td class="text-center"><?= $row['status_aktif'] ? 'Aktif' : 'Tidak Aktif'; ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#editModal" data-id="<?= $row['id'] ?? '-'; ?>"
-                                                data-nama_tarif="<?= $row['nama_tarif'] ?? '-'; ?>"
-                                                data-nominal="<?= $row['nominal'] ?? '-'; ?>"
-                                                data-tahun_ajaran_id="<?= $row['tahun_ajaran_id'] ?? '-'; ?>"
-                                                data-deskripsi="<?= $row['deskripsi'] ?? '-'; ?>"
-                                                data-status_aktif="<?= $row['status_aktif'] ?? '0'; ?>">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
+                                <table id="datatable" class="table table-striped table-bordered pt-3">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Nama Tarif</th>
+                                            <th>Nominal</th>
+                                            <th>Tahun Ajaran</th>
+                                            <th>Deskripsi</th>
+                                            <th>Status Aktif</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($results as $index => $row): ?>
+                                            <tr>
+                                                <td><?= $index + 1; ?></td>
+                                                <td><?= $row['nama_tarif']; ?></td>
+                                                <td>Rp. <?= number_format($row['nominal'], 2, ',', '.'); ?></td>
+                                                <td><?= $row['tahun_ajaran']; ?></td>
+                                                <td><?= $row['deskripsi'] ?? '-'; ?></td>
+                                                <td class="text-center"><?= $row['status_aktif'] ? 'Aktif' : 'Tidak Aktif'; ?>
+                                                </td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                                        data-bs-target="#editModal" data-id="<?= $row['id'] ?? '-'; ?>"
+                                                        data-nama_tarif="<?= $row['nama_tarif'] ?? '-'; ?>"
+                                                        data-nominal="<?= $row['nominal'] ?? '-'; ?>"
+                                                        data-tahun_ajaran_id="<?= $row['tahun_ajaran_id'] ?? '-'; ?>"
+                                                        data-deskripsi="<?= $row['deskripsi'] ?? '-'; ?>"
+                                                        data-status_aktif="<?= $row['status_aktif'] ?? '0'; ?>">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
 
-                                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?? '-'; ?>"
-                                                data-nama_tarif="<?= $row['nama_tarif'] ?? '-'; ?>">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                                        data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?? '-'; ?>"
+                                                        data-nama_tarif="<?= $row['nama_tarif'] ?? '-'; ?>">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
                             <?php else: ?>
-                            <p>No data available.</p>
+                                <p>No data available.</p>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -250,7 +246,6 @@ ob_end_flush(); // Mengakhiri output buffering
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <!-- Form for creating a new record -->
                             <form id="createForm" method="POST">
                                 <input type="hidden" name="action" value="create">
                                 <div class="mb-3">
@@ -272,9 +267,9 @@ ob_end_flush(); // Mengakhiri output buffering
                                     <select class="form-select" id="tahun_ajaran_id" name="tahun_ajaran_id" required>
                                         <option value="">Pilih Tahun Ajaran</option>
                                         <?php foreach ($tahun_ajaran as $ta): ?>
-                                        <option value="<?php echo $ta['id']; ?>">
-                                            <?php echo $ta['tahun']; ?>
-                                        </option>
+                                            <option value="<?php echo $ta['id']; ?>">
+                                                <?php echo $ta['tahun']; ?>
+                                            </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -330,9 +325,9 @@ ob_end_flush(); // Mengakhiri output buffering
                                         required>
                                         <option value="">Pilih Tahun Ajaran</option>
                                         <?php foreach ($tahun_ajaran as $ta): ?>
-                                        <option value="<?php echo $ta['id']; ?>">
-                                            <?php echo $ta['tahun']; ?>
-                                        </option>
+                                            <option value="<?php echo $ta['id']; ?>">
+                                                <?php echo $ta['tahun']; ?>
+                                            </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -382,11 +377,8 @@ ob_end_flush(); // Mengakhiri output buffering
 
         </div>
     </div>
-    <!--end::Container-->
-    </div>
-    <!--end::App Content-->
 </main>
-<!--end::App Main-->
+<!-- App Main -->
 
 <!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
@@ -396,60 +388,60 @@ ob_end_flush(); // Mengakhiri output buffering
 
 <!-- Inisialisasi DataTables -->
 <script>
-$(document).ready(function() {
-    $('#datatable').dataTable();
-    $("[data-toggle=tooltip]").tooltip();
+    $(document).ready(function () {
+        $('#datatable').dataTable();
+        $("[data-toggle=tooltip]").tooltip();
 
-});
+    });
 
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
 
-    // Handling Update
-    const editModal = document.getElementById('editModal');
-    if (editModal) {
-        editModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
+        // Handling Update
+        const editModal = document.getElementById('editModal');
+        if (editModal) {
+            editModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
 
-            // Get data attributes from the button
-            const id = button.getAttribute('data-id');
-            const nama_tarif = button.getAttribute('data-nama_tarif');
-            const nominal = button.getAttribute('data-nominal');
-            const tahun_ajaran_id = button.getAttribute('data-tahun_ajaran_id');
-            const deskripsi = button.getAttribute('data-deskripsi');
-            const status_aktif = button.getAttribute('data-status_aktif') === '1';
+                // Get data attributes from the button
+                const id = button.getAttribute('data-id');
+                const nama_tarif = button.getAttribute('data-nama_tarif');
+                const nominal = button.getAttribute('data-nominal');
+                const tahun_ajaran_id = button.getAttribute('data-tahun_ajaran_id');
+                const deskripsi = button.getAttribute('data-deskripsi');
+                const status_aktif = button.getAttribute('data-status_aktif') === '1';
 
-            // Update the modal's content.
-            const modalTitle = editModal.querySelector('.modal-title');
-            modalTitle.textContent = `Edit Data Tagihan: ${nama_tarif}`;
+                // Update the modal's content.
+                const modalTitle = editModal.querySelector('.modal-title');
+                modalTitle.textContent = `Edit Data Tagihan: ${nama_tarif}`;
 
-            // Populate the form in the modal with the data
-            document.getElementById('edit_id').value = id;
-            document.getElementById('edit_nama_tarif').value = nama_tarif;
-            document.getElementById('edit_nominal').value = nominal;
-            document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;
-            document.getElementById('edit_deskripsi').value = deskripsi;
-            document.getElementById('edit_status_aktif').checked = status_aktif;
-        });
-    }
+                // Populate the form in the modal with the data
+                document.getElementById('edit_id').value = id;
+                document.getElementById('edit_nama_tarif').value = nama_tarif;
+                document.getElementById('edit_nominal').value = nominal;
+                document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;
+                document.getElementById('edit_deskripsi').value = deskripsi;
+                document.getElementById('edit_status_aktif').checked = status_aktif;
+            });
+        }
 
-    // Handling Delete
-    const deleteModal = document.getElementById('deleteModal');
-    if (deleteModal) {
-        deleteModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-bs-id');
-            const nama_tarif = button.getAttribute('data-nama_tarif');
+        // Handling Delete
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-bs-id');
+                const nama_tarif = button.getAttribute('data-nama_tarif');
 
-            // Update the modal's content.
-            const modalTitle = deleteModal.querySelector('.modal-title');
-            modalTitle.textContent = `Hapus Data Tagihan: ${nama_tarif}`;
+                // Update the modal's content.
+                const modalTitle = deleteModal.querySelector('.modal-title');
+                modalTitle.textContent = `Hapus Data Tagihan: ${nama_tarif}`;
 
-            // Populate the form with the id
-            const form = deleteModal.querySelector('#deleteForm');
-            form.querySelector('#delete-id').value = id;
+                // Populate the form with the id
+                const form = deleteModal.querySelector('#deleteForm');
+                form.querySelector('#delete-id').value = id;
 
-        });
+            });
 
-    }
-})
+        }
+    })
 </script>
