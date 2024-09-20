@@ -84,7 +84,7 @@ foreach ($dropdownRoutes as $key => $routes) {
                 </li>
                 <li class="nav-item dropdown <?php echo $activeDropdown === 'sid-02' ? 'menu-open' : ''; ?>">
                     <a href="#" class="nav-link <?php echo $activeDropdown === 'sid-02' ? 'active' : ''; ?>">
-                        <i class="nav-icon bi bi-box-seam-fill"></i>
+                        <i class="nav-icon bi bi-cash-coin"></i>
                         <p>
                             Pendapatan
                             <i class="nav-arrow bi bi-chevron-right"></i>
@@ -146,12 +146,20 @@ foreach ($dropdownRoutes as $key => $routes) {
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link">
-                        <i class="nav-icon bi bi-box-seam-fill"></i>
+                        <i class="nav-icon bi bi-cash-stack"></i>
                         <p>
                             pengeluaran
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon bi bi-cart3"></i>
+                                <p>Belanja</p>
+                            </a>
+                        </li>
+                    </ul>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="#" class="nav-link">

@@ -55,5 +55,5 @@ if (array_key_exists($requestUri, $routes)) {
 } else {
     // Jika rute tidak ditemukan, arahkan ke halaman 404
     http_response_code(404);
-    require __DIR__ . '/../layouts/error.php';
+    require __DIR__ . '/../layouts/error_404.php';
 }
