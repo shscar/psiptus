@@ -2,7 +2,7 @@
 // config/router.php
 
 $routes = [
-    '/' => '/dashboard/index.php',
+    '/dashboard' => '/dashboards/index.php',
     // '/test' => '/test/index.php',
     // '/login' => '/dashboard/login.php',
 
@@ -23,9 +23,14 @@ $routes = [
 
     // infoice
     // pendapatan
-    '/pendapatan/tagihan-siswa' => '/finances/incomes/student_bills.php',
+    '/pendapatan/pembayaran-siswa' => '/finances/incomes/student_paid_fees.php',
     '/pendapatan/tagihan-spp-siswa' => '/finances/incomes/spp_student_bills.php',
     '/pendapatan/tagihan-lain-siswa' => '/finances/incomes/other_student_bills.php',
+    '/pendapatan/pemasukan-bos' => '/finances/incomes/revenues_bos.php',
+    '/pendapatan/pemasukan-lain' => '/finances/incomes/revenues_other.php',
+
+    // pengeluaran
+    '/pengeluaran/kategori-pengeluaran' => '/finances/outlays/expens_category.php',
 ];
 
 // Mendapatkan URI saat ini

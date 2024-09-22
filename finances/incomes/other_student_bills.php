@@ -27,8 +27,8 @@ $stmt = $db->prepare("SELECT
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch only active form "tahun_ajaran"
-$stmt = $db->prepare("SELECT id, tahun FROM tahun_ajaran WHERE status = 'Aktif' ORDER BY tahun DESC");
+// query untuk mengambil data tabel "tahun_ajaran"
+$stmt = $db->prepare("SELECT id, tahun FROM tahun_ajaran ORDER BY tahun DESC");
 $stmt->execute();
 $tahun_ajaran = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -198,7 +198,7 @@ ob_end_flush();
                                             <th>Nama Pembayaran</th>
                                             <th>Diangsur</th>
                                             <th>Nominal</th>
-                                            <th>Keterangan</th>
+                                            <th style="width: 35%">Keterangan</th>
                                             <th>Tahun Ajaran</th>
                                             <th>Status</th>
                                             <th>Aksi</th>

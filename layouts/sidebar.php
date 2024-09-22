@@ -8,17 +8,25 @@
 // Menu aktif untuk dropdown
 $dropdownRoutes = [
     'sid-01' => ['/siswa', '/tahun-ajaran', '/kelas', '/tingkat-kelas'],
-    'sid-02' => ['/pendapatan/tagihan-spp-siswa', '/pendapatan/tagihan-lain-siswa'],
+    'sid-02' => [
+        '/pendapatan/tagihan-spp-siswa',
+        '/pendapatan/tagihan-lain-siswa',
+        '/pendapatan/pemasukan-bos'
+    ],
     'sid-03' => [],
 ];
 
 $activeDropdown = null;
+$isActiveFound = false;
+
 foreach ($dropdownRoutes as $key => $routes) {
     if (isAnyActive($routes, $requestUri)) {
         $activeDropdown = $key;
+        $isActiveFound = true;
         break;
     }
 }
+
 ?>
 
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
@@ -32,7 +40,7 @@ foreach ($dropdownRoutes as $key => $routes) {
         <nav class="mt-2">
             <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
                 <li class="nav-item menu-open">
-                    <a href="/" class="nav-link  <?php echo isActive('/', $requestUri); ?>">
+                    <a href="/dashboard" class="nav-link  <?php echo isActive('/dashboard', $requestUri); ?>">
                         <i class="nav-icon bi bi-speedometer"></i>
                         <p>Dashboard</p>
                     </a>
@@ -113,7 +121,8 @@ foreach ($dropdownRoutes as $key => $routes) {
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="/pendapatan/pemasukan-bos"
+                                class="nav-link <?php echo isActive('/pendapatan/pemasukan-bos', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Dana BOS</p>
                             </a>

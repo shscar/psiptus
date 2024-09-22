@@ -106,8 +106,8 @@ $stmt = $db->prepare("SELECT tk.id, tk.tingkat, tk.tahun_ajaran_id, tk.keteranga
 $stmt->execute();
 $tingkat_kelas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch only active form "tahun_ajaran"
-$stmt = $db->prepare("SELECT id, tahun FROM tahun_ajaran WHERE status = 'Aktif' ORDER BY tahun DESC");
+// query untuk mengambil data tabel "tahun_ajaran"
+$stmt = $db->prepare("SELECT id, tahun FROM tahun_ajaran ORDER BY tahun DESC");
 $stmt->execute();
 $tahun_ajaran = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

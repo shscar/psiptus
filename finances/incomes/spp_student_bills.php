@@ -7,6 +7,27 @@
 ob_start(); // Memulai output buffering
 
 include __DIR__ . '/../../layouts/master.php';
+$db = Database::getInstance()->getConnection();
+
+$stmt = $db->prepare("SELECT 
+        t.id,
+        t.nama_tarif,
+        t.nominal,
+        t.deskripsi,
+        t.status_aktif,
+        ta.tahun AS tahun_ajaran,
+        t.tahun_ajaran_id
+    FROM tarif_spp t
+    LEFT JOIN tahun_ajaran ta ON t.tahun_ajaran_id = ta.id
+    ORDER BY t.id DESC
+");
+$stmt->execute();
+$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// query untuk mengambil data tabel "tahun_ajaran"
+$stmt = $db->prepare("SELECT id, tahun FROM tahun_ajaran ORDER BY tahun DESC");
+$stmt->execute();
+$tahun_ajaran = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Handle Form Submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -119,27 +140,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 }
-
-$db = Database::getInstance();
-$sql = "SELECT 
-        t.id,
-        t.nama_tarif,
-        t.nominal,
-        t.deskripsi,
-        t.status_aktif,
-        ta.tahun AS tahun_ajaran,
-        t.tahun_ajaran_id
-    FROM tarif_spp t
-    LEFT JOIN tahun_ajaran ta ON t.tahun_ajaran_id = ta.id
-    ORDER BY t.id DESC
-";
-
-$results = $db->query($sql);
-// var_dump($results);
-
-// Fetch only active form "tahun_ajaran"
-$sql = "SELECT id, tahun FROM tahun_ajaran WHERE status = 'Aktif' ORDER BY tahun DESC";
-$tahun_ajaran = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
 ob_end_flush(); // Mengakhiri output buffering
 ?>
@@ -421,6 +421,16 @@ ob_end_flush(); // Mengakhiri output buffering
                 document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;
                 document.getElementById('edit_deskripsi').value = deskripsi;
                 document.getElementById('edit_status_aktif').checked = status_aktif;
+
+
+                // Men-debug untuk memastikan nilai diambil dengan benar
+                console.log(
+                    `ID: ${id}, Tahun Ajaran ID: ${tahun_ajaran_id}`
+                );
+
+                // Men-debug untuk memastikan apakah option yang benar terpilih
+                console.log(`Tahun Ajaran yang terpilih: ${edit_tahun_ajaran_id.value}`);
+
             });
         }
 
