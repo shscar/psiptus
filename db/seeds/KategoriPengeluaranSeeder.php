@@ -26,14 +26,14 @@ class KategoriPengeluaranSeeder extends AbstractSeed
             ],
             [
                 'nama_kategori' => 'Biaya Listrik',
-                'parent_id' => 1,
+                'parent_id' => null,
                 'icon' => 'bi-lightning',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ],
             [
                 'nama_kategori' => 'Biaya Perawatan Gedung',
-                'parent_id' => 1,
+                'parent_id' => null,
                 'icon' => 'bi-building',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),

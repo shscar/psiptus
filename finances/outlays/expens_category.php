@@ -229,7 +229,8 @@ try {
                                             <span class="menu-title"><?= $kat['nama_kategori'] ?></span>
                                             <button class="btn btn-info btn-sm edit-category float-end"
                                                 data-bs-toggle="modal" data-bs-target="#editCategoryModal"
-                                                data-id_kategori="<?= $kat['id'] ?>" data-name="<?= $kat['nama_kategori'] ?>"
+                                                data-id_kategori="<?= $kat['id'] ?>"
+                                                data-name="<?= $kat['nama_kategori'] ?>"
                                                 data-icon="<?= $kat['icon'] ?>"><i class="bi bi-pencil-square"></i>
                                             </button>
 
@@ -252,7 +253,8 @@ try {
                                                         data-bs-toggle="modal" data-bs-target="#editCategoryModal"
                                                         data-id_kategori="<?= $subkat['id'] ?>"
                                                         data-name="<?= $subkat['nama_kategori'] ?>"
-                                                        data-icon="<?= $subkat['icon'] ?>"><i class="bi bi-pencil-square"></i>
+                                                        data-icon="<?= $subkat['icon'] ?>"><i
+                                                            class="bi bi-pencil-square"></i>
                                                     </button>
                                                     <a href="?delete=<?= $subkat['id'] ?>"
                                                         class="btn btn-danger btn-sm float-end mx-1"
@@ -277,7 +279,7 @@ try {
                     aria-hidden="true">
                     <div class="modal-dialog">
                         <form method="POST">
-                        <input type="hidden" name="action" value="create_category">
+                            <input type="hidden" name="action" value="create_category">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="addCategoryModalLabel">Tambah Kategori Baru</h5>
@@ -319,7 +321,7 @@ try {
                     aria-hidden="true">
                     <div class="modal-dialog">
                         <form method="POST">
-                        <input type="hidden" name="action" value="update_category">
+                            <input type="hidden" name="action" value="update_category">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="editCategoryModalLabel">Edit Kategori</h5>
@@ -367,7 +369,7 @@ try {
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Kategori/Subkategori</th>
+                                        <th>Kategori</th>
                                         <th>Judul</th>
                                         <th>Deskripsi</th>
                                         <th>Aksi</th>
@@ -390,10 +392,8 @@ try {
                                             <!-- <a href="?delete_detail=<?= $detail['id'] ?>" class="btn btn-danger btn-sm"
                                                 onclick="return confirm('Hapus detail kategori ini?')"><i
                                                     class="bi bi-trash"></i></a> -->
-                                            <button class="btn btn-danger btn-sm delete-detail" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#deleteDetailModal" 
-                                                data-id="<?= $detail['id'] ?>" 
+                                            <button class="btn btn-danger btn-sm delete-detail" data-bs-toggle="modal"
+                                                data-bs-target="#deleteDetailModal" data-id="<?= $detail['id'] ?>"
                                                 data-judul="<?= $detail['judul'] ?>">
                                                 <i class="bi bi-trash"></i>
                                             </button>
@@ -492,18 +492,21 @@ try {
                 </div>
 
                 <!-- Modal Konfirmasi Hapus -->
-                <div class="modal fade" id="deleteDetailModal" tabindex="-1" aria-labelledby="deleteDetailModalLabel" aria-hidden="true">
+                <div class="modal fade" id="deleteDetailModal" tabindex="-1" aria-labelledby="deleteDetailModalLabel"
+                    aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="deleteDetailModalLabel">Hapus Data</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <form id="deleteForm" method="POST">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" id="delete-id" name="id">
-                                    <p>Apakah Anda yakin ingin menghapus <span id="detail-info"></span>? Tindakan ini tidak dapat dikembalikan.</p>
+                                    <p>Apakah Anda yakin ingin menghapus <span id="detail-info"></span>? Tindakan ini
+                                        tidak dapat dikembalikan.</p>
                                 </form>
                             </div>
                             <div class="modal-footer">
@@ -538,7 +541,8 @@ document.addEventListener('DOMContentLoaded', function() {
             modalTitle.textContent = `Edit Kategori: ${nama_kategori}`;
 
             // Memastikan elemen ada sebelum mengisi form
-            if (document.getElementById('edit_id') && document.getElementById('edit_nama_kategori') && document.getElementById('edit_data_icon')) {
+            if (document.getElementById('edit_id') && document.getElementById(
+                    'edit_nama_kategori') && document.getElementById('edit_data_icon')) {
                 document.getElementById('edit_id').value = id || '';
                 document.getElementById('edit_nama_kategori').value = nama_kategori || '';
                 document.getElementById('edit_data_icon').value = data_icon || '';
@@ -552,13 +556,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const kategori_id = this.getAttribute('data-kategori');
             const judul = this.getAttribute('data-judul');
             const deskripsi = this.getAttribute('data-deskripsi');
-            
+
             // Up modal's header.
             const modalTitle = editDetailModal.querySelector('.modal-title');
             modalTitle.textContent = `Edit Kategori: ${judul}`;
 
             // Memastikan elemen ada sebelum mengisi form
-            if (document.getElementById('edit_detail_id') && document.getElementById('edit_kategori_id') && document.getElementById('edit_judul') && document.getElementById('edit_deskripsi')) {
+            if (document.getElementById('edit_detail_id') && document.getElementById(
+                    'edit_kategori_id') && document.getElementById('edit_judul') && document
+                .getElementById('edit_deskripsi')) {
                 document.getElementById('edit_detail_id').value = id || '';
                 document.getElementById('edit_kategori_id').value = kategori_id || '';
                 document.getElementById('edit_judul').value = judul || '';
@@ -581,14 +587,14 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
             const judul = this.getAttribute('data-judul');
-            
+
             // Up modal's header.
             const modalTitle = deleteDetailModal.querySelector('.modal-title');
             modalTitle.textContent = `Delete Detail Kategori: ${judul}`;
 
-                console.log(
-                   `ID: ${id}, Judul: ${judul}`
-                );
+            console.log(
+                `ID: ${id}, Judul: ${judul}`
+            );
 
             // Mengisi form dengan id yang akan dihapus
             const form = deleteModal.querySelector('#deleteForm');
@@ -601,14 +607,14 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
             const judul = this.getAttribute('data-judul');
-            
+
             // Up modal's header.
             const modalTitle = deleteDetailModal.querySelector('.modal-title');
             modalTitle.textContent = `Delete Detail Kategori: ${judul}`;
 
-                console.log(
-                   `ID: ${id}, Judul: ${judul}`
-                );
+            console.log(
+                `ID: ${id}, Judul: ${judul}`
+            );
 
             // Mengisi form dengan id yang akan dihapus
             const form = deleteModal.querySelector('#deleteForm');

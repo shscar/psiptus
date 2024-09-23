@@ -3,7 +3,7 @@
 
 $routes = [
     '/dashboard' => '/dashboards/index.php',
-    // '/test' => '/test/index.php',
+    '/test' => '/testing/index.php',
     // '/login' => '/dashboard/login.php',
 
     // '/guru-staff' => '/users/guru-karyawan.php',
@@ -31,6 +31,8 @@ $routes = [
 
     // pengeluaran
     '/pengeluaran/kategori-pengeluaran' => '/finances/outlays/expens_category.php',
+    '/pengeluaran/pengeluaran' => '/finances/outlays/expends.php',
+
 ];
 
 // Mendapatkan URI saat ini

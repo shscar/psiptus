@@ -13,7 +13,7 @@ $dropdownRoutes = [
         '/pendapatan/tagihan-lain-siswa',
         '/pendapatan/pemasukan-bos'
     ],
-    'sid-03' => [],
+    'sid-03' => ['/pengeluaran/kategori-pengeluaran'],
 ];
 
 $activeDropdown = null;
@@ -153,23 +153,29 @@ foreach ($dropdownRoutes as $key => $routes) {
                         </li> -->
                     </ul>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
+                <li class="nav-item dropdown <?php echo $activeDropdown === 'sid-03' ? 'menu-open' : ''; ?>">
+                    <a href="#" class="nav-link <?php echo $activeDropdown === 'sid-03' ? 'active' : ''; ?>">
                         <i class="nav-icon bi bi-cash-stack"></i>
                         <p>
                             pengeluaran
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
-                    <ul class="nav nav-treeview">
+                    <ul class="nav nav-treeview"
+                        style="<?php echo $activeDropdown === 'sid-03' ? 'display: block;' : 'display: none;'; ?>">
+                        <li class="nav-item">
+                            <a href="/pengeluaran/kategori-pengeluaran"
+                                class="nav-link <?php echo isActive('/pengeluaran/kategori-pengeluaran', $requestUri); ?>">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Jenis Pengeluaran</p>
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon bi bi-cart3"></i>
                                 <p>Belanja</p>
                             </a>
                         </li>
-                    </ul>
-                    <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon bi bi-circle"></i>
