@@ -2,12 +2,6 @@
 include __DIR__ . '/../../layouts/master.php';
 $db = Database::getInstance()->getConnection();
 
-// Ambil semua detail kategori
-// $stmt = $db->prepare("SELECT * FROM kategori_pengeluaran WHERE parent_id IS NULL");
-// $stmt->execute();
-// $kategori = $stmt->fetchAll(PDO::FETCH_ASSOC);
-// var_dump($kategori);
-
 // Fungsi untuk mendapatkan subkategori berdasarkan parent ID
 function getSubKategori($db, $parentId)
 {
@@ -21,45 +15,62 @@ function getSubKategori($db, $parentId)
     }
 }
 
-// Tambah Kategori
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] === 'tambah') {
-    $nama_kategori = $_POST['nama_kategori'];
-    $parent_id = !empty($_POST['parent_id']) ? $_POST['parent_id'] : null;
-    $icon = $_POST['icon'];
+// Handle Form Submission
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $action = $_POST['action'];
 
-    try {
-        $stmt = $db->prepare("INSERT INTO kategori_pengeluaran (nama_kategori, parent_id, icon) VALUES (:nama_kategori, :parent_id, :icon)");
-        $stmt->execute([
-            ':nama_kategori' => $nama_kategori,
-            ':parent_id' => $parent_id,
-            ':icon' => $icon,
-        ]);
-        header('Location: index.php');
-        exit();
-    } catch (PDOException $e) {
-        echo "Gagal menambah kategori: " . $e->getMessage();
+    // Tambah Kategori
+    if ($action === 'create_category') {
+        $nama_kategori = $_POST['nama_kategori'];
+        $parent_id = !empty($_POST['parent_id']) ? $_POST['parent_id'] : null;
+        $icon = $_POST['icon'];
+    
+        try {
+            $stmt = $db->prepare("INSERT INTO kategori_pengeluaran (nama_kategori, parent_id, icon) VALUES (:nama_kategori, :parent_id, :icon)");
+            $stmt->execute([
+                ':nama_kategori' => $nama_kategori,
+                ':parent_id' => $parent_id,
+                ':icon' => $icon,
+            ]);
+
+            // Redirect
+            echo "<script>
+                alert('Data berhasil ditambahkan.');
+                window.location.href = '/pengeluaran/kategori-pengeluaran';
+            </script>";
+            exit();
+        } catch (PDOException $e) {
+            echo "Gagal menambah kategori: " . $e->getMessage();
+        }
     }
+    
+    // Edit Kategori
+    if ($action === 'update_category') {
+        $id = $_POST['id'];
+        $nama_kategori = $_POST['nama_kategori'];
+        $icon = $_POST['icon'];
+
+        try {
+            $stmt = $db->prepare("UPDATE kategori_pengeluaran SET nama_kategori = :nama_kategori, icon = :icon WHERE id = :id");
+            $stmt->execute([
+                ':nama_kategori' => $nama_kategori,
+                ':icon' => $icon,
+                ':id' => $id,
+            ]);
+
+            // Redirect
+            echo "<script>
+                alert('Data berhasil diupdate.');
+                window.location.href = '/pengeluaran/kategori-pengeluaran';
+            </script>";
+            exit();
+        } catch (PDOException $e) {
+            echo "Gagal mengedit kategori: " . $e->getMessage();
+        }
+    }
+
 }
 
-// Edit Kategori
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] === 'update') {
-    $id = $_POST['id'];
-    $nama_kategori = $_POST['nama_kategori'];
-    $icon = $_POST['icon'];
-
-    try {
-        $stmt = $db->prepare("UPDATE kategori_pengeluaran SET nama_kategori = :nama_kategori, icon = :icon WHERE id = :id");
-        $stmt->execute([
-            ':nama_kategori' => $nama_kategori,
-            ':icon' => $icon,
-            ':id' => $id,
-        ]);
-        header('Location: index.php');
-        exit();
-    } catch (PDOException $e) {
-        echo "Gagal mengedit kategori: " . $e->getMessage();
-    }
-}
 
 // Hapus Kategori
 if (isset($_GET['delete'])) {
@@ -218,13 +229,15 @@ try {
                                             <span class="menu-title"><?= $kat['nama_kategori'] ?></span>
                                             <button class="btn btn-info btn-sm edit-category float-end"
                                                 data-bs-toggle="modal" data-bs-target="#editCategoryModal"
-                                                data-id="<?= $kat['id'] ?>" data-name="<?= $kat['nama_kategori'] ?>"
-                                                data-icon="<?= $kat['icon'] ?>"><i
-                                                    class="bi bi-pencil-square"></i></button>
+                                                data-id_kategori="<?= $kat['id'] ?>" data-name="<?= $kat['nama_kategori'] ?>"
+                                                data-icon="<?= $kat['icon'] ?>"><i class="bi bi-pencil-square"></i>
+                                            </button>
+
                                             <a href="?delete=<?= $kat['id'] ?>"
                                                 class="btn btn-danger btn-sm float-end mx-1"
-                                                onclick="return confirm('Hapus kategori ini?')"><i
-                                                    class="bi bi-trash"></i></a>
+                                                onclick="return confirm('Hapus kategori ini?')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
                                         </div>
                                         <ol class="dd-list">
                                             <?php
@@ -237,14 +250,15 @@ try {
                                                     <span class="menu-title"><?= $subkat['nama_kategori'] ?></span>
                                                     <button class="btn btn-info btn-sm edit-category float-end"
                                                         data-bs-toggle="modal" data-bs-target="#editCategoryModal"
-                                                        data-id="<?= $subkat['id'] ?>"
+                                                        data-id_kategori="<?= $subkat['id'] ?>"
                                                         data-name="<?= $subkat['nama_kategori'] ?>"
-                                                        data-icon="<?= $subkat['icon'] ?>"><i
-                                                            class="bi bi-pencil-square"></i></button>
+                                                        data-icon="<?= $subkat['icon'] ?>"><i class="bi bi-pencil-square"></i>
+                                                    </button>
                                                     <a href="?delete=<?= $subkat['id'] ?>"
                                                         class="btn btn-danger btn-sm float-end mx-1"
-                                                        onclick="return confirm('Hapus subkategori ini?')"><i
-                                                            class="bi bi-trash"></i></a>
+                                                        onclick="return confirm('Hapus subkategori ini?')">
+                                                        <i class="bi bi-trash"></i>
+                                                    </a>
                                                 </div>
                                             </li>
                                             <?php endforeach; ?>
@@ -263,6 +277,7 @@ try {
                     aria-hidden="true">
                     <div class="modal-dialog">
                         <form method="POST">
+                        <input type="hidden" name="action" value="create_category">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="addCategoryModalLabel">Tambah Kategori Baru</h5>
@@ -304,6 +319,7 @@ try {
                     aria-hidden="true">
                     <div class="modal-dialog">
                         <form method="POST">
+                        <input type="hidden" name="action" value="update_category">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="editCategoryModalLabel">Edit Kategori</h5>
@@ -318,8 +334,8 @@ try {
                                             name="nama_kategori" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="edit_icon" class="form-label">Icon</label>
-                                        <input type="text" class="form-control" id="edit_icon" name="icon">
+                                        <label for="edit_data_icon" class="form-label">Icon</label>
+                                        <input type="text" class="form-control" id="edit_data_icon" name="icon">
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -371,9 +387,17 @@ try {
                                                 data-judul="<?= $detail['judul'] ?>"
                                                 data-deskripsi="<?= $detail['deskripsi'] ?>"><i
                                                     class="bi bi-pencil-square"></i></button>
-                                            <a href="?delete_detail=<?= $detail['id'] ?>" class="btn btn-danger btn-sm"
+                                            <!-- <a href="?delete_detail=<?= $detail['id'] ?>" class="btn btn-danger btn-sm"
                                                 onclick="return confirm('Hapus detail kategori ini?')"><i
-                                                    class="bi bi-trash"></i></a>
+                                                    class="bi bi-trash"></i></a> -->
+                                            <button class="btn btn-danger btn-sm delete-detail" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#deleteDetailModal" 
+                                                data-id="<?= $detail['id'] ?>" 
+                                                data-judul="<?= $detail['judul'] ?>">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -467,6 +491,28 @@ try {
                     </div>
                 </div>
 
+                <!-- Modal Konfirmasi Hapus -->
+                <div class="modal fade" id="deleteDetailModal" tabindex="-1" aria-labelledby="deleteDetailModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteDetailModalLabel">Hapus Data</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="deleteForm" method="POST">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" id="delete-id" name="id">
+                                    <p>Apakah Anda yakin ingin menghapus <span id="detail-info"></span>? Tindakan ini tidak dapat dikembalikan.</p>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                <button type="submit" form="deleteForm" class="btn btn-danger">Hapus</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             </div>
         </div>
@@ -478,22 +524,27 @@ try {
 
 
 <script>
-// Mengisi Form Edit dengan Data dari Baris yang Dipilih
 document.addEventListener('DOMContentLoaded', function() {
+    // Mengisi Form Edit dengan Data dari Baris yang Dipilih
     // Menangani klik pada tombol edit kategori
-    document.querySelectorAll('.edit-kategori').forEach(function(button) {
+    document.querySelectorAll('.edit-category').forEach(function(button) {
         button.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            const nama_kategori = this.getAttribute('data-nama_kategori');
-            const keterangan = this.getAttribute('data-keterangan');
+            const id = this.getAttribute('data-id_kategori');
+            const nama_kategori = this.getAttribute('data-name');
+            const data_icon = this.getAttribute('data-icon');
 
-            // Mengisi form di modal dengan data dari baris tabel
-            document.getElementById('edit_id').value = id;
-            document.getElementById('edit_nama_kategori').value = nama_kategori;
-            document.getElementById('edit_keterangan').value = keterangan;
+            // Up modal's header.
+            const modalTitle = editCategoryModal.querySelector('.modal-title');
+            modalTitle.textContent = `Edit Kategori: ${nama_kategori}`;
+
+            // Memastikan elemen ada sebelum mengisi form
+            if (document.getElementById('edit_id') && document.getElementById('edit_nama_kategori') && document.getElementById('edit_data_icon')) {
+                document.getElementById('edit_id').value = id || '';
+                document.getElementById('edit_nama_kategori').value = nama_kategori || '';
+                document.getElementById('edit_data_icon').value = data_icon || '';
+            }
         });
     });
-
     // Menangani klik pada tombol edit detail kategori
     document.querySelectorAll('.edit-detail').forEach(function(button) {
         button.addEventListener('click', function() {
@@ -501,42 +552,71 @@ document.addEventListener('DOMContentLoaded', function() {
             const kategori_id = this.getAttribute('data-kategori');
             const judul = this.getAttribute('data-judul');
             const deskripsi = this.getAttribute('data-deskripsi');
+            
+            // Up modal's header.
+            const modalTitle = editDetailModal.querySelector('.modal-title');
+            modalTitle.textContent = `Edit Kategori: ${judul}`;
 
-            // Mengisi form di modal dengan data dari baris tabel
-            document.getElementById('edit_detail_id').value = id;
-            document.getElementById('edit_kategori_id').value = kategori_id;
-            document.getElementById('edit_judul').value = judul;
-            document.getElementById('edit_deskripsi').value = deskripsi;
+            // Memastikan elemen ada sebelum mengisi form
+            if (document.getElementById('edit_detail_id') && document.getElementById('edit_kategori_id') && document.getElementById('edit_judul') && document.getElementById('edit_deskripsi')) {
+                document.getElementById('edit_detail_id').value = id || '';
+                document.getElementById('edit_kategori_id').value = kategori_id || '';
+                document.getElementById('edit_judul').value = judul || '';
+                document.getElementById('edit_deskripsi').value = deskripsi || '';
+            }
         });
     });
-});
 
-// Menghapus Data dengan Konfirmasi
-document.addEventListener('DOMContentLoaded', function() {
+    // Menghapus Data dengan Konfirmasi
     // Konfirmasi penghapusan kategori
-    document.querySelectorAll('.delete-kategori').forEach(function(link) {
-        link.addEventListener('click', function(event) {
-            const confirmed = confirm('Apakah Anda yakin ingin menghapus kategori ini?');
-            if (!confirmed) {
-                event.preventDefault();
-            }
+    // document.querySelectorAll('.delete-kategori').forEach(function(link) {
+    //     link.addEventListener('click', function(event) {
+    //         const confirmed = confirm('Apakah Anda yakin ingin menghapus kategori ini?');
+    //         if (!confirmed) {
+    //             event.preventDefault();
+    //         }
+    //     });
+    // });
+    document.querySelectorAll('.delete-kategori').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const judul = this.getAttribute('data-judul');
+            
+            // Up modal's header.
+            const modalTitle = deleteDetailModal.querySelector('.modal-title');
+            modalTitle.textContent = `Delete Detail Kategori: ${judul}`;
+
+                console.log(
+                   `ID: ${id}, Judul: ${judul}`
+                );
+
+            // Mengisi form dengan id yang akan dihapus
+            const form = deleteModal.querySelector('#deleteForm');
+            form.querySelector('#delete-id').value = id;
         });
     });
-
     // Konfirmasi penghapusan detail kategori
-    document.querySelectorAll('.delete-detail').forEach(function(link) {
-        link.addEventListener('click', function(event) {
-            const confirmed = confirm(
-                'Apakah Anda yakin ingin menghapus detail kategori ini?');
-            if (!confirmed) {
-                event.preventDefault();
-            }
+    // const deleteModal = document.getElementById('deleteDetailModal'); 
+    document.querySelectorAll('.delete-detail').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const judul = this.getAttribute('data-judul');
+            
+            // Up modal's header.
+            const modalTitle = deleteDetailModal.querySelector('.modal-title');
+            modalTitle.textContent = `Delete Detail Kategori: ${judul}`;
+
+                console.log(
+                   `ID: ${id}, Judul: ${judul}`
+                );
+
+            // Mengisi form dengan id yang akan dihapus
+            const form = deleteModal.querySelector('#deleteForm');
+            form.querySelector('#delete-id').value = id;
         });
     });
-});
 
-// Menampilkan Modal Tambah dan Reset Form
-document.addEventListener('DOMContentLoaded', function() {
+    // Menampilkan Modal Tambah dan Reset Form
     // Reset form modal tambah kategori
     const addCategoryButton = document.getElementById('add-category');
     if (addCategoryButton) {
@@ -547,7 +627,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
     // Reset form modal tambah detail
     const addDetailButton = document.getElementById('add-detail');
     if (addDetailButton) {
