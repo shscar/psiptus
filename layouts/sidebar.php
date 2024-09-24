@@ -13,7 +13,7 @@ $dropdownRoutes = [
         '/pendapatan/tagihan-lain-siswa',
         '/pendapatan/pemasukan-bos'
     ],
-    'sid-03' => ['/pengeluaran/kategori-pengeluaran'],
+    'sid-03' => ['/pengeluaran/kategori-pengeluaran', '/pengeluaran/detail-pengeluaran'],
 ];
 
 $activeDropdown = null;
@@ -171,11 +171,18 @@ foreach ($dropdownRoutes as $key => $routes) {
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="/pengeluaran/detail-pengeluaran"
+                                class="nav-link <?php echo isActive('/pengeluaran/detail-pengeluaran', $requestUri); ?>">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Detail Pengeluaran</p>
+                            </a>
+                        </li>
+                        <!-- <li class="nav-item">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon bi bi-cart3"></i>
                                 <p>Belanja</p>
                             </a>
-                        </li>
+                        </li> -->
                         <li class="nav-item">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon bi bi-circle"></i>

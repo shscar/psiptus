@@ -31,7 +31,7 @@ $routes = [
 
     // pengeluaran
     '/pengeluaran/kategori-pengeluaran' => '/finances/outlays/expens_category.php',
-    '/pengeluaran/pengeluaran' => '/finances/outlays/expends.php',
+    '/pengeluaran/detail-pengeluaran' => '/finances/outlays/expends.php',
 
 ];
 

@@ -22,9 +22,9 @@ class PengeluaranDanaSeeder extends AbstractSeed
                 'tanggal_pengeluaran' => '2024-09-01',
                 'bukti_pengeluaran' => 'bukti_pengeluaran1.jpg',
                 'pihak_terlibat' => 'Supplier Alat Tulis',
-                'detail_kategori_pengeluaran_id' => 1, // Sesuaikan dengan ID yang valid dari tabel detail_kategori_pengeluaran
+                'detail_kategori_pengeluaran_id' => 1,
                 'sumber_dana' => 'Dana Sekolah',
-                'jenis_bayar' => 1, // 1: Tunai, 2: Transfer, 3: Lainnya
+                'jenis_bayar' => 1,
                 'total_jumlah' => 1500000.00,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
@@ -33,20 +33,20 @@ class PengeluaranDanaSeeder extends AbstractSeed
                 'tanggal_pengeluaran' => '2024-09-10',
                 'bukti_pengeluaran' => 'bukti_pengeluaran2.pdf',
                 'pihak_terlibat' => 'CV Jasa Listrik',
-                'detail_kategori_pengeluaran_id' => 2, // Sesuaikan dengan ID yang valid dari tabel detail_kategori_pengeluaran
+                'detail_kategori_pengeluaran_id' => 2,
                 'sumber_dana' => 'Donasi Alumni',
-                'jenis_bayar' => 2, // 1: Tunai, 2: Transfer, 3: Lainnya
+                'jenis_bayar' => 2,
                 'total_jumlah' => 5000000.00,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ],
             [
                 'tanggal_pengeluaran' => '2024-09-15',
-                'bukti_pengeluaran' => null, // Tidak ada bukti pengeluaran
+                'bukti_pengeluaran' => null,
                 'pihak_terlibat' => 'Toko Perlengkapan Gedung',
-                'detail_kategori_pengeluaran_id' => 3, // Sesuaikan dengan ID yang valid dari tabel detail_kategori_pengeluaran
+                'detail_kategori_pengeluaran_id' => 3,
                 'sumber_dana' => 'Dana Pemerintah',
-                'jenis_bayar' => 3, // 1: Tunai, 2: Transfer, 3: Lainnya
+                'jenis_bayar' => 3,
                 'total_jumlah' => 10000000.00,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
@@ -58,16 +58,16 @@ class PengeluaranDanaSeeder extends AbstractSeed
 
         // Data untuk tabel item_pengeluaran_dana
         $itemPengeluaranDanaData = [];
-        $pengeluaranIds = [1, 2, 3]; // Asumsi ID yang valid dari tabel pengeluaran_dana
+        $pengeluaranIds = [1, 2, 3];
 
         foreach ($pengeluaranIds as $id) {
             for ($i = 1; $i <= 5; $i++) {
                 $itemPengeluaranDanaData[] = [
-                    'pengeluaran_id' => $id, // Sesuaikan dengan ID pengeluaran_dana yang valid
-                    'nama_pengeluaran' => "Item Pengeluaran $i untuk Pengeluaran $id",
-                    'keterangan' => "Keterangan pengeluaran $i untuk pengeluaran $id",
-                    'jumlah_barang' => rand(1, 10),
-                    'nilai_bayar' => rand(100000, 500000) / 100, // Nilai acak antara 1000 dan 5000
+                    'pengeluaran_id' => $id,
+                    'nama_pengeluaran' => "Item $i untuk Pengeluaran $id",
+                    'keterangan' => "Keterangan pengeluaran item $i untuk pengeluaran $id",
+                    'jumlah_barang' => rand(1, 30),
+                    'nilai_bayar' => rand(100000, 2500000) / 100,
                     'created_at' => date('Y-m-d H:i:s'),
                     'updated_at' => date('Y-m-d H:i:s'),
                 ];
