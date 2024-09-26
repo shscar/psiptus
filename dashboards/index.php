@@ -2,6 +2,25 @@
 
 // $content = __DIR__ . '/index_content.php';
 include __DIR__ . '/../layouts/master.php';
+$db = Database::getInstance()->getConnection();
+
+// menghitung total julah siswa
+$stmt = $db->prepare("SELECT COUNT(*) AS total FROM siswa");
+$stmt->execute();
+$result = $stmt->fetch(PDO::FETCH_ASSOC);
+$totalSiswa = $result['total'];
+
+// menghitung jumlah dana bos yang masuk
+$stmt = $db->prepare("SELECT SUM(nominal) AS total_nominal FROM pemasukan_dana_bos");
+$stmt->execute();
+$total = $stmt->fetchColumn();
+
+// menghitung total dari total_jumlah
+$stmt = $db->query("SELECT SUM(total_jumlah) AS total FROM pengeluaran_dana");
+$result = $stmt->fetch(PDO::FETCH_ASSOC);
+$totalJumlah = $result['total'] ? $result['total'] : 0;
+
+
 ?>
 
 <!-- apexcharts -->
@@ -39,8 +58,8 @@ include __DIR__ . '/../layouts/master.php';
                 <div class="col-lg-3 col-6">
                     <div class="small-box text-bg-primary">
                         <div class="inner">
-                            <h3>150</h3>
-                            <p>New Orders</p>
+                            <h3>Rp <?php echo number_format($totalJumlah, 2, ',', '.'); ?></h3>
+                            <p>Total Pengeluaran</p>
                         </div>
                         <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -55,11 +74,12 @@ include __DIR__ . '/../layouts/master.php';
                     </div>
                 </div>
                 <div class="col-lg-3 col-6">
-                    <!--begin::Small Box Widget 2-->
                     <div class="small-box text-bg-success">
                         <div class="inner">
-                            <h3>53<sup class="fs-5">%</sup></h3>
-                            <p>Bounce Rate</p>
+                            <h3>Rp. <?php echo number_format($total, 2, ',', '.'); ?>
+                                <!-- <sup class="fs-5">%</sup> -->
+                            </h3>
+                            <p>Pemasukan Dana BOS</p>
                         </div>
                         <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -72,15 +92,13 @@ include __DIR__ . '/../layouts/master.php';
                             More info <i class="bi bi-link-45deg"></i>
                         </a>
                     </div>
-                    <!--end::Small Box Widget 2-->
                 </div>
                 <!--end::Col-->
                 <div class="col-lg-3 col-6">
-                    <!--begin::Small Box Widget 3-->
                     <div class="small-box text-bg-warning">
                         <div class="inner">
-                            <h3>44</h3>
-                            <p>User Registrations</p>
+                            <h3><?php echo $totalSiswa; ?></h3>
+                            <p>Total Siswa/i</p>
                         </div>
                         <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -93,14 +111,12 @@ include __DIR__ . '/../layouts/master.php';
                             More info <i class="bi bi-link-45deg"></i>
                         </a>
                     </div>
-                    <!--end::Small Box Widget 3-->
                 </div>
                 <!--end::Col-->
                 <div class="col-lg-3 col-6">
-                    <!--begin::Small Box Widget 4-->
                     <div class="small-box text-bg-danger">
                         <div class="inner">
-                            <h3>65</h3>
+                            <h3>Rp 1.500.000,00</h3>
                             <p>Unique Visitors</p>
                         </div>
                         <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
@@ -117,7 +133,6 @@ include __DIR__ . '/../layouts/master.php';
                             More info <i class="bi bi-link-45deg"></i>
                         </a>
                     </div>
-                    <!--end::Small Box Widget 4-->
                 </div>
             </div>
             <!--end::Row-->
