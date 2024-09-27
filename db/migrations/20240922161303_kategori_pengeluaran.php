@@ -21,7 +21,6 @@ final class KategoriPengeluaran extends AbstractMigration
     {
         $table = $this->table('kategori_pengeluaran');
         $table->addColumn('nama_kategori', 'string', ['limit' => 100, 'null' => false])
-            ->addColumn('parent_id', 'integer', ['null' => true, 'default' => null])
             ->addColumn('icon', 'string', ['limit' => 50, 'default' => 'bi-folder'])
             ->addTimestamps()
             ->create();

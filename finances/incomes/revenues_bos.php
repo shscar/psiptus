@@ -1,8 +1,3 @@
-<!-- DataTables CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" />
-<!-- DataTables Buttons CSS (Opsional, jika menggunakan tombol) -->
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css" />
-
 <?php
 // Memulai output buffering
 ob_start();
@@ -199,53 +194,53 @@ ob_end_flush();
                     <div class="row">
                         <div class="col-md-12">
                             <?php if (!empty($results)): ?>
-                            <table id="datatable" class="table table-striped table-bordered pt-3">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Tanggal</th>
-                                        <th>Deskripsi</th>
-                                        <th>Nominal</th>
-                                        <th>Sumber Dana</th>
-                                        <th>Tahun Ajaran</th>
-                                        <th>Keterangan</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($results as $index => $row): ?>
-                                    <tr>
-                                        <td><?= $index + 1; ?></td>
-                                        <td><?= htmlspecialchars(string: date('d-m-Y', strtotime($row['tanggal']))); ?>
-                                        </td>
-                                        <td><?= $row['deskripsi'] ?? '-'; ?></td>
-                                        <td><?= number_format($row['nominal'], 2, ',', '.'); ?></td>
-                                        <td><?= $row['sumber_dana']; ?></td>
-                                        <td><?= $row['tahun_ajaran'] ?? '-'; ?></td>
-                                        <td><?= $row['keterangan'] ?? '-'; ?></td>
-                                        <td class="text-center">
-                                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#editModal" data-id="<?= $row['id']; ?>"
-                                                data-tanggal="<?= $row['tanggal']; ?>"
-                                                data-deskripsi="<?= htmlspecialchars($row['deskripsi']); ?>"
-                                                data-nominal="<?= $row['nominal']; ?>"
-                                                data-sumber_dana="<?= htmlspecialchars($row['sumber_dana']); ?>"
-                                                data-tahun_ajaran_id="<?= $row['tahun_ajaran_id'] ?? '-'; ?>"
-                                                data-keterangan="<?= htmlspecialchars($row['keterangan'] ?? '-'); ?>">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#deleteModal" data-id="<?= $row['id']; ?>"
-                                                data-deskripsi="<?= htmlspecialchars($row['deskripsi']); ?>">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                                <table id="datatable" class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Tanggal</th>
+                                            <th>Deskripsi</th>
+                                            <th>Nominal</th>
+                                            <th>Sumber Dana</th>
+                                            <th>Tahun Ajaran</th>
+                                            <th>Keterangan</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($results as $index => $row): ?>
+                                            <tr>
+                                                <td><?= $index + 1; ?></td>
+                                                <td><?= htmlspecialchars(string: date('d-m-Y', strtotime($row['tanggal']))); ?>
+                                                </td>
+                                                <td><?= $row['deskripsi'] ?? '-'; ?></td>
+                                                <td><?= number_format($row['nominal'], 2, ',', '.'); ?></td>
+                                                <td><?= $row['sumber_dana']; ?></td>
+                                                <td><?= $row['tahun_ajaran'] ?? '-'; ?></td>
+                                                <td><?= $row['keterangan'] ?? '-'; ?></td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                                        data-bs-target="#editModal" data-id="<?= $row['id']; ?>"
+                                                        data-tanggal="<?= $row['tanggal']; ?>"
+                                                        data-deskripsi="<?= htmlspecialchars($row['deskripsi']); ?>"
+                                                        data-nominal="<?= $row['nominal']; ?>"
+                                                        data-sumber_dana="<?= htmlspecialchars($row['sumber_dana']); ?>"
+                                                        data-tahun_ajaran_id="<?= $row['tahun_ajaran_id'] ?? '-'; ?>"
+                                                        data-keterangan="<?= htmlspecialchars($row['keterangan'] ?? '-'); ?>">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                                        data-bs-target="#deleteModal" data-id="<?= $row['id']; ?>"
+                                                        data-deskripsi="<?= htmlspecialchars($row['deskripsi']); ?>">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
                             <?php else: ?>
-                            <p>No data available.</p>
+                                <p>No data available.</p>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -292,9 +287,9 @@ ob_end_flush();
                                     <select class="form-select" id="tahun_ajaran_id" name="tahun_ajaran_id">
                                         <option value="">Pilih Tahun Ajaran</option>
                                         <?php foreach ($tahun_ajaran as $ta): ?>
-                                        <option value="<?php echo htmlspecialchars($ta['id']); ?>">
-                                            <?php echo htmlspecialchars($ta['tahun']); ?>
-                                        </option>
+                                            <option value="<?php echo htmlspecialchars($ta['id']); ?>">
+                                                <?php echo htmlspecialchars($ta['tahun']); ?>
+                                            </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -355,9 +350,9 @@ ob_end_flush();
                                     <select class="form-select" id="edit_tahun_ajaran_id" name="tahun_ajaran_id">
                                         <option value="">Pilih Tahun Ajaran</option>
                                         <?php foreach ($tahun_ajaran as $ta): ?>
-                                        <option value="<?php echo htmlspecialchars($ta['id']); ?>">
-                                            <?php echo htmlspecialchars($ta['tahun']); ?>
-                                        </option>
+                                            <option value="<?php echo htmlspecialchars($ta['id']); ?>">
+                                                <?php echo htmlspecialchars($ta['tahun']); ?>
+                                            </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -414,63 +409,74 @@ ob_end_flush();
 
 <!-- Inisialisasi DataTables -->
 <script>
-$(document).ready(function() {
-    $('#datatable').dataTable();
-    $("[data-toggle=tooltip]").tooltip();
-
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-
-    // Handling Update
-    const editModal = document.getElementById('editModal');
-    if (editModal) {
-        editModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-
-            // Mengambil nilai dari tombol yang ditekan
-            const id = button.getAttribute('data-id');
-            const tanggal = button.getAttribute('data-tanggal');
-            const deskripsi = button.getAttribute('data-deskripsi');
-            const nominal = button.getAttribute('data-nominal');
-            const sumber_dana = button.getAttribute('data-sumber_dana');
-            const tahun_ajaran_id = button.getAttribute('data-tahun_ajaran_id');
-            const keterangan = button.getAttribute('data-keterangan');
-
-            // Update the modal's content.
-            const modalTitle = editModal.querySelector('.modal-title');
-            modalTitle.textContent = `Edit Pemasukan Dana BOS : ${deskripsi}`;
-
-            // Mengisi modal form dengan data yang didapat
-            document.getElementById('edit_id').value = id;
-            document.getElementById('edit_tanggal').value = tanggal;
-            document.getElementById('edit_deskripsi').value = deskripsi;
-            document.getElementById('edit_nominal').value = nominal;
-            document.getElementById('edit_sumber_dana').value = sumber_dana;
-            document.getElementById('edit_keterangan').value = keterangan;
-            document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;
-
+    $(document).ready(function () {
+        $('#datatable').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true
         });
-    }
+    });
 
-    // Handling Delete
-    const deleteModal = document.getElementById('deleteModal');
-    if (deleteModal) {
-        deleteModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
+    document.addEventListener('DOMContentLoaded', function () {
 
-            const id = button.getAttribute('data-id');
-            const deskripsi = button.getAttribute('data-deskripsi');
+        // Handling Update
+        const editModal = document.getElementById('editModal');
+        if (editModal) {
+            editModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
 
-            // Update the modal's content.
-            const modalTitle = deleteModal.querySelector('.modal-title');
-            modalTitle.textContent = `Edit Pemasukan Dana BOS : ${deskripsi}`;
+                // Mengambil nilai dari tombol yang ditekan
+                const id = button.getAttribute('data-id');
+                const tanggal = button.getAttribute('data-tanggal');
+                const deskripsi = button.getAttribute('data-deskripsi');
+                const nominal = button.getAttribute('data-nominal');
+                const sumber_dana = button.getAttribute('data-sumber_dana');
+                const tahun_ajaran_id = button.getAttribute('data-tahun_ajaran_id');
+                const keterangan = button.getAttribute('data-keterangan');
 
-            // Populate the form with the id
-            const form = deleteModal.querySelector('#deleteForm');
-            form.querySelector('#delete-id').value = id;
-        });
-    }
+                // Update the modal's content.
+                const modalTitle = editModal.querySelector('.modal-title');
+                modalTitle.textContent = `Edit Pemasukan Dana BOS : ${deskripsi}`;
 
-})
+                // Mengisi modal form dengan data yang didapat
+                document.getElementById('edit_id').value = id;
+                document.getElementById('edit_tanggal').value = tanggal;
+                document.getElementById('edit_deskripsi').value = deskripsi;
+                document.getElementById('edit_nominal').value = nominal;
+                document.getElementById('edit_sumber_dana').value = sumber_dana;
+                document.getElementById('edit_keterangan').value = keterangan;
+                document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;
+
+            });
+        }
+
+        // Handling Delete
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+
+                const id = button.getAttribute('data-id');
+                const deskripsi = button.getAttribute('data-deskripsi');
+
+                // Update the modal's content.
+                const modalTitle = deleteModal.querySelector('.modal-title');
+                modalTitle.textContent = `Edit Pemasukan Dana BOS : ${deskripsi}`;
+
+                // Populate the form with the id
+                const form = deleteModal.querySelector('#deleteForm');
+                form.querySelector('#delete-id').value = id;
+            });
+        }
+
+    })
 </script>
+
+<!-- DataTables CSS/JS Dependencies -->
+<link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>

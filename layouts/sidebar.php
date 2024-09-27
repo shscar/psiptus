@@ -9,6 +9,7 @@
 $dropdownRoutes = [
     'sid-01' => ['/siswa', '/tahun-ajaran', '/kelas', '/tingkat-kelas'],
     'sid-02' => [
+        '/pendapatan/pembayaran-siswa',
         '/pendapatan/tagihan-spp-siswa',
         '/pendapatan/tagihan-lain-siswa',
         '/pendapatan/pemasukan-bos'
@@ -39,12 +40,11 @@ foreach ($dropdownRoutes as $key => $routes) {
     <div class="sidebar-wrapper">
         <nav class="mt-2">
             <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
-                <li class="nav-item menu-open">
-                    <a href="/dashboard" class="nav-link  <?php echo isActive('/dashboard', $requestUri); ?>">
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link <?php echo isActive('/dashboard', $requestUri); ?>">
                         <i class="nav-icon bi bi-speedometer"></i>
                         <p>Dashboard</p>
                     </a>
-                    <ul class="nav nav-treeview"></ul>
                 </li>
                 <li class="nav-item">
                     <a href="/guru-staff" class="nav-link <?php echo isActive('/guru-staff', $requestUri); ?>">
@@ -115,7 +115,8 @@ foreach ($dropdownRoutes as $key => $routes) {
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="/pendapatan/pembayaran-siswa"
+                                class="nav-link <?php echo isActive('/pendapatan/tagihan-lain-siswa', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Pembayaran Siswa</p>
                             </a>

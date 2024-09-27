@@ -19,21 +19,18 @@ class KategoriPengeluaranSeeder extends AbstractSeed
         $data = [
             [
                 'nama_kategori' => 'Pengeluaran Operasional',
-                'parent_id' => null,
                 'icon' => 'bi-gear',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ],
             [
                 'nama_kategori' => 'Biaya Listrik',
-                'parent_id' => null,
                 'icon' => 'bi-lightning',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ],
             [
                 'nama_kategori' => 'Biaya Perawatan Gedung',
-                'parent_id' => null,
                 'icon' => 'bi-building',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),

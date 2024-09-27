@@ -1,9 +1,3 @@
-<!-- DataTables CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" />
-
-<!-- DataTables Buttons CSS (Opsional, jika menggunakan tombol) -->
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css" />
-
 <?php
 include __DIR__ . '/../../layouts/master.php';
 $db = Database::getInstance()->getConnection();
@@ -133,51 +127,51 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="row">
                         <div class="col-md-12">
                             <?php if (!empty($results)): ?>
-                                <table id="datatable" class="table table-striped table-bordered pt-3">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>Gedung</th>
-                                            <th>Kelas</th>
-                                            <th>Wakel</th>
-                                            <th>Jumlah Siswa/i</th>
-                                            <th>Jurusan</th>
-                                            <th>Tahun Ajaran</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($results as $index => $row): ?>
-                                            <tr>
-                                                <td><?= $row['gedung'] ?? '-'; ?></td>
-                                                <!-- test 2 table -->
-                                                <!-- <td><?= $row['tingkat'] . ' ' . $row['nama_kelas'] ?? '-'; ?></td> -->
+                            <table id="datatable" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Gedung</th>
+                                        <th>Kelas</th>
+                                        <th>Wakel</th>
+                                        <th>Jumlah Siswa/i</th>
+                                        <th>Jurusan</th>
+                                        <th>Tahun Ajaran</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($results as $index => $row): ?>
+                                    <tr>
+                                        <td><?= $row['gedung'] ?? '-'; ?></td>
+                                        <!-- test 2 table -->
+                                        <!-- <td><?= $row['tingkat'] . ' ' . $row['nama_kelas'] ?? '-'; ?></td> -->
 
-                                                <td><?= $row['nama_kelas'] ?? '-'; ?></td>
-                                                <td><?= $row['guru_staff'] ?? '-'; ?></td>
-                                                <td><?= $row['jumlah_siswa'] ?? '-'; ?></td>
-                                                <td><?= $row['jurusan'] ?? '-'; ?></td>
-                                                <td><?= $row['tahun_ajaran'] ?? '-'; ?></td>
-                                                <td class="text-center">
-                                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                                        data-bs-target="#editModal" data-id="<?= $row['id'] ?? '-'; ?>"
-                                                        data-nama_kelas="<?= $row['nama_kelas'] ?? '-'; ?>"
-                                                        data-jurusan="<?= $row['jurusan'] ?? '-'; ?>"
-                                                        data-jumlah_siswa="<?= $row['jumlah_siswa'] ?? '-'; ?>"
-                                                        data-gedung="<?= $row['gedung'] ?? '-'; ?>"
-                                                        data-keterangan="<?= $row['keterangan'] ?? '-'; ?>">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                        data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?? '-'; ?>">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
+                                        <td><?= $row['nama_kelas'] ?? '-'; ?></td>
+                                        <td><?= $row['guru_staff'] ?? '-'; ?></td>
+                                        <td><?= $row['jumlah_siswa'] ?? '-'; ?></td>
+                                        <td><?= $row['jurusan'] ?? '-'; ?></td>
+                                        <td><?= $row['tahun_ajaran'] ?? '-'; ?></td>
+                                        <td class="text-center">
+                                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#editModal" data-id="<?= $row['id'] ?? '-'; ?>"
+                                                data-nama_kelas="<?= $row['nama_kelas'] ?? '-'; ?>"
+                                                data-jurusan="<?= $row['jurusan'] ?? '-'; ?>"
+                                                data-jumlah_siswa="<?= $row['jumlah_siswa'] ?? '-'; ?>"
+                                                data-gedung="<?= $row['gedung'] ?? '-'; ?>"
+                                                data-keterangan="<?= $row['keterangan'] ?? '-'; ?>">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?? '-'; ?>">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
                             <?php else: ?>
-                                <p>No data available.</p>
+                            <p>No data available.</p>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -211,9 +205,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <select class="form-select" id="tingkat_kelas_id" name="tingkat_kelas_id" required>
                                         <option value="">Pilih Tingkat Kelas</option>
                                         <?php foreach ($tingkat_kelas as $tk): ?>
-                                            <option value="<?php echo $tk['id']; ?>">
-                                                <?php echo $tk['tingkat'] . ' - ' . $tk['tahun']; ?>
-                                            </option>
+                                        <option value="<?php echo $tk['id']; ?>">
+                                            <?php echo $tk['tingkat'] . ' - ' . $tk['tahun']; ?>
+                                        </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -222,9 +216,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <select class="form-select" id="wali_kelas_id" name="wali_kelas_id">
                                         <option value="">Pilih Wali Kelas</option>
                                         <?php foreach ($guru_staff as $guru): ?>
-                                            <option value="<?php echo $guru['id']; ?>">
-                                                <?php echo $guru['nama_lengkap'] . ' (' . $guru['nip'] . ')'; ?>
-                                            </option>
+                                        <option value="<?php echo $guru['id']; ?>">
+                                            <?php echo $guru['nama_lengkap'] . ' (' . $guru['nip'] . ')'; ?>
+                                        </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -280,44 +274,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </main>
 <!--end::App Main-->
 
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-<!-- DataTables Buttons JS (Opsional, jika menggunakan tombol) -->
-<script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
-
 <!-- Inisialisasi DataTables -->
 <script>
-    $(document).ready(function () {
-        $('#datatable').dataTable();
-
-        $("[data-toggle=tooltip]").tooltip();
-
+$(document).ready(function() {
+    $('#datatable').DataTable({
+        "paging": true,
+        "lengthChange": true,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "autoWidth": false,
+        "responsive": true
     });
+});
 
-    // Edit Modal
-    const editModal = document.getElementById('editModal')
-    if (editModal) {
-        editModal.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget
-            const recipient = button.getAttribute('data-bs-whatever')
-            const modalTitle = editModal.querySelector('.modal-title')
-            const modalBodyInput = editModal.querySelector('.modal-body input')
+// Edit Modal
+const editModal = document.getElementById('editModal')
+if (editModal) {
+    editModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const recipient = button.getAttribute('data-bs-whatever')
+        const modalTitle = editModal.querySelector('.modal-title')
+        const modalBodyInput = editModal.querySelector('.modal-body input')
 
-            modalTitle.textContent = `Edit data for ${recipient}`
-            modalBodyInput.value = recipient
-        })
-    }
+        modalTitle.textContent = `Edit data for ${recipient}`
+        modalBodyInput.value = recipient
+    })
+}
 
-    // Delete Modal
-    const deleteModal = document.getElementById('deleteModal')
-    if (deleteModal) {
-        deleteModal.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget
-            const recipient = button.getAttribute('data-bs-whatever')
-            const modalTitle = deleteModal.querySelector('.modal-title')
+// Delete Modal
+const deleteModal = document.getElementById('deleteModal')
+if (deleteModal) {
+    deleteModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const recipient = button.getAttribute('data-bs-whatever')
+        const modalTitle = deleteModal.querySelector('.modal-title')
 
-            modalTitle.textContent = `Hapus data untuk ${recipient}`
-        })
-    }
+        modalTitle.textContent = `Hapus data untuk ${recipient}`
+    })
+}
 </script>
+
+<!-- DataTables CSS/JS Dependencies -->
+<link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>

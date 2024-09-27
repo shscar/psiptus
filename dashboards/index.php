@@ -54,104 +54,254 @@ $totalJumlah = $result['total'] ? $result['total'] : 0;
     <!--begin::App Content-->
     <div class="app-content">
         <div class="container-fluid">
+
             <div class="row">
-                <div class="col-lg-3 col-6">
-                    <div class="small-box text-bg-primary">
-                        <div class="inner">
-                            <h3>Rp <?php echo number_format($totalJumlah, 2, ',', '.'); ?></h3>
-                            <p>Total Pengeluaran</p>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon text-bg-primary shadow-sm">
+                            <i class="bi bi-gear-fill"></i>
+                        </span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Traffic</span>
+                            <span class="info-box-number">
+                                10
+                                <small>%</small>
+                            </span>
                         </div>
-                        <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path
-                                d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z">
-                            </path>
-                        </svg>
-                        <a href="#"
-                            class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
-                            More info <i class="bi bi-link-45deg"></i>
-                        </a>
                     </div>
                 </div>
-                <div class="col-lg-3 col-6">
-                    <div class="small-box text-bg-success">
-                        <div class="inner">
-                            <h3>Rp. <?php echo number_format($total, 2, ',', '.'); ?>
-                                <!-- <sup class="fs-5">%</sup> -->
-                            </h3>
-                            <p>Pemasukan Dana BOS</p>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon text-bg-success shadow-sm">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Pemasukan D</span>
+                            <span class="info-box-number">
+                                Rp. <?php echo number_format($total, 2, ',', '.'); ?>
+                            </span>
                         </div>
-                        <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path
-                                d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z">
-                            </path>
-                        </svg>
-                        <a href="#"
-                            class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
-                            More info <i class="bi bi-link-45deg"></i>
-                        </a>
                     </div>
                 </div>
-                <!--end::Col-->
-                <div class="col-lg-3 col-6">
-                    <div class="small-box text-bg-warning">
-                        <div class="inner">
-                            <h3><?php echo $totalSiswa; ?></h3>
-                            <p>Total Siswa/i</p>
+                <!-- fix for small devices only -->
+                <!-- <div class="clearfix hidden-md-up"></div> -->
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon text-bg-danger shadow-sm">
+                            <i class="bi bi-cart-fill"></i>
+                        </span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Belanja/Pengeluaran</span>
+                            <span class="info-box-number">
+                                Rp <?php echo number_format($totalJumlah, 2, ',', '.'); ?>
+                            </span>
                         </div>
-                        <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path
-                                d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM19.75 7.5a.75.75 0 00-1.5 0v2.25H16a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H22a.75.75 0 000-1.5h-2.25V7.5z">
-                            </path>
-                        </svg>
-                        <a href="#"
-                            class="small-box-footer link-dark link-underline-opacity-0 link-underline-opacity-50-hover">
-                            More info <i class="bi bi-link-45deg"></i>
-                        </a>
                     </div>
                 </div>
-                <!--end::Col-->
-                <div class="col-lg-3 col-6">
-                    <div class="small-box text-bg-danger">
-                        <div class="inner">
-                            <h3>Rp 1.500.000,00</h3>
-                            <p>Unique Visitors</p>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon text-bg-warning shadow-sm">
+                            <i class="bi bi-people-fill"></i>
+                        </span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Members</span>
+                            <span class="info-box-number">
+                                <?php echo $totalSiswa; ?>
+                            </span>
                         </div>
-                        <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path clip-rule="evenodd" fill-rule="evenodd"
-                                d="M2.25 13.5a8.25 8.25 0 018.25-8.25.75.75 0 01.75.75v6.75H18a.75.75 0 01.75.75 8.25 8.25 0 01-16.5 0z">
-                            </path>
-                            <path clip-rule="evenodd" fill-rule="evenodd"
-                                d="M12.75 3a.75.75 0 01.75-.75 8.25 8.25 0 018.25 8.25.75.75 0 01-.75.75h-7.5a.75.75 0 01-.75-.75V3z">
-                            </path>
-                        </svg>
-                        <a href="#"
-                            class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
-                            More info <i class="bi bi-link-45deg"></i>
-                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!--begin::Row-->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card mb-4">
+
+                        <div class="card-header">
+                            <h5 class="card-title">Monthly Recap Report</h5>
+                            <div class="card-tools"> <button type="button" class="btn btn-tool"
+                                    data-lte-toggle="card-collapse"> <i data-lte-icon="expand"
+                                        class="bi bi-plus-lg"></i> <i data-lte-icon="collapse"
+                                        class="bi bi-dash-lg"></i> </button>
+                                <div class="btn-group"> <button type="button" class="btn btn-tool dropdown-toggle"
+                                        data-bs-toggle="dropdown"> <i class="bi bi-wrench"></i> </button>
+                                    <div class="dropdown-menu dropdown-menu-end" role="menu"> <a href="#"
+                                            class="dropdown-item">Action</a> <a href="#" class="dropdown-item">Another
+                                            action</a> <a href="#" class="dropdown-item">
+                                            Something else here
+                                        </a> <a class="dropdown-divider"></a> <a href="#"
+                                            class="dropdown-item">Separated link</a> </div>
+                                </div> <button type="button" class="btn btn-tool" data-lte-toggle="card-remove"> <i
+                                        class="bi bi-x-lg"></i> </button>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <p class="text-center"> <strong>Sales: 1 Jan, 2023 - 30 Jul, 2023</strong> </p>
+                                    <div id="sales-chart"></div>
+                                </div>
+                                <div class="col-md-3">
+                                    <p class="text-center"> <strong>Goal Completion</strong> </p>
+                                    <div class="progress-group">
+                                        Add Products to Cart
+                                        <span class="float-end"><b>160</b>/200</span>
+                                        <div class="progress progress-sm">
+                                            <div class="progress-bar text-bg-primary" style="width: 80%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="progress-group">
+                                        Complete Purchase
+                                        <span class="float-end"><b>310</b>/400</span>
+                                        <div class="progress progress-sm">
+                                            <div class="progress-bar text-bg-danger" style="width: 75%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="progress-group"> <span class="progress-text">Visit Premium Page</span>
+                                        <span class="float-end"><b>480</b>/800</span>
+                                        <div class="progress progress-sm">
+                                            <div class="progress-bar text-bg-success" style="width: 60%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="progress-group">
+                                        Send Inquiries
+                                        <span class="float-end"><b>250</b>/500</span>
+                                        <div class="progress progress-sm">
+                                            <div class="progress-bar text-bg-warning" style="width: 50%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <div class="row">
+                                <div class="col-md-3 col-6">
+                                    <div class="text-center border-end"> <span class="text-success"> <i
+                                                class="bi bi-caret-up-fill"></i> 17%
+                                        </span>
+                                        <h5 class="fw-bold mb-0">$35,210.43</h5> <span class="text-uppercase">TOTAL
+                                            REVENUE</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-6">
+                                    <div class="text-center border-end"> <span class="text-info"> <i
+                                                class="bi bi-caret-left-fill"></i> 0%
+                                        </span>
+                                        <h5 class="fw-bold mb-0">$10,390.90</h5> <span class="text-uppercase">TOTAL
+                                            COST</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-6">
+                                    <div class="text-center border-end"> <span class="text-success"> <i
+                                                class="bi bi-caret-up-fill"></i> 20%
+                                        </span>
+                                        <h5 class="fw-bold mb-0">$24,813.53</h5> <span class="text-uppercase">TOTAL
+                                            PROFIT</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-6">
+                                    <div class="text-center"> <span class="text-danger"> <i
+                                                class="bi bi-caret-down-fill"></i> 18%
+                                        </span>
+                                        <h5 class="fw-bold mb-0">1200</h5> <span class="text-uppercase">GOAL
+                                            COMPLETIONS</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div> <!-- /.col -->
+                <!-- </div> -->
+                <!--end::Row-->
+                <!--begin::Row-->
+                <!-- <div class="row"> -->
+                <div class="col-md-4">
+                    <!-- PRODUCT LIST -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recently</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-lte-toggle="card-collapse">
+                                    <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
+                                    <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
+                                </button>
+                                <button type="button" class="btn btn-tool" data-lte-toggle="card-remove">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="px-2">
+
+                                <div class="d-flex border-top py-2 px-1">
+                                    <div class="col-2"> <img src="../assets/img/default-150x150.png" alt="Product Image"
+                                            class="img-size-50"> </div>
+                                    <div class="col-10"> <a href="javascript:void(0)" class="fw-bold">
+                                            Samsung TV
+                                            <span class="badge text-bg-warning float-end">
+                                                $1800
+                                            </span> </a>
+                                        <div class="text-truncate">
+                                            Samsung 32" 1080p 60Hz LED Smart HDTV.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex border-top py-2 px-1">
+                                    <div class="col-2"> <img src="../assets/img/default-150x150.png" alt="Product Image"
+                                            class="img-size-50"> </div>
+                                    <div class="col-10"> <a href="javascript:void(0)" class="fw-bold">
+                                            Bicycle
+                                            <span class="badge text-bg-info float-end">
+                                                $700
+                                            </span> </a>
+                                        <div class="text-truncate">
+                                            26" Mongoose Dolomite Men's 7-speed, Navy Blue.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex border-top py-2 px-1">
+                                    <div class="col-2"> <img src="../assets/img/default-150x150.png" alt="Product Image"
+                                            class="img-size-50"> </div>
+                                    <div class="col-10"> <a href="javascript:void(0)" class="fw-bold">
+                                            Xbox One
+                                            <span class="badge text-bg-danger float-end">
+                                                $350
+                                            </span> </a>
+                                        <div class="text-truncate">
+                                            Xbox One Console Bundle with Halo Master Chief
+                                            Collection.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex border-top py-2 px-1">
+                                    <div class="col-2"> <img src="../assets/img/default-150x150.png" alt="Product Image"
+                                            class="img-size-50"> </div>
+                                    <div class="col-10"> <a href="javascript:void(0)" class="fw-bold">
+                                            PlayStation 4
+                                            <span class="badge text-bg-success float-end">
+                                                $399
+                                            </span> </a>
+                                        <div class="text-truncate">
+                                            PlayStation 4 500GB Console (PS4)
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="card-footer text-center">
+                            <a href="javascript:void(0)" class="uppercase">
+                                View All Products
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
             <!--end::Row-->
-            <!--begin::Row-->
-            <div class="row">
-                <!-- Start col -->
-                <div class="col-lg-7 connectedSortable">
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h3 class="card-title">Sales Value</h3>
-                        </div>
-                        <div class="card-body">
-                            <div id="revenue-chart"></div>
-                        </div>
-                    </div>
-                    <!-- /.card -->
-                </div>
-            </div>
-            <!-- /.row (main row) -->
         </div>
         <!--end::Container-->
     </div>
@@ -159,38 +309,11 @@ $totalJumlah = $result['total'] ? $result['total'] : 0;
 </main>
 <!--end::App Main-->
 
-
 <!-- OPTIONAL SCRIPTS -->
-<!-- sortablejs -->
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"
-    integrity="sha256-ipiJrswvAR4VAx/th+6zWsdeYmVae0iJuiR+6OqHJHQ=" crossorigin="anonymous"></script>
-<!-- sortablejs -->
-<script>
-    const connectedSortables =
-        document.querySelectorAll(".connectedSortable");
-    connectedSortables.forEach((connectedSortable) => {
-        let sortable = new Sortable(connectedSortable, {
-            group: "shared",
-            handle: ".card-header",
-        });
-    });
-
-    const cardHeaders = document.querySelectorAll(
-        ".connectedSortable .card-header"
-    );
-    cardHeaders.forEach((cardHeader) => {
-        cardHeader.style.cursor = "move";
-    });
-</script>
 <!-- apexcharts -->
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.37.1/dist/apexcharts.min.js"
     integrity="sha256-+vh8GkaU7C9/wbSLIcwq82tQ2wTf44aOHA8HlBMwRI8=" crossorigin="anonymous"></script>
-<!-- ChartJS -->
 <script>
-    // NOTICE!! DO NOT USE ANY OF THIS JAVASCRIPT
-    // IT'S ALL JUST JUNK FOR DEMO
-    // ++++++++++++++++++++++++++++++++++++++++++
-
     const sales_chart_options = {
         series: [{
             name: "Digital Goods",
@@ -202,7 +325,7 @@ $totalJumlah = $result['total'] ? $result['total'] : 0;
         },
         ],
         chart: {
-            height: 300,
+            height: 180,
             type: "area",
             toolbar: {
                 show: false,
@@ -238,124 +361,117 @@ $totalJumlah = $result['total'] ? $result['total'] : 0;
     };
 
     const sales_chart = new ApexCharts(
-        document.querySelector("#revenue-chart"),
-        sales_chart_options
+        document.querySelector("#sales-chart"),
+        sales_chart_options,
     );
     sales_chart.render();
-</script>
-<!-- jsvectormap -->
-<script src="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/js/jsvectormap.min.js"
-    integrity="sha256-/t1nN2956BT869E6H4V1dnt0X5pAQHPytli+1nTZm2Y=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/maps/world.js"
-    integrity="sha256-XPpPaZlU8S/HWf7FZLAncLg2SAkP8ScUTII89x9D3lY=" crossorigin="anonymous"></script>
-<!-- jsvectormap -->
-<script>
-    const visitorsData = {
-        US: 398, // USA
-        SA: 400, // Saudi Arabia
-        CA: 1000, // Canada
-        DE: 500, // Germany
-        FR: 760, // France
-        CN: 300, // China
-        AU: 700, // Australia
-        BR: 600, // Brazil
-        IN: 800, // India
-        GB: 320, // Great Britain
-        RU: 3000, // Russia
-    };
 
-    // World map by jsVectorMap
-    const map = new jsVectorMap({
-        selector: "#world-map",
-        map: "world",
-    });
+    //---------------------------
+    // - END MONTHLY SALES CHART -
+    //---------------------------
 
-    // Sparkline charts
-    const option_sparkline1 = {
-        series: [{
-            data: [1000, 1200, 920, 927, 931, 1027, 819, 930, 1021],
-        },],
-        chart: {
-            type: "area",
-            height: 50,
-            sparkline: {
-                enabled: true,
+    function createSparklineChart(selector, data) {
+        const options = {
+            series: [{
+                data
+            }],
+            chart: {
+                type: "line",
+                width: 150,
+                height: 30,
+                sparkline: {
+                    enabled: true,
+                },
             },
-        },
-        stroke: {
-            curve: "straight",
-        },
-        fill: {
-            opacity: 0.3,
-        },
-        yaxis: {
-            min: 0,
-        },
-        colors: ["#DCE6EC"],
-    };
-
-    const sparkline1 = new ApexCharts(
-        document.querySelector("#sparkline-1"),
-        option_sparkline1
-    );
-    sparkline1.render();
-
-    const option_sparkline2 = {
-        series: [{
-            data: [515, 519, 520, 522, 652, 810, 370, 627, 319, 630, 921],
-        },],
-        chart: {
-            type: "area",
-            height: 50,
-            sparkline: {
-                enabled: true,
+            colors: ["var(--bs-primary)"],
+            stroke: {
+                width: 2,
             },
-        },
-        stroke: {
-            curve: "straight",
-        },
-        fill: {
-            opacity: 0.3,
-        },
-        yaxis: {
-            min: 0,
-        },
-        colors: ["#DCE6EC"],
-    };
-
-    const sparkline2 = new ApexCharts(
-        document.querySelector("#sparkline-2"),
-        option_sparkline2
-    );
-    sparkline2.render();
-
-    const option_sparkline3 = {
-        series: [{
-            data: [15, 19, 20, 22, 33, 27, 31, 27, 19, 30, 21],
-        },],
-        chart: {
-            type: "area",
-            height: 50,
-            sparkline: {
-                enabled: true,
+            tooltip: {
+                fixed: {
+                    enabled: false,
+                },
+                x: {
+                    show: false,
+                },
+                y: {
+                    title: {
+                        formatter: function (seriesName) {
+                            return "";
+                        },
+                    },
+                },
+                marker: {
+                    show: false,
+                },
             },
+        };
+
+        const chart = new ApexCharts(document.querySelector(selector), options);
+        chart.render();
+    }
+
+    const table_sparkline_1_data = [
+        25, 66, 41, 89, 63, 25, 44, 12, 36, 9, 54,
+    ];
+    const table_sparkline_2_data = [
+        12, 56, 21, 39, 73, 45, 64, 52, 36, 59, 44,
+    ];
+    const table_sparkline_3_data = [
+        15, 46, 21, 59, 33, 15, 34, 42, 56, 19, 64,
+    ];
+    const table_sparkline_4_data = [
+        30, 56, 31, 69, 43, 35, 24, 32, 46, 29, 64,
+    ];
+    const table_sparkline_5_data = [
+        20, 76, 51, 79, 53, 35, 54, 22, 36, 49, 64,
+    ];
+    const table_sparkline_6_data = [
+        5, 36, 11, 69, 23, 15, 14, 42, 26, 19, 44,
+    ];
+    const table_sparkline_7_data = [
+        12, 56, 21, 39, 73, 45, 64, 52, 36, 59, 74,
+    ];
+
+    createSparklineChart("#table-sparkline-1", table_sparkline_1_data);
+    createSparklineChart("#table-sparkline-2", table_sparkline_2_data);
+    createSparklineChart("#table-sparkline-3", table_sparkline_3_data);
+    createSparklineChart("#table-sparkline-4", table_sparkline_4_data);
+    createSparklineChart("#table-sparkline-5", table_sparkline_5_data);
+    createSparklineChart("#table-sparkline-6", table_sparkline_6_data);
+    createSparklineChart("#table-sparkline-7", table_sparkline_7_data);
+
+    //-------------
+    // - PIE CHART -
+    //-------------
+
+    const pie_chart_options = {
+        series: [700, 500, 400, 600, 300, 100],
+        chart: {
+            type: "donut",
         },
-        stroke: {
-            curve: "straight",
+        labels: ["Chrome", "Edge", "FireFox", "Safari", "Opera", "IE"],
+        dataLabels: {
+            enabled: false,
         },
-        fill: {
-            opacity: 0.3,
-        },
-        yaxis: {
-            min: 0,
-        },
-        colors: ["#DCE6EC"],
+        colors: [
+            "#0d6efd",
+            "#20c997",
+            "#ffc107",
+            "#d63384",
+            "#6f42c1",
+            "#adb5bd",
+        ],
     };
 
-    const sparkline3 = new ApexCharts(
-        document.querySelector("#sparkline-3"),
-        option_sparkline3
+    const pie_chart = new ApexCharts(
+        document.querySelector("#pie-chart"),
+        pie_chart_options,
     );
-    sparkline3.render();
+    pie_chart.render();
+
+    //-----------------
+    // - END PIE CHART -
+    //-----------------
 </script>
 <!--end::Script-->

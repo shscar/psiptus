@@ -1,8 +1,3 @@
-<!-- DataTables CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" />
-<!-- DataTables Buttons CSS (Opsional, jika menggunakan tombol) -->
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css" />
-
 <?php
 // Memulai output buffering
 ob_start();
@@ -191,56 +186,56 @@ ob_end_flush();
                     <div class="row">
                         <div class="col-md-12">
                             <?php if (!empty($results)): ?>
-                                <table id="datatable" class="table table-striped table-bordered pt-3">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Nama Pembayaran</th>
-                                            <th>Diangsur</th>
-                                            <th>Nominal</th>
-                                            <th style="width: 35%">Keterangan</th>
-                                            <th>Tahun Ajaran</th>
-                                            <th>Status</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($results as $index => $row): ?>
-                                            <tr>
-                                                <td><?= $index + 1; ?></td>
-                                                <td><?= $row['nama_pembayaran'] ?? '-'; ?></td>
-                                                <td><?= $row['bisa_diangsur'] ? 'Ya' : 'Tidak'; ?></td>
-                                                <td>Rp. <?= number_format($row['nominal'], 2, ',', '.'); ?></td>
-                                                <td><?= $row['keterangan'] ?? '-'; ?></td>
-                                                <td><?= $row['tahun_ajaran'] ?? '-'; ?></td>
-                                                <td class="text-center"><?= $row['status_aktif'] ? 'Aktif' : 'Tidak Aktif'; ?>
-                                                </td>
-                                                <td class="text-center">
+                            <table id="datatable" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Nama Pembayaran</th>
+                                        <th>Diangsur</th>
+                                        <th>Nominal</th>
+                                        <th style="width: 35%">Keterangan</th>
+                                        <th>Tahun Ajaran</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($results as $index => $row): ?>
+                                    <tr>
+                                        <td><?= $index + 1; ?></td>
+                                        <td><?= $row['nama_pembayaran'] ?? '-'; ?></td>
+                                        <td><?= $row['bisa_diangsur'] ? 'Ya' : 'Tidak'; ?></td>
+                                        <td>Rp. <?= number_format($row['nominal'], 2, ',', '.'); ?></td>
+                                        <td><?= $row['keterangan'] ?? '-'; ?></td>
+                                        <td><?= $row['tahun_ajaran'] ?? '-'; ?></td>
+                                        <td class="text-center"><?= $row['status_aktif'] ? 'Aktif' : 'Tidak Aktif'; ?>
+                                        </td>
+                                        <td class="text-center">
 
-                                                    <button type="button" class="btn btn-warning btn-sm edit-button"
-                                                        data-bs-toggle="modal" data-bs-target="#editModal"
-                                                        data-id="<?= $row['id'] ?? '-'; ?>"
-                                                        data-nama_pembayaran="<?= $row['nama_pembayaran'] ?? '-'; ?>"
-                                                        data-nominal="<?= $row['nominal'] ?? '-'; ?>"
-                                                        data-tahun_ajaran_id="<?= $row['tahun_ajaran_id'] ?? '-'; ?>"
-                                                        data-keterangan="<?= $row['keterangan'] ?? '-'; ?>"
-                                                        data-bisa_diangsur="<?= $row['bisa_diangsur'] ?? '-'; ?>"
-                                                        data-status_aktif="<?= $row['status_aktif'] ?? '-'; ?>">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
+                                            <button type="button" class="btn btn-warning btn-sm edit-button"
+                                                data-bs-toggle="modal" data-bs-target="#editModal"
+                                                data-id="<?= $row['id'] ?? '-'; ?>"
+                                                data-nama_pembayaran="<?= $row['nama_pembayaran'] ?? '-'; ?>"
+                                                data-nominal="<?= $row['nominal'] ?? '-'; ?>"
+                                                data-tahun_ajaran_id="<?= $row['tahun_ajaran_id'] ?? '-'; ?>"
+                                                data-keterangan="<?= $row['keterangan'] ?? '-'; ?>"
+                                                data-bisa_diangsur="<?= $row['bisa_diangsur'] ?? '-'; ?>"
+                                                data-status_aktif="<?= $row['status_aktif'] ?? '-'; ?>">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
 
-                                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                        data-bs-target="#deleteModal" data-id="<?= $row['id'] ?? '-'; ?>"
-                                                        data-nama_pembayaran="<?= $row['nama_pembayaran'] ?? '-'; ?>">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
+                                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#deleteModal" data-id="<?= $row['id'] ?? '-'; ?>"
+                                                data-nama_pembayaran="<?= $row['nama_pembayaran'] ?? '-'; ?>">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
                             <?php else: ?>
-                                <p>No data available.</p>
+                            <p>No data available.</p>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -278,9 +273,9 @@ ob_end_flush();
                                     <select class="form-select" id="tahun_ajaran_id" name="tahun_ajaran_id">
                                         <option value="">Pilih Tahun Ajaran</option>
                                         <?php foreach ($tahun_ajaran as $ta): ?>
-                                            <option value="<?php echo $ta['id']; ?>">
-                                                <?php echo $ta['tahun']; ?>
-                                            </option>
+                                        <option value="<?php echo $ta['id']; ?>">
+                                            <?php echo $ta['tahun']; ?>
+                                        </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -340,9 +335,9 @@ ob_end_flush();
                                     <select class="form-select" id="edit_tahun_ajaran_id" name="tahun_ajaran_id">
                                         <option value="">Pilih Tahun Ajaran</option>
                                         <?php foreach ($tahun_ajaran as $ta): ?>
-                                            <option value="<?php echo $ta['id']; ?>">
-                                                <?php echo $ta['tahun']; ?>
-                                            </option>
+                                        <option value="<?php echo $ta['id']; ?>">
+                                            <?php echo $ta['tahun']; ?>
+                                        </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -402,69 +397,74 @@ ob_end_flush();
 </main>
 <!-- App Main -->
 
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-<!-- DataTables Buttons JS (Opsional, jika menggunakan tombol) -->
-<script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
-
 <!-- Inisialisasi DataTables -->
 <script>
-    $(document).ready(function () {
-        $('#datatable').dataTable();
-        $("[data-toggle=tooltip]").tooltip();
-
+$(document).ready(function() {
+    $('#datatable').DataTable({
+        "paging": true,
+        "lengthChange": true,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "autoWidth": false,
+        "responsive": true
     });
+});
 
-    document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
 
-        // Handling Update
-        const editModal = document.getElementById('editModal');
-        if (editModal) {
-            editModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
+    // Handling Update
+    const editModal = document.getElementById('editModal');
+    if (editModal) {
+        editModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
 
-                // Get data attributes from the button
-                const id = button.getAttribute('data-id');
-                const nama_pembayaran = button.getAttribute('data-nama_pembayaran');
-                const nominal = button.getAttribute('data-nominal');
-                const tahun_ajaran_id = button.getAttribute('data-tahun_ajaran_id');
-                const keterangan = button.getAttribute('data-keterangan');
-                const bisa_diangsur = button.getAttribute('data-bisa_diangsur') === '1';
-                const status_aktif = button.getAttribute('data-status_aktif') === '1';
+            // Get data attributes from the button
+            const id = button.getAttribute('data-id');
+            const nama_pembayaran = button.getAttribute('data-nama_pembayaran');
+            const nominal = button.getAttribute('data-nominal');
+            const tahun_ajaran_id = button.getAttribute('data-tahun_ajaran_id');
+            const keterangan = button.getAttribute('data-keterangan');
+            const bisa_diangsur = button.getAttribute('data-bisa_diangsur') === '1';
+            const status_aktif = button.getAttribute('data-status_aktif') === '1';
 
-                // Update the modal's content.
-                const modalTitle = editModal.querySelector('.modal-title');
-                modalTitle.textContent = `Edit Data Tagihan: ${nama_pembayaran}`;
+            // Update the modal's content.
+            const modalTitle = editModal.querySelector('.modal-title');
+            modalTitle.textContent = `Edit Data Tagihan: ${nama_pembayaran}`;
 
-                // Populate the form in the modal with the data
-                document.getElementById('edit_id').value = id;
-                document.getElementById('edit_nama_pembayaran').value = nama_pembayaran;
-                document.getElementById('edit_nominal').value = nominal;
-                document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;
-                document.getElementById('edit_keterangan').value = keterangan;
-                document.getElementById('edit_bisa_diangsur').checked = bisa_diangsur;
-                document.getElementById('edit_status_aktif').checked = status_aktif;
-            });
-        }
+            // Populate the form in the modal with the data
+            document.getElementById('edit_id').value = id;
+            document.getElementById('edit_nama_pembayaran').value = nama_pembayaran;
+            document.getElementById('edit_nominal').value = nominal;
+            document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;
+            document.getElementById('edit_keterangan').value = keterangan;
+            document.getElementById('edit_bisa_diangsur').checked = bisa_diangsur;
+            document.getElementById('edit_status_aktif').checked = status_aktif;
+        });
+    }
 
-        // Handling Delete
-        const deleteModal = document.getElementById('deleteModal');
-        if (deleteModal) {
-            deleteModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
+    // Handling Delete
+    const deleteModal = document.getElementById('deleteModal');
+    if (deleteModal) {
+        deleteModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
 
-                const id = button.getAttribute('data-id');
-                const nama_pembayaran = button.getAttribute('data-nama_pembayaran');
+            const id = button.getAttribute('data-id');
+            const nama_pembayaran = button.getAttribute('data-nama_pembayaran');
 
-                // Update the modal's content.
-                const modalTitle = deleteModal.querySelector('.modal-title');
-                modalTitle.textContent = `Hapus Data Pembayaran: ${nama_pembayaran}`;
+            // Update the modal's content.
+            const modalTitle = deleteModal.querySelector('.modal-title');
+            modalTitle.textContent = `Hapus Data Pembayaran: ${nama_pembayaran}`;
 
-                // Populate the form with the id
-                const form = deleteModal.querySelector('#deleteForm');
-                form.querySelector('#delete-id').value = id;
-            });
-        }
-    })
+            // Populate the form with the id
+            const form = deleteModal.querySelector('#deleteForm');
+            form.querySelector('#delete-id').value = id;
+        });
+    }
+})
 </script>
+
+<!-- DataTables CSS/JS Dependencies -->
+<link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>

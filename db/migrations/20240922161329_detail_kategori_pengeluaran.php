@@ -22,7 +22,6 @@ final class DetailKategoriPengeluaran extends AbstractMigration
         $table = $this->table('detail_kategori_pengeluaran');
         $table->addColumn('kategori_id', 'integer', ['null' => false])
             ->addColumn('judul', 'string', ['limit' => 100, 'null' => false])
-            ->addColumn('deskripsi', 'text', ['null' => true])
             ->addTimestamps()
             ->create();
     }

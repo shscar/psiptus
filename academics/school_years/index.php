@@ -1,11 +1,6 @@
-<!-- DataTables CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" />
-
-<!-- DataTables Buttons CSS (Opsional, jika menggunakan tombol) -->
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css" />
-
 <?php
-ob_start(); // Memulai output buffering
+// Memulai output buffering
+ob_start();
 
 include __DIR__ . '/../../layouts/master.php';
 $db = Database::getInstance()->getConnection();
@@ -137,8 +132,8 @@ ob_end_flush();
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-12">
-                            <table id="datatable" class="table table-striped table-bordered pt-3">
-                                <thead class="table-dark">
+                            <table id="datatable" class="table table-striped table-bordered">
+                                <thead>
                                     <tr>
                                         <th style="width:7%;">No.</th>
                                         <th>Tahun Ajaran</th>
@@ -149,26 +144,26 @@ ob_end_flush();
                                 </thead>
                                 <tbody>
                                     <?php foreach ($tahun_ajaran as $index => $row): ?>
-                                        <tr>
-                                            <td><?= $index + 1; ?></td>
-                                            <td><?= $row['tahun']; ?></td>
-                                            <td><?= $row['status']; ?></td>
-                                            <td class="text-center">
-                                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                                    data-bs-target="#editModal" data-bs-id="<?= $row['id'] ?>"
-                                                    data-bs-tahun="<?= $row['tahun'] ?>"
-                                                    data-bs-status="<?= $row['status'] ?>">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                            </td>
-                                            <td class="text-center">
-                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                    data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?>"
-                                                    data-bs-tahun="<?= $row['tahun'] ?>">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                    <tr>
+                                        <td><?= $index + 1; ?></td>
+                                        <td><?= $row['tahun']; ?></td>
+                                        <td><?= $row['status']; ?></td>
+                                        <td class="text-center">
+                                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#editModal" data-bs-id="<?= $row['id'] ?>"
+                                                data-bs-tahun="<?= $row['tahun'] ?>"
+                                                data-bs-status="<?= $row['status'] ?>">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?>"
+                                                data-bs-tahun="<?= $row['tahun'] ?>">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
@@ -275,57 +270,61 @@ ob_end_flush();
 </main>
 <!--end::App Main-->
 
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-<!-- DataTables Buttons JS (Opsional, jika menggunakan tombol) -->
-<script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
-
 <!-- Inisialisasi DataTables -->
 <script>
-    $(document).ready(function () {
-        $('#datatable').dataTable();
-
-        $("[data-toggle=tooltip]").tooltip();
-
+$(document).ready(function() {
+    $('#datatable').DataTable({
+        "paging": true,
+        "lengthChange": true,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "autoWidth": false,
+        "responsive": true
     });
+});
 
-    document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
 
-        const editModal = document.getElementById('editModal');
-        if (editModal) {
-            editModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-                const id = button.getAttribute('data-bs-id');
-                const tahun = button.getAttribute('data-bs-tahun');
-                const status = button.getAttribute('data-bs-status');
+    const editModal = document.getElementById('editModal');
+    if (editModal) {
+        editModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-bs-id');
+            const tahun = button.getAttribute('data-bs-tahun');
+            const status = button.getAttribute('data-bs-status');
 
-                // Update the modal's content.
-                const modalTitle = editModal.querySelector('.modal-title');
-                modalTitle.textContent = `Edit Data: ${tahun}`;
+            // Update the modal's content.
+            const modalTitle = editModal.querySelector('.modal-title');
+            modalTitle.textContent = `Edit Data: ${tahun}`;
 
-                const form = editModal.querySelector('#editForm');
-                form.querySelector('#edit-id').value = id;
-                form.querySelector('#edit-tahun').value = tahun;
-                form.querySelector('#edit-status').value = status;
-            });
-        }
+            const form = editModal.querySelector('#editForm');
+            form.querySelector('#edit-id').value = id;
+            form.querySelector('#edit-tahun').value = tahun;
+            form.querySelector('#edit-status').value = status;
+        });
+    }
 
-        const deleteModal = document.getElementById('deleteModal');
-        if (deleteModal) {
-            deleteModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-                const id = button.getAttribute('data-bs-id');
-                const tahun = button.getAttribute('data-bs-tahun');
+    const deleteModal = document.getElementById('deleteModal');
+    if (deleteModal) {
+        deleteModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-bs-id');
+            const tahun = button.getAttribute('data-bs-tahun');
 
-                // Update the modal's content.
-                const modalTitle = deleteModal.querySelector('.modal-title');
-                modalTitle.textContent = `Delete Data: ${tahun}`;
+            // Update the modal's content.
+            const modalTitle = deleteModal.querySelector('.modal-title');
+            modalTitle.textContent = `Delete Data: ${tahun}`;
 
-                // Update the modal's content.
-                const form = deleteModal.querySelector('#deleteForm');
-                form.querySelector('#delete-id').value = id;
-            });
-        }
-    });
+            // Update the modal's content.
+            const form = deleteModal.querySelector('#deleteForm');
+            form.querySelector('#delete-id').value = id;
+        });
+    }
+});
 </script>
+
+<!-- DataTables CSS/JS Dependencies -->
+<link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>

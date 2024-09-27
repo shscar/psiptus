@@ -1,9 +1,3 @@
-<!-- DataTables CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" />
-
-<!-- DataTables Buttons CSS (Opsional, jika menggunakan tombol) -->
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css" />
-
 <?php
 // Memulai output buffering
 ob_start();
@@ -18,7 +12,7 @@ $stmt = $db->prepare("SELECT
             s.jenis_kelamin,
             s.status,
             t.tahun AS tahun_ajaran,
-            CONCAT(tk.tingkat, ' ', k.nama_kelas) AS kelas
+            CONCAT(tk.tingkat, ' - ', k.nama_kelas) AS kelas
         FROM siswa s
         LEFT JOIN kelas k ON s.kelas_id = k.id
         LEFT JOIN tingkat_kelas tk ON k.tingkat_kelas_id = tk.id
@@ -75,7 +69,7 @@ ob_end_flush();
 
                         <!-- Card body -->
                         <div class="card-body">
-                            <table id="example2" class="table table-bordered table-striped">
+                            <table id="datatable" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
                                         <th style="width: 10%">NISN</th>
@@ -116,10 +110,12 @@ ob_end_flush();
                                                     <span class="<?php echo $badgeClass; ?>"><?php echo $statusText; ?></span>
                                                 </td>
                                                 <td class="project-actions text-right">
-                                                    <a class="btn btn-info btn-sm"
-                                                        href="/siswa/edit-siswa?id=<?= htmlspecialchars($row['id']); ?>">
-                                                        <i class="fas fa-pencil-alt"></i>
-                                                    </a>
+                                                    <button class="btn btn-warning btn-sm">Edit</button>
+                                                    <!-- <button class="btn btn-danger">Delete</button> -->
+                                                    <!-- <a class="btn btn-info btn-sm"
+                                                href="/siswa/edit-siswa?id=<?= htmlspecialchars($row['id']); ?>">
+                                                <i class="fas fa-pencil-alt"></i>
+                                            </a> -->
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -222,30 +218,18 @@ ob_end_flush();
 </main>
 <!--end::App Main-->
 
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-<!-- DataTables Buttons JS (Opsional, jika menggunakan tombol) -->
-<script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
-
 <!-- Inisialisasi DataTables -->
 <script>
-    $(function () {
-        $("#example2").DataTable({
+    $(document).ready(function () {
+        $('#datatable').DataTable({
             "paging": true,
             "lengthChange": true,
             "searching": true,
             "ordering": true,
             "info": true,
             "autoWidth": false,
-            "responsive": true,
+            "responsive": true
         });
-    });
-    $(document).ready(function () {
-        $('#datatable').dataTable();
-
-        $("[data-toggle=tooltip]").tooltip();
-
     });
 
     // Edit Modal
@@ -274,3 +258,8 @@ ob_end_flush();
         })
     }
 </script>
+
+<!-- DataTables CSS/JS Dependencies -->
+<link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
