@@ -1,18 +1,3 @@
-<style>
-td {
-    padding: 20px;
-    background: #eaeaea;
-    max-width: 400px;
-    margin: 50px auto;
-}
-
-.list-circle {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-}
-</style>
 <?php
 // Memulai buffering
 ob_start();
@@ -186,6 +171,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 // Mengakhiri buffering
 ob_end_flush();
 ?>
+
+<style>
+    td {
+        padding: 20px;
+        background: #eaeaea;
+        max-width: 400px;
+        margin: 50px auto;
+    }
+
+    .list-circle {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+    }
+</style>
 
 <!-- App Main -->
 <main class="app-main">
@@ -438,7 +439,11 @@ ob_end_flush();
                                                 <th>Nama Pengeluaran</th>
                                                 <th>Keterangan</th>
                                                 <th style="width:130px">Jumlah</th>
-                                                <th style="width:20px"></th>
+                                                <th style="width:20px">
+                                                    <button type="button" class="btn btn-outline-success add-row-edit">
+                                                        <i class="bi bi-plus-lg"></i>
+                                                    </button>
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -461,13 +466,11 @@ ob_end_flush();
                                                     id="edit-total-item-nilai-bayar">
                                                     0
                                                 </td>
-                                                <td></td>
+                                                <td>
+                                                </td>
                                             </tr>
                                         </tfoot>
                                     </table>
-                                    <button type="button" class="btn btn-outline-success add-row-edit">
-                                        <i class="bi bi-plus-lg"></i> Tambah Baris
-                                    </button>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -479,8 +482,6 @@ ob_end_flush();
                 </div>
             </div>
         </div>
-
-
 
         <!-- Modal Delete -->
         <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">

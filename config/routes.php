@@ -21,7 +21,7 @@ $routes = [
     '/tingkat-kelas' => '/academics/classrooms/grade_lv.php',
     '/kelas' => '/academics/classrooms/index.php',
 
-    // infoice
+    // invoice
     // pendapatan
     '/pendapatan/pembayaran-siswa' => '/finances/incomes/student_paid_fees.php',
     '/pendapatan/tagihan-spp-siswa' => '/finances/incomes/spp_student_bills.php',
@@ -32,6 +32,7 @@ $routes = [
     // pengeluaran
     '/pengeluaran/kategori-pengeluaran' => '/finances/outlays/expens_category.php',
     '/pengeluaran/detail-pengeluaran' => '/finances/outlays/expends.php',
+    '/child-expens-category' => '/finances/outlays/child_expens_category.php',
 
 ];
 

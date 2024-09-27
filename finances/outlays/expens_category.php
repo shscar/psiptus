@@ -1,4 +1,5 @@
 <?php
+
 include __DIR__ . '/../../layouts/master.php';
 $db = Database::getInstance()->getConnection();
 
@@ -61,7 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo "Gagal mengedit kategori: " . $e->getMessage();
         }
     }
-
 
     // Tambah Detail Kategori
     if ($action === 'tambah_detail') {
@@ -160,23 +160,6 @@ try {
 
 ?>
 
-<link rel="stylesheet" type="text/css"
-    href="https://codeliro.com/demo/aplikasi-spp/public/vendors/jquery-nestable/jquery.nestable.min.css?r=1726984088?r=1726984088" />
-
-<style>
-    .nested-category {
-        margin-left: 20px;
-    }
-
-    .category-actions {
-        float: right;
-    }
-
-    .category-actions button {
-        margin-left: 5px;
-    }
-</style>
-
 <!--begin::App Main-->
 <main class="app-main">
     <div class="app-content-header">
@@ -201,47 +184,75 @@ try {
     <div class="app-content">
         <div class="container-fluid">
             <div class="row">
-                <!-- Kategori dan Subkategori -->
+                <!-- Kategori -->
                 <div class="col-md-4">
                     <div class="card mb-4">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h3 class="card-title">Kategori </h3>
-                            <button class="btn btn-primary btn-sm ms-auto" id="add-menu" data-bs-toggle="modal"
+                            <button class="btn btn-secondary btn-sm ms-auto" id="add-menu" data-bs-toggle="modal"
                                 data-bs-target="#addCategoryModal">
                                 <i class="bi bi-plus pe-1"></i> Tambah Kategori
                             </button>
-
                         </div>
                         <div class="card-body">
-
-                            <div id="list-menu">
-                                <ol class="dd-list">
-                                    <?php foreach ($kategori as $kat): ?>
-                                        <li class="dd-item" data-id="<?= $kat['id'] ?>">
-                                            <div class="dd-handle">
-                                                <i class="<?= $kat['icon'] ?>"></i>
-                                                <span class="menu-title"><?= $kat['nama_kategori'] ?></span>
-                                                <button class="btn btn-info btn-sm edit-category float-end"
-                                                    data-bs-toggle="modal" data-bs-target="#editCategoryModal"
-                                                    data-id_kategori="<?= $kat['id'] ?>"
-                                                    data-name="<?= $kat['nama_kategori'] ?>"
-                                                    data-icon="<?= $kat['icon'] ?>"><i class="bi bi-pencil-square"></i>
-                                                </button>
-
-                                                <a href="?delete=<?= $kat['id'] ?>"
-                                                    class="btn btn-danger btn-sm float-end mx-1"
-                                                    onclick="return confirm('Hapus kategori ini?')">
-                                                    <i class="bi bi-trash"></i>
-                                                </a>
-                                            </div>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ol>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="list-menu">
+                                        <ul class="nav nav-pills flex-column" id="pills-tab" role="tablist">
+                                            <?php foreach ($kategori as $kat): ?>
+                                                <li class="nav-item border border-primary rounded-4 mb-2"  role="presentation" data-id="<?= $kat['id'] ?>">
+                                                    <a class="nav-link rounded-4" id="pills-kategori-tab-<?= $kat['id'] ?>" data-bs-toggle="pill"
+                                                    href="javascript:void(0)" role="tab" aria-controls="pills-kategori" aria-selected="false"
+                                                    onclick="getDetails(<?= $kat['id'] ?>)">
+                                                        <i class="<?= $kat['icon'] ?>"></i>
+                                                        <span class="menu-title"><?= $kat['nama_kategori'] ?></span>
+                                                        <button class="btn btn-info btn-sm ms-auto"
+                                                                data-bs-toggle="modal" data-bs-target="#editCategoryModal"
+                                                                data-id_kategori="<?= $kat['id'] ?>"
+                                                                data-name="<?= $kat['nama_kategori'] ?>"
+                                                                data-icon="<?= $kat['icon'] ?>"><i class="bi bi-pencil-square"></i>
+                                                        </button>
+                                                        <!-- <a href="?delete=<?= $kat['id'] ?>"
+                                                            class="btn btn-danger btn-sm float-end mx-1"
+                                                            onclick="return confirm('Hapus kategori ini?')">
+                                                            <i class="bi bi-trash"></i>
+                                                        </a> -->
+                                                    </a>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
+                    
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h3 class="card-title">Detail Kategori</h3>
+                            <button type="button" class="btn btn-success btn-sm ms-auto" data-bs-toggle="modal"
+                                    data-bs-target="#addDetailModal">
+                                <i class="bi bi-plus-lg pe-1"></i> Tambah Data
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr class="row">
+                                    <th class="col-md-1 text-center">#</th>
+                                    <th class="col-md-9">Judul</th>
+                                    <th class="col-md-2 text-center">Aksi</th>
+                                </tr>
+                                </thead>
+                                <tbody id="detail-content">
+                                    <!-- Konten detail akan diisi oleh AJAX -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Modal Tambah Kategori -->
                 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel"
@@ -308,57 +319,6 @@ try {
                                 </div>
                             </div>
                         </form>
-                    </div>
-                </div>
-
-
-                <!-- Bagian Detail Kategori -->
-                <div class="col-md-8">
-                    <div class="card mb-4">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h3 class="card-title">Grade Level </h3>
-                            <button type="button" class="btn btn-success btn-sm ms-auto" data-bs-toggle="modal"
-                                data-bs-target="#addDetailModal">
-                                <i class="bi bi-plus-lg pe-1"></i> Tambah Data
-                            </button>
-                        </div>
-                        <div class="card-body">
-
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Kategori</th>
-                                        <th>Judul</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($details as $index => $detail): ?>
-                                        <tr>
-                                            <td><?= $index + 1; ?></td>
-                                            <td><?= $detail['nama_kategori'] ?? '-' ?></td>
-                                            <td><?= $detail['judul'] ?? '-' ?></td>
-                                            <td>
-                                                <button class="btn btn-info btn-sm edit-detail" data-bs-toggle="modal"
-                                                    data-bs-target="#editDetailModal" data-id="<?= $detail['id'] ?>"
-                                                    data-kategori="<?= $detail['kategori_id'] ?? '-' ?>"
-                                                    data-judul="<?= $detail['judul'] ?? '-' ?>">
-                                                    <i class="bi bi-pencil-square"></i>
-                                                </button>
-                                                <button class="btn btn-danger btn-sm delete-detail" data-bs-toggle="modal"
-                                                    data-bs-target="#deleteDetailModal"
-                                                    data-id="<?= $detail['id'] ?? '-' ?>"
-                                                    data-judul="<?= $detail['judul'] ?? '-' ?>">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
                 </div>
 
@@ -472,109 +432,109 @@ try {
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Mengisi Form Edit dengan Data dari Baris yang Dipilih
-        // Menangani klik pada tombol edit kategori
-        document.querySelectorAll('.edit-category').forEach(function (button) {
-            button.addEventListener('click', function () {
-                const id = this.getAttribute('data-id_kategori');
-                const nama_kategori = this.getAttribute('data-name');
-                const data_icon = this.getAttribute('data-icon');
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle klik pada tombol edit kategori
+    document.querySelectorAll('.btn-info').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const id = this.getAttribute('data-id_kategori');
+            const nama_kategori = this.getAttribute('data-name');
+            const data_icon = this.getAttribute('data-icon');
+            
+            // Mendapatkan modal edit kategori
+            const editCategoryModal = document.getElementById('editCategoryModal');
 
-                // Up modal's header.
-                const modalTitle = editCategoryModal.querySelector('.modal-title');
-                modalTitle.textContent = `Edit Kategori: ${nama_kategori}`;
+            // Up modal's header.
+            const modalTitle = editCategoryModal.querySelector('.modal-title');
+            modalTitle.textContent = `Edit Kategori: ${nama_kategori}`;
 
-                // Memastikan elemen ada sebelum mengisi form
-                if (document.getElementById('edit_id') && document.getElementById(
-                    'edit_nama_kategori') && document.getElementById('edit_data_icon')) {
-                    document.getElementById('edit_id').value = id || '';
-                    document.getElementById('edit_nama_kategori').value = nama_kategori || '';
-                    document.getElementById('edit_data_icon').value = data_icon || '';
-                }
-            });
+            // Memastikan elemen ada sebelum mengisi form
+            if (document.getElementById('edit_id') && document.getElementById('edit_nama_kategori') && document.getElementById('edit_data_icon')) {
+                document.getElementById('edit_id').value = id || '';
+                document.getElementById('edit_nama_kategori').value = nama_kategori || '';
+                document.getElementById('edit_data_icon').value = data_icon || '';
+            }
         });
-        // Menangani klik pada tombol edit detail kategori
-        document.querySelectorAll('.edit-detail').forEach(function (button) {
-            button.addEventListener('click', function () {
-                const id = this.getAttribute('data-id');
-                const kategori_id = this.getAttribute('data-kategori');
-                const judul = this.getAttribute('data-judul');
-
-                // Up modal's header.
-                const modalTitle = editDetailModal.querySelector('.modal-title');
-                modalTitle.textContent = `Edit Kategori: ${judul}`;
-
-                // Memastikan elemen ada sebelum mengisi form
-                if (document.getElementById('edit_detail_id') && document.getElementById(
-                    'edit_kategori_id') && document.getElementById('edit_judul')) {
-                    document.getElementById('edit_detail_id').value = id || '';
-                    document.getElementById('edit_kategori_id').value = kategori_id || '';
-                    document.getElementById('edit_judul').value = judul || '';
-                }
-            });
-        });
-
-        // Menghapus Data dengan Konfirmasi
-        document.querySelectorAll('.delete-kategori').forEach(function (button) {
-            button.addEventListener('click', function () {
-                const id = this.getAttribute('data-id');
-                const judul = this.getAttribute('data-judul');
-
-                // Up modal's header.
-                const modalTitle = deleteDetailModal.querySelector('.modal-title');
-                modalTitle.textContent = `Delete Detail Kategori: ${judul}`;
-
-                console.log(
-                    `ID: ${id}, Judul: ${judul}`
-                );
-
-                // Mengisi form dengan id yang akan dihapus
-                const form = deleteModal.querySelector('#deleteForm');
-                form.querySelector('#delete-id').value = id;
-            });
-        });
-        // Konfirmasi penghapusan detail kategori
-        const deleteModal = document.getElementById('deleteDetailModal');
-        document.querySelectorAll('.delete-detail').forEach(function (button) {
-            button.addEventListener('click', function () {
-                const id = this.getAttribute('data-id');
-                const judul = this.getAttribute('data-judul');
-
-                // Up modal's header.
-                const modalTitle = deleteDetailModal.querySelector('.modal-title');
-                modalTitle.textContent = `Delete Detail Kategori: ${judul}`;
-
-                console.log(
-                    `ID: ${id}, Judul: ${judul}`
-                );
-
-                // Mengisi form dengan id yang akan dihapus
-                const form = deleteModal.querySelector('#deleteForm');
-                form.querySelector('#delete-id').value = id;
-            });
-        });
-
-        // Menampilkan Modal Tambah dan Reset Form
-        // Reset form modal tambah kategori
-        const addCategoryButton = document.getElementById('add-category');
-        if (addCategoryButton) {
-            addCategoryButton.addEventListener('click', function () {
-                const addCategoryModal = document.getElementById('addCategoryModal');
-                if (addCategoryModal) {
-                    addCategoryModal.querySelector('form').reset();
-                }
-            });
-        }
-        // Reset form modal tambah detail
-        const addDetailButton = document.getElementById('add-detail');
-        if (addDetailButton) {
-            addDetailButton.addEventListener('click', function () {
-                const addDetailModal = document.getElementById('addDetailModal');
-                if (addDetailModal) {
-                    addDetailModal.querySelector('form').reset();
-                }
-            });
-        }
     });
+
+    // Menghapus Data dengan Konfirmasi
+    document.querySelectorAll('.delete-kategori').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const id = this.getAttribute('data-id');
+            const judul = this.getAttribute('data-judul');
+
+            // Up modal's header.
+            const modalTitle = deleteDetailModal.querySelector('.modal-title');
+            modalTitle.textContent = `Delete Detail Kategori: ${judul}`;
+
+            // console.log(
+            //     `ID: ${id}, Judul: ${judul}`
+            // );
+
+            // Mengisi form dengan id yang akan dihapus
+            const form = deleteModal.querySelector('#deleteForm');
+            form.querySelector('#delete-id').value = id;
+        });
+    });
+    // Konfirmasi penghapusan detail kategori
+    document.querySelectorAll('.delete-detail').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const id = this.getAttribute('data-id');
+            const judul = this.getAttribute('data-judul');
+
+            // Up modal's header.
+            const modalTitle = deleteDetailModal.querySelector('.modal-title');
+            modalTitle.textContent = `Delete Detail Kategori: ${judul}`;
+
+            console.log(
+                `ID: ${id}, Judul: ${judul}`
+            );
+
+            // Mengisi form dengan id yang akan dihapus
+            const form = deleteModal.querySelector('#deleteForm');
+            form.querySelector('#delete-id').value = id;
+        });
+    });
+
+    // Menampilkan Modal Tambah dan Reset Form
+    // Reset form modal tambah kategori
+    const addCategoryButton = document.getElementById('add-category');
+    if (addCategoryButton) {
+        addCategoryButton.addEventListener('click', function () {
+            const addCategoryModal = document.getElementById('addCategoryModal');
+            if (addCategoryModal) {
+                addCategoryModal.querySelector('form').reset();
+            }
+        });
+    }
+    // Reset form modal tambah detail
+    const addDetailButton = document.getElementById('add-detail');
+    if (addDetailButton) {
+        addDetailButton.addEventListener('click', function () {
+            const addDetailModal = document.getElementById('addDetailModal');
+            if (addDetailModal) {
+                addDetailModal.querySelector('form').reset();
+            }
+        });
+    }
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+
+<!-- Script AJAX untuk menampilkan detail berdasarkan kategori yang dipilih -->
+<script>
+    function getDetails(kategoriId) {
+        // AJAX request untuk mendapatkan detail kategori
+        $.ajax({
+            url: '/child-expens-category',
+            method: 'GET',
+            data: {kategori_id: kategoriId},
+            success: function (response) {
+                $('#detail-content').html(response);
+            },
+            error: function () {
+                alert('Gagal mengambil data');
+            }
+        });
+    }
 </script>

@@ -3,7 +3,6 @@
 
 <!-- DataTables Buttons CSS (Opsional, jika menggunakan tombol) -->
 <!-- <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css" /> -->
-
 <?php
 include __DIR__ . '/../../layouts/master.php';
 
@@ -34,14 +33,13 @@ include __DIR__ . '/../../layouts/master.php';
     <div class="app-content">
         <div class="container-fluid">
 
-
             <!-- Modal Structure -->
             <div class="modal fade" id="editDataModal" tabindex="-1" aria-labelledby="editDataModalLabel"
                 aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="editDataModalLabel">Edit Data</h5>
+                            <h5 class="modal-title" id="editDataModalLabel">Create Data</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
