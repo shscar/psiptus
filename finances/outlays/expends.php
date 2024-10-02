@@ -173,19 +173,19 @@ ob_end_flush();
 ?>
 
 <style>
-    td {
-        padding: 20px;
-        background: #eaeaea;
-        max-width: 400px;
-        margin: 50px auto;
-    }
+td {
+    padding: 20px;
+    background: #eaeaea;
+    max-width: 400px;
+    margin: 50px auto;
+}
 
-    .list-circle {
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-    }
+.list-circle {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
 </style>
 
 <!-- App Main -->
@@ -222,6 +222,7 @@ ob_end_flush();
                 </div>
                 <div class="card-body">
                     <div class="row">
+                        <h3 class="card-title text-danger">Edit Detail sedang Maintance</h3>
                         <div class="col-md-12">
                             <?php if (!empty($combinedResults)): ?>
                             <table id="datatable" class="table table-striped table-bordered">
@@ -418,17 +419,48 @@ ob_end_flush();
                     </div>
                     <div class="modal-body">
                         <form id="editForm" method="POST" enctype="multipart/form-data">
-                            <input type="hidden" name="action" value="edit">
-                            <input type="hidden" id="edit_pengeluaran_id" name="pengeluaran_id">
-                            <!-- The rest of the form fields will be similar to your create form but with IDs prefixed with 'edit_' -->
+                            <input type="hidden" name="action" value="create">
                             <div class="row">
-                                <!-- ... (similar to create form fields, with 'edit_' prefixes) ... -->
-                                <!-- For example: -->
                                 <div class="form-group col-4 mb-3">
-                                    <label for="edit_tanggal_pengeluaran" class="form-label">Tanggal Pengeluaran</label>
-                                    <input type="date" class="form-control" id="edit_tanggal_pengeluaran"
+                                    <label for="tanggal_pengeluaran" class="form-label">Tanggal Pengeluaran</label>
+                                    <input type="date" class="form-control" id="tanggal_pengeluaran"
                                         name="tanggal_pengeluaran" required>
                                 </div>
+                                <div class="form-group col-4 mb-3">
+                                    <label for="bukti_pengeluaran" class="form-label">Unggah Bukti Pengeluaran
+                                        (Opsional)</label>
+                                    <input type="file" class="form-control" id="bukti_pengeluaran"
+                                        name="bukti_pengeluaran" accept=".jpg,.jpeg,.png,.pdf">
+                                </div>
+                                <div class="form-group col-4 mb-3">
+                                    <label for="pihak_terlibat" class="form-label">Pihak Terlibat</label>
+                                    <input type="text" class="form-control" id="pihak_terlibat" name="pihak_terlibat"
+                                        placeholder="Contoh: Bagian Keuangan" required>
+                                </div>
+                                <div class="form-group col-6 mb-3">
+                                    <label for="detail_kategori_pengeluaran_id" class="form-label">Kategori
+                                        Pengeluaran</label>
+                                    <select class="form-select" id="detail_kategori_pengeluaran_id"
+                                        name="detail_kategori_pengeluaran_id" required>
+                                        <option selected disabled value="">Pilih pengeluaran</option>
+                                        <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
+                                        <option value="<?php echo $dkp['id']; ?>">
+                                            <?php echo $dkp['judul']; ?>
+                                        </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="form-group col-6 mb-3">
+                                    <label for="sumber_dana" class="form-label">Sumber Dana</label>
+                                    <select class="form-control" id="sumber_dana" name="sumber_dana" required>
+                                        <option selected disabled value="">Pilih Sumber Dana</option>
+                                        <option value="Dana BOS">Dana BOS</option>
+                                        <option value="Dana Sumbangan">Dana Sumbangan</option>
+                                        <option value="Dana Sekolah">Dana Sekolah</option>
+                                        <option value="Lain-lain">Lain-lain</option>
+                                    </select>
+                                </div>
+                                <hr>
                                 <!-- ... other fields ... -->
                                 <div class="form-group">
                                     <table class="table table-striped table-bordered"
@@ -738,68 +770,68 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Handling Edit Modal Show Event
-    const editModal = document.getElementById('editModal');
-    if (editModal) {
-        editModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const pengeluaranId = button.getAttribute('data-bs-id');
-            const pengeluaranData = JSON.parse(button.getAttribute('data-pengeluaran'));
+    // // Handling Edit Modal Show Event
+    // const editModal = document.getElementById('editModal');
+    // if (editModal) {
+    //     editModal.addEventListener('show.bs.modal', function(event) {
+    //         const button = event.relatedTarget;
+    //         const pengeluaranId = button.getAttribute('data-bs-id');
+    //         const pengeluaranData = JSON.parse(button.getAttribute('data-pengeluaran'));
 
-            // Populate form fields with existing data
-            document.getElementById('edit_pengeluaran_id').value = pengeluaranData.pengeluaran_id;
-            document.getElementById('edit_tanggal_pengeluaran').value = pengeluaranData
-                .tanggal_pengeluaran;
-            document.getElementById('edit_pihak_terlibat').value = pengeluaranData.pihak_terlibat;
-            document.getElementById('edit_detail_kategori_pengeluaran_id').value = pengeluaranData
-                .detail_kategori_pengeluaran_id;
-            document.getElementById('edit_sumber_dana').value = pengeluaranData.sumber_dana;
-            document.getElementById('edit_jenis_bayar').value = pengeluaranData.jenis_bayar;
+    //         // Populate form fields with existing data
+    //         document.getElementById('edit_pengeluaran_id').value = pengeluaranData.pengeluaran_id;
+    //         document.getElementById('edit_tanggal_pengeluaran').value = pengeluaranData
+    //             .tanggal_pengeluaran;
+    //         document.getElementById('edit_pihak_terlibat').value = pengeluaranData.pihak_terlibat;
+    //         document.getElementById('edit_detail_kategori_pengeluaran_id').value = pengeluaranData
+    //             .detail_kategori_pengeluaran_id;
+    //         document.getElementById('edit_sumber_dana').value = pengeluaranData.sumber_dana;
+    //         document.getElementById('edit_jenis_bayar').value = pengeluaranData.jenis_bayar;
 
-            // Populate the items table
-            let tbody = document.querySelector('#edit-tabel-list-item-pengeluaran tbody');
-            tbody.innerHTML = ''; // Clear existing rows
-            pengeluaranData.items.forEach((item, index) => {
-                let newRow = document.createElement('tr');
-                newRow.classList.add('row-item-bayar');
+    //         // Populate the items table
+    //         let tbody = document.querySelector('#edit-tabel-list-item-pengeluaran tbody');
+    //         tbody.innerHTML = ''; // Clear existing rows
+    //         pengeluaranData.items.forEach((item, index) => {
+    //             let newRow = document.createElement('tr');
+    //             newRow.classList.add('row-item-bayar');
 
-                newRow.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>
-                        <input type="text" class="form-control" name="nama_pengeluaran[]" value="${item.nama_pengeluaran}" required>
-                    </td>
-                    <td>
-                        <textarea class="form-control" name="keterangan[]">${item.item_keterangan || ''}</textarea>
-                    </td>
-                    <td>
-                        <input type="number" class="form-control jumlah" name="jumlah_barang[]" value="${item.jumlah_barang}" required>
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-outline-danger remove-row-edit">
-                            <i class="bi bi-dash-lg"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(newRow);
+    //             newRow.innerHTML = `
+    //                 <td>${index + 1}</td>
+    //                 <td>
+    //                     <input type="text" class="form-control" name="nama_pengeluaran[]" value="${item.nama_pengeluaran}" required>
+    //                 </td>
+    //                 <td>
+    //                     <textarea class="form-control" name="keterangan[]">${item.item_keterangan || ''}</textarea>
+    //                 </td>
+    //                 <td>
+    //                     <input type="number" class="form-control jumlah" name="jumlah_barang[]" value="${item.jumlah_barang}" required>
+    //                 </td>
+    //                 <td>
+    //                     <button type="button" class="btn btn-outline-danger remove-row-edit">
+    //                         <i class="bi bi-dash-lg"></i>
+    //                     </button>
+    //                 </td>
+    //             `;
+    //             tbody.appendChild(newRow);
 
-                // Attach input event listener to the quantity input field
-                newRow.querySelector('input[name="jumlah_barang[]"]').addEventListener('input',
-                    function() {
-                        updateEditTotal();
-                    });
+    //             // Attach input event listener to the quantity input field
+    //             newRow.querySelector('input[name="jumlah_barang[]"]').addEventListener('input',
+    //                 function() {
+    //                     updateEditTotal();
+    //                 });
 
-                // Attach event listener to remove the row
-                newRow.querySelector('.remove-row-edit').addEventListener('click', function() {
-                    this.parentElement.parentElement.remove();
-                    updateEditTotal();
-                    updateRowNumbers('#edit-tabel-list-item-pengeluaran');
-                });
-            });
+    //             // Attach event listener to remove the row
+    //             newRow.querySelector('.remove-row-edit').addEventListener('click', function() {
+    //                 this.parentElement.parentElement.remove();
+    //                 updateEditTotal();
+    //                 updateRowNumbers('#edit-tabel-list-item-pengeluaran');
+    //             });
+    //         });
 
-            // Update total
-            updateEditTotal();
-        });
-    }
+    //         // Update total
+    //         updateEditTotal();
+    //     });
+    // }
 });
 </script>
 

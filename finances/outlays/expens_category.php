@@ -109,42 +109,52 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-}
+    // Delete Record
+    if ($action === 'delete_category') {
+        $id = $_POST['id'];
 
-// Hapus Kategori
-if (isset($_GET['delete'])) {
-    $id = $_GET['delete'];
+        if (!empty($id)) {
+            try {
+                $stmt = $db->prepare("DELETE FROM kategori_pengeluaran WHERE id = :id");
+                $stmt->execute(['id' => $id]);
 
-    try {
-        $stmt = $db->prepare("DELETE FROM kategori_pengeluaran WHERE id = :id");
-        $stmt->execute([':id' => $id]);
-        // Redirect
-        echo "<script>
-            alert('Data Kategori berhasil dihapus.');
-            window.location.href = '/pengeluaran/kategori-pengeluaran';
-        </script>";
-        exit();
-    } catch (PDOException $e) {
-        echo "Gagal menghapus kategori: " . $e->getMessage();
+                // Redirect to kategori-pengeluaran page
+                echo "<script>
+                    alert('Detail pengeluaran berhasil dihapus.');
+                    window.location.href = '/pengeluaran/kategori-pengeluaran';
+                </script>";
+                exit();
+            } catch (PDOException $e) {
+                echo "Gagal menghapus kategori: " . $e->getMessage();
+            }
+        } else {
+            echo "ID tidak valid!";
+        }
     }
-}
 
-// Hapus Detail Kategori
-if (isset($_GET['delete_detail'])) {
-    $id = $_GET['delete_detail'];
+    if ($action === 'delete_detail_category') {
+        $id = $_POST['id'];
 
-    try {
-        $stmt = $db->prepare("DELETE FROM detail_kategori_pengeluaran WHERE id = :id");
-        $stmt->execute([':id' => $id]);
-        // Redirect
-        echo "<script>
-            alert('Detail pengeluaran berhasil dihapus.');
-            window.location.href = '/pengeluaran/kategori-pengeluaran';
-        </script>";
-        exit();
-    } catch (PDOException $e) {
-        echo "Gagal menghapus detail kategori: " . $e->getMessage();
+        if (!empty($id)) {
+            try {
+                $stmt = $db->prepare("DELETE FROM detail_kategori_pengeluaran WHERE id = :id");
+                $stmt->execute([':id' => $id]);
+
+                // Redirect 
+                echo "<script>
+                    alert('Detail Kategori pengeluaran berhasil dihapus.');
+                    window.location.href = '/pengeluaran/kategori-pengeluaran';
+                </script>";
+                exit();
+            } catch (PDOException $e) {
+                echo "Gagal menghapus detail kategori: " . $e->getMessage();
+            }
+        } else {
+            echo "ID tidak valid!";
+        }
     }
+
+
 }
 
 // Ambil semua detail kategori
@@ -159,6 +169,15 @@ try {
 // var_dump($kategori);
 
 ?>
+
+<link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
+<link href="../../assets/bootstrap/css/bootstrapicons-iconpicker.css" rel="stylesheet">
+<style>
+    .container {
+        margin: 150px auto;
+        max-width: 640px;
+    }
+</style>
 
 <!--begin::App Main-->
 <main class="app-main">
@@ -200,24 +219,37 @@ try {
                                     <div id="list-menu">
                                         <ul class="nav nav-pills flex-column" id="pills-tab" role="tablist">
                                             <?php foreach ($kategori as $kat): ?>
-                                                <li class="nav-item border border-primary rounded-4 mb-2"  role="presentation" data-id="<?= $kat['id'] ?>">
-                                                    <a class="nav-link rounded-4" id="pills-kategori-tab-<?= $kat['id'] ?>" data-bs-toggle="pill"
-                                                    href="javascript:void(0)" role="tab" aria-controls="pills-kategori" aria-selected="false"
-                                                    onclick="getDetails(<?= $kat['id'] ?>)">
+                                                <li class="nav-item mb-2 d-flex justify-content-between align-items-center"
+                                                    role="presentation" data-id="<?= $kat['id'] ?>">
+                                                    <a class="nav-link rounded-4 flex-grow-1"
+                                                        id="pills-kategori-tab-<?= $kat['id'] ?>" data-bs-toggle="pill"
+                                                        href="javascript:void(0)" role="tab" aria-controls="pills-kategori"
+                                                        aria-selected="false" onclick="getDetails(<?= $kat['id'] ?>)">
                                                         <i class="<?= $kat['icon'] ?>"></i>
                                                         <span class="menu-title"><?= $kat['nama_kategori'] ?></span>
-                                                        <button class="btn btn-info btn-sm ms-auto"
-                                                                data-bs-toggle="modal" data-bs-target="#editCategoryModal"
-                                                                data-id_kategori="<?= $kat['id'] ?>"
-                                                                data-name="<?= $kat['nama_kategori'] ?>"
-                                                                data-icon="<?= $kat['icon'] ?>"><i class="bi bi-pencil-square"></i>
-                                                        </button>
-                                                        <!-- <a href="?delete=<?= $kat['id'] ?>"
-                                                            class="btn btn-danger btn-sm float-end mx-1"
-                                                            onclick="return confirm('Hapus kategori ini?')">
-                                                            <i class="bi bi-trash"></i>
-                                                        </a> -->
                                                     </a>
+
+                                                    <div class="ms-auto me-2">
+                                                        <button class="btn btn-info btn-sm rounded-2" data-bs-toggle="modal"
+                                                            data-bs-target="#editCategoryModal"
+                                                            data-id_kategori="<?= $kat['id'] ?>"
+                                                            data-name="<?= $kat['nama_kategori'] ?>"
+                                                            data-icon="<?= $kat['icon'] ?>">
+                                                            <i class="bi bi-pencil-square"></i>
+                                                        </button>
+
+                                                        <button class="btn btn-danger btn-sm rounded-2"
+                                                            data-bs-toggle="modal" data-bs-target="#deleteKatModal"
+                                                            data-id="<?= $kat['id']; ?>"
+                                                            data-name="<?= $kat['nama_kategori'] ?>">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                        <!-- <button href="?delete=<?= $kat['id'] ?>"
+                                                        class="btn btn-danger btn-sm rounded-2"
+                                                        onclick="return confirm('Hapus kategori ini?')">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button> -->
+                                                    </div>
                                                 </li>
                                             <?php endforeach; ?>
                                         </ul>
@@ -225,26 +257,28 @@ try {
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
-                    
+
                 <div class="col-md-8">
                     <div class="card mb-4">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h3 class="card-title">Detail Kategori</h3>
                             <button type="button" class="btn btn-success btn-sm ms-auto" data-bs-toggle="modal"
-                                    data-bs-target="#addDetailModal">
+                                data-bs-target="#addDetailModal">
                                 <i class="bi bi-plus-lg pe-1"></i> Tambah Data
                             </button>
                         </div>
                         <div class="card-body">
+                            <h3 class="card-title text-danger">Edit Detail sedang Maintance</h3>
                             <table class="table table-bordered">
                                 <thead>
-                                <tr class="row">
-                                    <th class="col-md-1 text-center">#</th>
-                                    <th class="col-md-9">Judul</th>
-                                    <th class="col-md-2 text-center">Aksi</th>
-                                </tr>
+                                    <tr class="row">
+                                        <th class="col-md-1 text-center">#</th>
+                                        <th class="col-md-9">Judul</th>
+                                        <th class="col-md-2 text-center">Aksi</th>
+                                    </tr>
                                 </thead>
                                 <tbody id="detail-content">
                                     <!-- Konten detail akan diisi oleh AJAX -->
@@ -273,8 +307,11 @@ try {
                                             required>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="icon" class="form-label">Icon</label>
-                                        <input type="text" class="form-control" id="icon" name="icon" value="bi-folder">
+                                        <label for="data_icon" class="form-label">Icon Picker</label>
+                                        <!-- Create An Input Field For The Icon Picker -->
+                                        <input type="text" class="form-control iconpicker" placeholder="Icon Picker"
+                                            aria-label="Icone Picker" aria-describedby="basic-addon1" id="icon"
+                                            name="icon" value="bi-folder">
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -307,8 +344,9 @@ try {
                                             name="nama_kategori" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="edit_data_icon" class="form-label">Icon</label>
-                                        <input type="text" class="form-control" id="edit_data_icon" name="icon">
+                                        <label for="edit_data_icon" class="form-label">Icon Picker</label>
+                                        <input type="text" class="form-control iconpicker"
+                                            aria-describedby="basic-addon1" id="edit_data_icon" name="icon">
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -319,6 +357,33 @@ try {
                                 </div>
                             </div>
                         </form>
+                    </div>
+                </div>
+
+                <!-- Modal Konfirmasi Hapus Kategori -->
+                <div class="modal fade" id="deleteKatModal" tabindex="-1" aria-labelledby="deleteKatModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteKatModalLabel">Hapus Data</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="deleteKatForm" method="POST">
+                                    <input type="hidden" name="action" value="delete_category">
+                                    <input type="hidden" id="delete-id" name="id">
+                                    <p>Apakah Anda yakin ingin menghapus <span id="detail-info"></span>?. Semua data
+                                        detail juga akan ikut terhapus.</p>
+                                    <p>Tindakan ini tidak dapat dikembalikan.</p>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                <button type="submit" form="deleteKatForm" class="btn btn-danger">Hapus</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -396,7 +461,7 @@ try {
                     </div>
                 </div>
 
-                <!-- Modal Konfirmasi Hapus -->
+                <!-- Modal Konfirmasi Hapus Detail Kategori -->
                 <div class="modal fade" id="deleteDetailModal" tabindex="-1" aria-labelledby="deleteDetailModalLabel"
                     aria-hidden="true">
                     <div class="modal-dialog">
@@ -407,8 +472,8 @@ try {
                                     aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form id="deleteForm" method="POST">
-                                    <input type="hidden" name="action" value="delete">
+                                <form id="deleteDetailForm" method="POST">
+                                    <input type="hidden" name="action" value="delete_detail_category">
                                     <input type="hidden" id="delete-id" name="id">
                                     <p>Apakah Anda yakin ingin menghapus <span id="detail-info"></span>? Tindakan ini
                                         tidak dapat dikembalikan.</p>
@@ -416,11 +481,12 @@ try {
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                                <button type="submit" form="deleteForm" class="btn btn-danger">Hapus</button>
+                                <button type="submit" form="deleteDetailForm" class="btn btn-danger">Hapus</button>
                             </div>
                         </div>
                     </div>
                 </div>
+
 
             </div>
         </div>
@@ -432,91 +498,85 @@ try {
 
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Handle klik pada tombol edit kategori
-    document.querySelectorAll('.btn-info').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const id = this.getAttribute('data-id_kategori');
-            const nama_kategori = this.getAttribute('data-name');
-            const data_icon = this.getAttribute('data-icon');
-            
-            // Mendapatkan modal edit kategori
-            const editCategoryModal = document.getElementById('editCategoryModal');
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle klik pada tombol edit kategori
+        document.querySelectorAll('.btn-info').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const id = this.getAttribute('data-id_kategori');
+                const nama_kategori = this.getAttribute('data-name');
+                const data_icon = this.getAttribute('data-icon');
 
-            // Up modal's header.
-            const modalTitle = editCategoryModal.querySelector('.modal-title');
-            modalTitle.textContent = `Edit Kategori: ${nama_kategori}`;
+                // Mendapatkan modal edit kategori
+                const editCategoryModal = document.getElementById('editCategoryModal');
 
-            // Memastikan elemen ada sebelum mengisi form
-            if (document.getElementById('edit_id') && document.getElementById('edit_nama_kategori') && document.getElementById('edit_data_icon')) {
-                document.getElementById('edit_id').value = id || '';
-                document.getElementById('edit_nama_kategori').value = nama_kategori || '';
-                document.getElementById('edit_data_icon').value = data_icon || '';
-            }
+                // Up modal's header.
+                const modalTitle = editCategoryModal.querySelector('.modal-title');
+                modalTitle.textContent = `Edit Kategori: ${nama_kategori}`;
+
+                // Memastikan elemen ada sebelum mengisi form
+                if (document.getElementById('edit_id') && document.getElementById(
+                    'edit_nama_kategori') && document.getElementById('edit_data_icon')) {
+                    document.getElementById('edit_id').value = id || '';
+                    document.getElementById('edit_nama_kategori').value = nama_kategori || '';
+                    document.getElementById('edit_data_icon').value = data_icon || '';
+                }
+            });
         });
+        // // Reset modal setiap kali ditutup
+        // const editDetailModal = document.getElementById('editDetailModal');
+        // editDetailModal.addEventListener('hidden.bs.modal', function() {
+        //     // Reset form elements
+        //     document.getElementById('edit_detail_id').value = '';
+        //     document.getElementById('edit_kategori_id').selectedIndex = 0; // Reset to first option
+        //     document.getElementById('edit_judul').value = '';
+        // });
+        // handleEditDetailButtons();
+
+        // Handling Delete
+        const deleteKatModal = document.getElementById('deleteKatModal');
+        if (deleteKatModal) {
+            deleteKatModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+
+                const id = button.getAttribute('data-id');
+                const name = button.getAttribute('data-name');
+
+                // Update the modal's content.
+                const modalTitle = deleteKatModal.querySelector('.modal-title');
+                modalTitle.textContent = `Hapus Kategori: ${name}`;
+
+                // Populate the form with the id
+                const form = deleteKatModal.querySelector('#deleteKatForm');
+                form.querySelector('#delete-id').value = id;
+
+                // Update the confirmation message with category name
+                const detailInfo = deleteKatModal.querySelector('#detail-info');
+                detailInfo.textContent = name;
+            });
+        }
+
+        // Menampilkan Modal Tambah dan Reset Form
+        // Reset form modal tambah kategori
+        const addCategoryButton = document.getElementById('add-category');
+        if (addCategoryButton) {
+            addCategoryButton.addEventListener('click', function () {
+                const addCategoryModal = document.getElementById('addCategoryModal');
+                if (addCategoryModal) {
+                    addCategoryModal.querySelector('form').reset();
+                }
+            });
+        }
+        // Reset form modal tambah detail
+        const addDetailButton = document.getElementById('add-detail');
+        if (addDetailButton) {
+            addDetailButton.addEventListener('click', function () {
+                const addDetailModal = document.getElementById('addDetailModal');
+                if (addDetailModal) {
+                    addDetailModal.querySelector('form').reset();
+                }
+            });
+        }
     });
-
-    // Menghapus Data dengan Konfirmasi
-    document.querySelectorAll('.delete-kategori').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const id = this.getAttribute('data-id');
-            const judul = this.getAttribute('data-judul');
-
-            // Up modal's header.
-            const modalTitle = deleteDetailModal.querySelector('.modal-title');
-            modalTitle.textContent = `Delete Detail Kategori: ${judul}`;
-
-            // console.log(
-            //     `ID: ${id}, Judul: ${judul}`
-            // );
-
-            // Mengisi form dengan id yang akan dihapus
-            const form = deleteModal.querySelector('#deleteForm');
-            form.querySelector('#delete-id').value = id;
-        });
-    });
-    // Konfirmasi penghapusan detail kategori
-    document.querySelectorAll('.delete-detail').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const id = this.getAttribute('data-id');
-            const judul = this.getAttribute('data-judul');
-
-            // Up modal's header.
-            const modalTitle = deleteDetailModal.querySelector('.modal-title');
-            modalTitle.textContent = `Delete Detail Kategori: ${judul}`;
-
-            console.log(
-                `ID: ${id}, Judul: ${judul}`
-            );
-
-            // Mengisi form dengan id yang akan dihapus
-            const form = deleteModal.querySelector('#deleteForm');
-            form.querySelector('#delete-id').value = id;
-        });
-    });
-
-    // Menampilkan Modal Tambah dan Reset Form
-    // Reset form modal tambah kategori
-    const addCategoryButton = document.getElementById('add-category');
-    if (addCategoryButton) {
-        addCategoryButton.addEventListener('click', function () {
-            const addCategoryModal = document.getElementById('addCategoryModal');
-            if (addCategoryModal) {
-                addCategoryModal.querySelector('form').reset();
-            }
-        });
-    }
-    // Reset form modal tambah detail
-    const addDetailButton = document.getElementById('add-detail');
-    if (addDetailButton) {
-        addDetailButton.addEventListener('click', function () {
-            const addDetailModal = document.getElementById('addDetailModal');
-            if (addDetailModal) {
-                addDetailModal.querySelector('form').reset();
-            }
-        });
-    }
-});
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
@@ -528,7 +588,9 @@ document.addEventListener('DOMContentLoaded', function() {
         $.ajax({
             url: '/child-expens-category',
             method: 'GET',
-            data: {kategori_id: kategoriId},
+            data: {
+                kategori_id: kategoriId
+            },
             success: function (response) {
                 $('#detail-content').html(response);
             },
@@ -536,5 +598,69 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Gagal mengambil data');
             }
         });
+    }
+</script>
+
+
+<script src="../../assets/bootstrap/js/bootstrapicon-iconpicker.js"></script>
+<script>
+    // initialize the icon picker and done
+    $('.iconpicker').iconpicker({
+        // customize the icon picker with the following options
+        // THANKS FOR WATCHING!
+        title: 'My Icon Picker',
+        selected: false,
+        defaultValue: false,
+        placement: "bottom",
+        collision: "none",
+        animation: true,
+        hideOnSelect: true,
+        showFooter: true,
+        searchInFooter: false,
+        mustAccept: false,
+        selectedCustomClass: "bg-primary",
+        fullClassFormatter: function (e) {
+            return e;
+        },
+        input: "input,.iconpicker-input",
+        inputSearch: false,
+        container: false,
+        component: ".input-group-addon,.iconpicker-component",
+        templates: {
+            popover: '<div class="iconpicker-popover popover" role="tooltip"><div class="arrow"></div>' +
+                '<div class="popover-title"></div><div class="popover-content"></div></div>',
+            footer: '<div class="popover-footer"></div>',
+            buttons: '<button class="iconpicker-btn iconpicker-btn-cancel btn btn-default btn-sm">Cancel</button>',
+            search: '<input type="search" class="form-control iconpicker-search" placeholder="Type to filter" />',
+            iconpicker: '<div class="iconpicker"><div class="iconpicker-items"></div></div>',
+            iconpickerItem: '<a role="button" href="javascript:;" class="iconpicker-item"><i></i></a>'
+        }
+    });
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1VDDWMRSTH"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+    gtag('js', new Date());
+    gtag('config', 'G-1VDDWMRSTH');
+</script>
+<script>
+    try {
+        fetch(new Request("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js", {
+            method: 'HEAD',
+            mode: 'no-cors'
+        })).then(function (response) {
+            return true;
+        }).catch(function (e) {
+            var carbonScript = document.createElement("script");
+            carbonScript.src = "//cdn.carbonads.com/carbon.js?serve=CK7DKKQU&placement=wwwjqueryscriptnet";
+            carbonScript.id = "_carbonads_js";
+            document.getElementById("carbon-block").appendChild(carbonScript);
+        });
+    } catch (error) {
+        console.log(error);
     }
 </script>

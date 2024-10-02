@@ -34,12 +34,12 @@ include __DIR__ . '/../../layouts/master.php';
         <div class="container-fluid">
 
             <!-- Modal Structure -->
-            <div class="modal fade" id="editDataModal" tabindex="-1" aria-labelledby="editDataModalLabel"
+            <div class="modal fade" id="createDataModal" tabindex="-1" aria-labelledby="createDataModalLabel"
                 aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="editDataModalLabel">Create Data</h5>
+                            <h5 class="modal-title" id="createDataModalLabel">Create Data</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -50,10 +50,12 @@ include __DIR__ . '/../../layouts/master.php';
                                         <div class="input-group">
                                             <input type="text" class="form-control" id="namaSiswa"
                                                 placeholder="Astari Budi Handayani">
-                                            <button class="btn btn-outline-secondary" type="button"
-                                                id="cariSiswaBtn">Cari</button>
-                                            <button class="btn btn-success" type="button" id="tambahSiswaBtn">+
-                                                Tambah</button>
+                                            <button class="btn btn-outline-secondary" type="button" id="cariSiswaBtn">
+                                                <i class="bi bi-search"></i>
+                                                Search
+                                            </button>
+                                            <!-- <button class="btn btn-success" type="button" id="tambahSiswaBtn">+
+                                                Tambah</button> -->
                                         </div>
                                     </div>
                                 </div>
@@ -87,10 +89,59 @@ include __DIR__ . '/../../layouts/master.php';
                                             + Add Item
                                         </button> -->
                                         <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                            data-bs-target="#jenisPembayaranModal">
+                                            data-bs-target="#jenisPembayaranModal" id="openModal2">
                                             + Add Item
                                         </button>
                                     </div>
+                                </div>
+
+                                <!-- ... other fields ... -->
+                                <hr>
+                                <div class="form-group">
+                                    <table class="table table-striped table-bordered" id="tabel-list-item-pengeluaran">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Nama Pembayaran</th>
+                                                <th>Tagihan</th>
+                                                <th>Jumlah Bayar</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="row-item-bayar">
+                                                <td>1</td>
+                                                <td>
+                                                    <label for="jenis" class="form-label">SPP Februari 2023</label>
+                                                </td>
+                                                <td>
+                                                    <label for="tagihan" class="form-label">350.000</label>
+                                                </td>
+                                                <td>
+                                                    <input type="jumlah_bayar" class="form-control"
+                                                        name="jumlah_bayar[]" required>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr id="row-total-bayar">
+                                                <td></td>
+                                                <td colspan="2">
+                                                    <div class="d-flex justify-content-between">
+                                                        Total
+                                                        <select name="jenis_bayar" class="form-select"
+                                                            style="width:auto">
+                                                            <option value="1">Tunai</option>
+                                                            <option value="2">Transfer</option>
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                                <td class="text-end fw-bold" style="padding-right:17px"
+                                                    id="total-item-nilai-bayar">
+                                                    0
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
                                 </div>
 
                             </form>
@@ -143,71 +194,6 @@ include __DIR__ . '/../../layouts/master.php';
                                         <td>350.000</td>
                                         <td><button class="btn btn-success btn-sm pilihBtn">+ Pilih</button></td>
                                     </tr>
-                                    <tr>
-                                        <td>3</td>
-                                        <td>SPP 3 2023</td>
-                                        <td>350.000</td>
-                                        <td>0</td>
-                                        <td>350.000</td>
-                                        <td><button class="btn btn-success btn-sm pilihBtn">+ Pilih</button></td>
-                                    </tr>
-                                    <tr>
-                                        <td>4</td>
-                                        <td>SPP 4 2023</td>
-                                        <td>350.000</td>
-                                        <td>0</td>
-                                        <td>350.000</td>
-                                        <td><button class="btn btn-success btn-sm pilihBtn">+ Pilih</button></td>
-                                    </tr>
-                                    <tr>
-                                        <td>5</td>
-                                        <td>SPP 5 2023</td>
-                                        <td>350.000</td>
-                                        <td>0</td>
-                                        <td>350.000</td>
-                                        <td><button class="btn btn-success btn-sm pilihBtn">+ Pilih</button></td>
-                                    </tr>
-                                    <tr>
-                                        <td>6</td>
-                                        <td>SPP 6 2023</td>
-                                        <td>350.000</td>
-                                        <td>0</td>
-                                        <td>350.000</td>
-                                        <td><button class="btn btn-success btn-sm pilihBtn">+ Pilih</button></td>
-                                    </tr>
-                                    <tr>
-                                        <td>7</td>
-                                        <td>SPP 7 2023</td>
-                                        <td>350.000</td>
-                                        <td>0</td>
-                                        <td>350.000</td>
-                                        <td><button class="btn btn-success btn-sm pilihBtn">+ Pilih</button></td>
-                                    </tr>
-                                    <tr>
-                                        <td>8</td>
-                                        <td>SPP 8 2023</td>
-                                        <td>350.000</td>
-                                        <td>0</td>
-                                        <td>350.000</td>
-                                        <td><button class="btn btn-success btn-sm pilihBtn">+ Pilih</button></td>
-                                    </tr>
-                                    <tr>
-                                        <td>9</td>
-                                        <td>SPP 9 2023</td>
-                                        <td>350.000</td>
-                                        <td>0</td>
-                                        <td>350.000</td>
-                                        <td><button class="btn btn-success btn-sm pilihBtn">+ Pilih</button></td>
-                                    </tr>
-                                    <tr>
-                                        <td>10</td>
-                                        <td>SPP 10 2023</td>
-                                        <td>350.000</td>
-                                        <td>0</td>
-                                        <td>350.000</td>
-                                        <td><button class="btn btn-success btn-sm pilihBtn">+ Pilih</button></td>
-                                    </tr>
-                                    <!-- More rows here -->
                                 </tbody>
                             </table>
                         </div>
@@ -219,13 +205,11 @@ include __DIR__ . '/../../layouts/master.php';
             </div>
 
 
-
-
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Grade Level </h3>
                     <button type="button" class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal"
-                        data-bs-target="#editDataModal">
+                        data-bs-target="#createDataModal">
                         <i class="bi bi-plus-lg pe-1"></i> Tambah Data
                     </button>
 
@@ -284,6 +268,7 @@ include __DIR__ . '/../../layouts/master.php';
                     </table>
                 </div>
             </div>
+
         </div>
     </div>
     <!--end::App Content-->
@@ -325,6 +310,25 @@ include __DIR__ . '/../../layouts/master.php';
             "autoWidth": false,
             "responsive": true
         });
+
+        // Ketika tombol untuk membuka modal kedua diklik
+        document.getElementById('openModal2').addEventListener('click', function () {
+            // Sembunyikan modal pertama, tapi jangan ditutup
+            var createDataModal = new bootstrap.Modal(document.getElementById('createDataModal'));
+            createDataModal.hide();
+
+            // Tampilkan modal kedua
+            var jenisPembayaranModal = new bootstrap.Modal(document.getElementById('jenisPembayaranModal'));
+            jenisPembayaranModal.show();
+        });
+
+        // Ketika modal kedua ditutup
+        document.getElementById('jenisPembayaranModal').addEventListener('hidden.bs.modal', function () {
+            // Buka kembali modal pertama setelah modal kedua ditutup
+            var createDataModal = new bootstrap.Modal(document.getElementById('createDataModal'));
+            createDataModal.show();
+        });
+
 
         // Handle "Pilih" button click
         $('#jenisPembayaranTable').on('click', '.pilihBtn', function () {
