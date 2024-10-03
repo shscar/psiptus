@@ -13,31 +13,32 @@ if (isset($_GET['kategori_id'])) {
     // Tampilkan data dalam format tabel
     if ($details) {
         foreach ($details as $index => $detail) {
-            echo '<tr class="row">';
-            echo '<td class="col-md-1 text-center">' . ($index + 1) . '</td>';
-            echo '<td class="col-md-9">' . htmlspecialchars($detail['judul']) . '</td>';
-            echo '<td class="col-md-2 text-center">';
-            echo '<button class="btn btn-warning btn-sm edit-detail" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#editDetailModal" 
-                    data-detail-id="' . $detail['id'] . '" 
-                    data-kategori-id="' . $detail['kategori_id'] . '" 
-                    data-judul="' . $detail['judul'] . '">
-                        <i class="bi bi-pencil-square"></i>
-                </button>';
+            echo '<tr class="row">
+                    <td class="col-md-1 text-center">' . ($index + 1) . '</td>
+                    <td class="col-md-9">' . htmlspecialchars($detail['judul']) . '</td>
+                    <td class="col-md-2 text-center">
+                        <button class="btn btn-warning btn-sm edit-detail" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#editDetailModal" 
+                            data-detail-id="' . $detail['id'] . '" 
+                            data-kategori-id="' . $detail['kategori_id'] . '" 
+                            data-judul="' . $detail['judul'] . '">
+                                <i class="bi bi-pencil-square"></i>
+                        </button>
 
-            echo '<button class="btn btn-danger btn-sm delete-detail" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#deleteDetailModal" 
-                    data-id="' . $detail['id'] . '"
-                    data-judul="' . $detail['judul'] . '">
-                        <i class="bi bi-trash"></i>
-                </button>';
-            echo '</td>';
-            echo '</tr>';
+                        <button class="btn btn-danger btn-sm delete-detail" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#deleteDetailModal" 
+                            data-id="' . $detail['id'] . '"
+                            data-judul="' . $detail['judul'] . '">
+                                <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            ';
         }
         echo "<script>
-            // Handle klik pada tombol edit detail kategori// Function untuk handle tombol edit detail kategori
+            // Handle klik pada tombol edit detail kategori
 
             // function handleEditDetailButtons() {
                 document.querySelectorAll('.edit-detail').forEach(function (button) {

@@ -244,11 +244,6 @@ try {
                                                             data-name="<?= $kat['nama_kategori'] ?>">
                                                             <i class="bi bi-trash"></i>
                                                         </button>
-                                                        <!-- <button href="?delete=<?= $kat['id'] ?>"
-                                                        class="btn btn-danger btn-sm rounded-2"
-                                                        onclick="return confirm('Hapus kategori ini?')">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button> -->
                                                     </div>
                                                 </li>
                                             <?php endforeach; ?>
@@ -272,7 +267,7 @@ try {
                         </div>
                         <div class="card-body">
                             <h3 class="card-title text-danger">Edit Detail sedang Maintance</h3>
-                            <table class="table table-bordered">
+                            <table class="table table-striped table-bordered">
                                 <thead>
                                     <tr class="row">
                                         <th class="col-md-1 text-center">#</th>

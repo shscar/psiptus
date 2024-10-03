@@ -3,9 +3,28 @@
 
 <!-- DataTables Buttons CSS (Opsional, jika menggunakan tombol) -->
 <!-- <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css" /> -->
-<?php
+<?php 
+// Memulai output buffering
+ob_start();
 include __DIR__ . '/../../layouts/master.php';
+$db = Database::getInstance()->getConnection();
 
+// Ambil data tagihan dan pembayaran siswa
+$stmt = $db->prepare("
+    SELECT spl.nama_pembayaran, spl.nominal AS nilai_tagihan, 
+        IFNULL(SUM(ps.jumlah_bayar), 0) AS dibayar, 
+        (spl.nominal - IFNULL(SUM(ps.jumlah_bayar), 0)) AS kurang
+    FROM siswa_pembayaran_lainnya spl
+    LEFT JOIN pembayaran_spp ps ON spl.id = ps.tarif_spp_id
+    WHERE spl.status_aktif = 1
+    GROUP BY spl.id, spl.nama_pembayaran, spl.nominal
+");
+$stmt->execute();
+$tagihanData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+// Mengakhiri output buffering
+ob_end_flush();
 ?>
 
 <!--begin::App Main-->
@@ -203,7 +222,6 @@ include __DIR__ . '/../../layouts/master.php';
                     </div>
                 </div>
             </div>
-
 
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">

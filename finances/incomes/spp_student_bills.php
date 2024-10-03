@@ -1,5 +1,6 @@
 <?php
-ob_start(); // Memulai output buffering
+// Memulai output buffering
+ob_start(); 
 
 include __DIR__ . '/../../layouts/master.php';
 $db = Database::getInstance()->getConnection();
@@ -136,7 +137,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-ob_end_flush(); // Mengakhiri output buffering
+// Mengakhiri output buffering
+ob_end_flush();
 ?>
 
 

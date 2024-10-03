@@ -28,6 +28,5 @@ final class SiswaPembayaranLainnya extends AbstractMigration
             ->addColumn('status_aktif', 'boolean', ['default' => true])
             ->addTimestamps()
             ->create();
-
     }
 }
