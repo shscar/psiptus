@@ -7,7 +7,12 @@
 
 // Menu aktif untuk dropdown
 $dropdownRoutes = [
-    'sid-01' => ['/siswa', '/tahun-ajaran', '/kelas', '/tingkat-kelas'],
+    'sid-01' => [
+        '/tahun-ajaran',
+        '/kelas',
+        '/tingkat-kelas',
+        'siswa-i' => ['/siswa', '/siswa/tambah-siswa', '/siswa/edit-siswa']
+    ],
     'sid-02' => [
         '/pendapatan/pembayaran-siswa',
         '/pendapatan/tagihan-spp-siswa',
@@ -63,9 +68,10 @@ foreach ($dropdownRoutes as $key => $routes) {
                     <ul class="nav nav-treeview"
                         style="<?php echo $activeDropdown === 'sid-01' ? 'display: block;' : 'display: none;'; ?>">
                         <li class="nav-item">
-                            <a href="/siswa" class="nav-link <?php echo isActive('/siswa', $requestUri); ?>">
+                            <a href="/siswa"
+                                class="nav-link <?php echo isActive($dropdownRoutes['sid-01']['siswa-i'], $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
-                                <p>Data siswa</p>
+                                <p>Data Siswa</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -205,26 +211,26 @@ foreach ($dropdownRoutes as $key => $routes) {
 
 <!--begin::OverlayScrollbars Configure-->
 <script>
-const SELECTOR_SIDEBAR_WRAPPER = ".sidebar-wrapper";
-const Default = {
-    scrollbarTheme: "os-theme-light",
-    scrollbarAutoHide: "leave",
-    scrollbarClickScroll: true,
-};
-document.addEventListener("DOMContentLoaded", function() {
-    const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
-    if (
-        sidebarWrapper &&
-        typeof OverlayScrollbarsGlobal?.OverlayScrollbars !== "undefined"
-    ) {
-        OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
-            scrollbars: {
-                theme: Default.scrollbarTheme,
-                autoHide: Default.scrollbarAutoHide,
-                clickScroll: Default.scrollbarClickScroll,
-            },
-        });
-    }
-});
+    const SELECTOR_SIDEBAR_WRAPPER = ".sidebar-wrapper";
+    const Default = {
+        scrollbarTheme: "os-theme-light",
+        scrollbarAutoHide: "leave",
+        scrollbarClickScroll: true,
+    };
+    document.addEventListener("DOMContentLoaded", function () {
+        const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+        if (
+            sidebarWrapper &&
+            typeof OverlayScrollbarsGlobal?.OverlayScrollbars !== "undefined"
+        ) {
+            OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+                scrollbars: {
+                    theme: Default.scrollbarTheme,
+                    autoHide: Default.scrollbarAutoHide,
+                    clickScroll: Default.scrollbarClickScroll,
+                },
+            });
+        }
+    });
 </script>
 <!--end::OverlayScrollbars Configure-->

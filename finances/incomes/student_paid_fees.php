@@ -3,7 +3,7 @@
 
 <!-- DataTables Buttons CSS (Opsional, jika menggunakan tombol) -->
 <!-- <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css" /> -->
-<?php 
+<?php
 // Memulai output buffering
 ob_start();
 include __DIR__ . '/../../layouts/master.php';
@@ -84,13 +84,6 @@ ob_end_flush();
                                     <div class="col-sm-9">
                                         <input type="text" class="form-control" id="noInvoice"
                                             placeholder="Digenerate otomatis oleh sistem" readonly>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3 row">
-                                    <label for="tanggalInvoice" class="col-sm-3 col-form-label">Tanggal Invoice</label>
-                                    <div class="col-sm-9">
-                                        <input type="date" class="form-control" id="tanggalInvoice" value="2024-09-26">
                                     </div>
                                 </div>
 

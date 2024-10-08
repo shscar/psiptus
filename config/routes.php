@@ -14,7 +14,7 @@ $routes = [
     // crud siswa
     '/siswa' => '/academics/students/index.php',
     '/siswa/tambah-siswa' => '/academics/students/create.php',
-    '/siswa/edit-siswa' => '/students/update_siswa.php',
+    '/siswa/edit-siswa' => '/academics/students/update.php',
 
     // lain-lain
     '/tahun-ajaran' => '/academics/school_years/index.php',
@@ -41,16 +41,24 @@ $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 
 // Fungsi untuk menentukan apakah link atau menu dropdown sedang aktif
-function isActive($route, $requestUri)
+function isActive($route, $currentUri)
 {
-    return $route === $requestUri ? 'active' : '';
+    if (is_array($route)) {
+        return in_array($currentUri, $route) ? 'active' : '';
+    }
+    return $currentUri === $route ? 'active' : '';
 }
 
 // Fungsi untuk memeriksa apakah salah satu rute dalam array aktif
-function isAnyActive($routes, $requestUri)
+function isAnyActive($routes, $currentUri)
 {
-    foreach ($routes as $route) {
-        if (isActive($route, $requestUri) === 'active') {
+    foreach ($routes as $key => $route) {
+        // Check if the current route is in an array (like siswa-i)
+        if (is_array($route)) {
+            if (isAnyActive($route, $currentUri)) {
+                return true;
+            }
+        } elseif ($currentUri === $route) {
             return true;
         }
     }

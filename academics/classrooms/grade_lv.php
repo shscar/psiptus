@@ -150,7 +150,7 @@ ob_end_flush();
                                     <tr>
                                         <th>No.</th>
                                         <th>Grade</th>
-                                        <th>Tahun Ajaran</th>
+                                        <th>Ajaran</th>
                                         <th style="width:68%;">Keterangan</th>
                                         <th style="width:9%;">Aksi</th>
                                     </tr>
