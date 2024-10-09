@@ -6,7 +6,7 @@ $routes = [
     '/test' => '/testing/index.php',
     // '/login' => '/dashboard/login.php',
 
-    // '/guru-staff' => '/users/guru-karyawan.php',
+    '/guru-staff' => '/teachers_employees/index.php',
     // '/user' => '/users/administrator/index.php',
     // '/student/peserta' => '/students/peserta/index.php',
 

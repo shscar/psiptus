@@ -596,7 +596,6 @@ try {
     }
 </script>
 
-
 <script src="../../assets/bootstrap/js/bootstrapicon-iconpicker.js"></script>
 <script>
     // initialize the icon picker and done

@@ -83,9 +83,9 @@ ob_end_flush();
                                 </button>
                             </div>
                             <?php
-                            if (!empty($success)) {
-                                echo '<div class="alert alert-success">' . $success . '</div>';
-                            }
+                                if (!empty($success)) {
+                                    echo '<div class="alert alert-success">' . $success . '</div>';
+                                }
                             ?>
                         </div>
 
@@ -114,20 +114,20 @@ ob_end_flush();
                                                 <td><?= htmlspecialchars($row['kelas']) ?: '-'; ?></td>
                                                 <td class="project-state">
                                                     <?php
-                                                    $status = htmlspecialchars($row['status']) ?: '-';
-                                                    switch ($status) {
-                                                        case 'Aktif':
-                                                            $badgeClass = 'badge bg-success';
-                                                            $statusText = 'Aktif';
-                                                            break;
-                                                        case 'Tidak Aktif':
-                                                            $badgeClass = 'badge bg-danger';
-                                                            $statusText = 'Tidak Aktif';
-                                                            break;
-                                                        default:
-                                                            $badgeClass = 'badge bg-secondary';
-                                                            $statusText = 'Unknown';
-                                                    }
+                                                        $status = htmlspecialchars($row['status']) ?: '-';
+                                                        switch ($status) {
+                                                            case 'Aktif':
+                                                                $badgeClass = 'badge bg-success';
+                                                                $statusText = 'Aktif';
+                                                                break;
+                                                            case 'Tidak Aktif':
+                                                                $badgeClass = 'badge bg-danger';
+                                                                $statusText = 'Tidak Aktif';
+                                                                break;
+                                                            default:
+                                                                $badgeClass = 'badge bg-secondary';
+                                                                $statusText = 'Unknown';
+                                                        }
                                                     ?>
                                                     <span class="<?php echo $badgeClass; ?>"><?php echo $statusText; ?></span>
                                                 </td>
