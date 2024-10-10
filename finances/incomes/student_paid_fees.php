@@ -1,31 +1,57 @@
-<!-- DataTables CSS -->
-<!-- <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" /> -->
-
-<!-- DataTables Buttons CSS (Opsional, jika menggunakan tombol) -->
-<!-- <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css" /> -->
 <?php
-// Memulai output buffering
-ob_start();
-include __DIR__ . '/../../layouts/master.php';
-$db = Database::getInstance()->getConnection();
+    // Memulai output buffering
+    ob_start();
+    include __DIR__ . '/../../layouts/master.php';
+    $db = Database::getInstance()->getConnection();
 
-// Ambil data tagihan dan pembayaran siswa
-$stmt = $db->prepare("
-    SELECT spl.nama_pembayaran, spl.nominal AS nilai_tagihan, 
-        IFNULL(SUM(ps.jumlah_bayar), 0) AS dibayar, 
-        (spl.nominal - IFNULL(SUM(ps.jumlah_bayar), 0)) AS kurang
-    FROM siswa_pembayaran_lainnya spl
-    LEFT JOIN pembayaran_spp ps ON spl.id = ps.tarif_spp_id
-    WHERE spl.status_aktif = 1
-    GROUP BY spl.id, spl.nama_pembayaran, spl.nominal
-");
-$stmt->execute();
-$tagihanData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Ambil data tagihan dan pembayaran siswa
+    $stmt = $db->prepare("
+        SELECT spl.nama_pembayaran, spl.nominal AS nilai_tagihan, 
+            IFNULL(SUM(ps.jumlah_bayar), 0) AS dibayar, 
+            (spl.nominal - IFNULL(SUM(ps.jumlah_bayar), 0)) AS kurang
+        FROM siswa_pembayaran_lainnya spl
+        LEFT JOIN pembayaran_spp ps ON spl.id = ps.tarif_spp_id
+        WHERE spl.status_aktif = 1
+        GROUP BY spl.id, spl.nama_pembayaran, spl.nominal
+    ");
+    $stmt->execute();
+    $tagihanData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Fungsi untuk mengambil data siswa dari tabel 'siswa'
+    function getSiswaData($db) {
+        $stmt = $db->prepare("SELECT nis, nama_lengkap AS nama FROM siswa");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    // Mengambil data siswa untuk digunakan di JavaScript
+    $siswaData = getSiswaData($db);
 
-// Mengakhiri output buffering
-ob_end_flush();
+    // Mengakhiri output buffering
+    ob_end_flush();
 ?>
+
+<!-- <style>
+    #autocomplete-list {
+        border: 1px solid #ced4da;
+        position: absolute;
+        background-color: #fff;
+        max-height: 200px;
+        overflow-y: auto;
+        width: 100%;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 99;
+    }
+
+    #autocomplete-list .list-group-item {
+        cursor: pointer;
+        background-color: #fff;
+        border: 1px solid #ced4da;
+    }
+
+    #autocomplete-list .list-group-item:hover {
+        background-color: #f4f6f9;
+    }
+</style> -->
 
 <!--begin::App Main-->
 <main class="app-main">
@@ -52,6 +78,46 @@ ob_end_flush();
     <div class="app-content">
         <div class="container-fluid">
 
+        
+<style>
+    /* Optimized autocomplete list styling for AdminLTE 4 */
+    #autocomplete-list {
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        z-index: 99;
+        position: absolute;
+        background-color: #f8f9fa;
+        max-height: 200px;
+        overflow-y: auto;
+        width: 100%;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    #autocomplete-list div {
+        padding: 10px;
+        cursor: pointer;
+        background-color: #fff;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    #autocomplete-list div:hover {
+        background-color: #f1f1f1;
+    }
+
+    /* To highlight the active element */
+    #autocomplete-list .autocomplete-active {
+        background-color: #007bff;
+        color: #fff;
+    }
+</style>
+
+<!-- AdminLTE 4 Input Field -->
+<div class="form-group">
+    <label for="nama_siswa">Nama Siswa</label>
+    <input class="form-control" type="text" id="nama_siswa" name="nama_siswa" autocomplete="off">
+    <div id="autocomplete-list"></div>
+</div>
+
             <!-- Modal Structure -->
             <div class="modal fade" id="createDataModal" tabindex="-1" aria-labelledby="createDataModalLabel"
                 aria-hidden="true">
@@ -66,13 +132,17 @@ ob_end_flush();
                                 <div class="mb-3 row">
                                     <label for="namaSiswa" class="col-sm-3 col-form-label">Nama Siswa</label>
                                     <div class="col-sm-9">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control" id="namaSiswa"
-                                                placeholder="Astari Budi Handayani">
-                                            <button class="btn btn-outline-secondary" type="button" id="cariSiswaBtn">
+                                        <div class="form-group">
+                                                <label for="nama_siswa">Nama Siswa</label>
+                                                <input class="form-control" type="text" id="nama_siswa" name="nama_siswa" autocomplete="off">
+                                                <div id="autocomplete-list" class="list-group"></div>
+                                                
+                                            <!-- <input class="form-control" type="text" id="nama_siswa" name="nama_siswa" autocomplete="off">
+                                            <div id="autocomplete-list"></div> -->
+                                            <!-- <button class="btn btn-outline-secondary" type="button" id="cariSiswaBtn">
                                                 <i class="bi bi-search"></i>
                                                 Search
-                                            </button>
+                                            </button> -->
                                             <!-- <button class="btn btn-success" type="button" id="tambahSiswaBtn">+
                                                 Tambah</button> -->
                                         </div>
@@ -363,6 +433,88 @@ ob_end_flush();
             });
         });
     });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const input = document.getElementById('nama_siswa');
+    const nisInput = document.getElementById('nis_siswa'); // Input untuk NIS
+    const autocompleteList = document.getElementById('autocomplete-list');
+
+    // Data siswa yang diambil dari PHP (ubah ini menjadi data siswa nyata dari server)
+    const suggestions = <?php echo json_encode($siswaData); ?>; // [{nis: '123', nama: 'Ahmad Hidayat'}, ...]
+
+    input.addEventListener('input', function () {
+        const value = this.value;
+        autocompleteList.innerHTML = ''; // Bersihkan list autocomplete 
+        if (!value) {
+            return; // Tidak ada input, jangan tampilkan apa-apa
+        }
+
+        // Filter saran yang sesuai
+        const filteredSuggestions = suggestions.filter(suggestion =>
+            suggestion.nama.toLowerCase().includes(value.toLowerCase())
+        );
+
+        // Tampilkan daftar autocomplete
+        filteredSuggestions.forEach(suggestion => {
+            const item = document.createElement('div');
+            item.textContent = suggestion.nama;
+            item.addEventListener('click', function () {
+                // Masukkan nama dan NIS ke input
+                input.value = suggestion.nama;
+                nisInput.value = suggestion.nis;
+                autocompleteList.innerHTML = ''; // Hilangkan daftar setelah pemilihan
+            });
+            autocompleteList.appendChild(item);
+        });
+    });
+
+    // Hilangkan daftar autocomplete ketika input sudah selesai
+    input.addEventListener('blur', function () {
+        setTimeout(function () {
+            autocompleteList.innerHTML = ''; // Hilangkan daftar setelah input selesai
+        }, 100); // Tambahkan sedikit jeda untuk memastikan klik terdaftar
+    });
+});
+
+    // document.addEventListener('DOMContentLoaded', function () {
+    //     const input = document.getElementById('nama_siswa');
+    //     const autocompleteList = document.getElementById('autocomplete-list');
+
+    //     let suggestions = ['Ahmad Hidayat', 'Budi Santoso', 'Citra Permata', 'Dewi Lestari']; // Contoh data
+
+    //     input.addEventListener('input', function () {
+    //         const value = this.value;
+    //         autocompleteList.innerHTML = ''; // Bersihkan list autocomplete
+    //         if (!value) {
+    //             return; // Tidak ada input, jangan tampilkan apa-apa
+    //         }
+            
+    //         // Filter saran yang sesuai
+    //         const filteredSuggestions = suggestions.filter(suggestion =>
+    //             suggestion.toLowerCase().includes(value.toLowerCase())
+    //         );
+            
+    //         // Tampilkan daftar autocomplete
+    //         filteredSuggestions.forEach(suggestion => {
+    //             const item = document.createElement('div');
+    //             item.textContent = suggestion;
+    //             item.addEventListener('click', function () {
+    //                 input.value = suggestion;
+    //                 autocompleteList.innerHTML = ''; // Hilangkan daftar setelah pemilihan
+    //             });
+    //             autocompleteList.appendChild(item);
+    //         });
+    //     });
+
+    //     // Hilangkan daftar autocomplete ketika input sudah selesai
+    //     input.addEventListener('blur', function () {
+    //         setTimeout(function () {
+    //             autocompleteList.innerHTML = ''; // Hilangkan daftar setelah input selesai
+    //         }, 100); // Tambahkan sedikit jeda untuk memastikan klik terdaftar
+    //     });
+    // });
 </script>
 
 <!-- DataTables CSS/JS Dependencies -->
