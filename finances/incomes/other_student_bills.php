@@ -190,11 +190,11 @@ ob_end_flush();
                                 <thead>
                                     <tr>
                                         <th>No</th>
+                                        <th>Jenis</th>
                                         <th>Nama Pembayaran</th>
                                         <th>Diangsur</th>
                                         <th>Nominal</th>
-                                        <th style="width: 35%">Keterangan</th>
-                                        <th>Tahun Ajaran</th>
+                                        <th>Ajaran</th>
                                         <th>Status</th>
                                         <th>Aksi</th>
                                     </tr>
@@ -203,10 +203,10 @@ ob_end_flush();
                                     <?php foreach ($results as $index => $row): ?>
                                     <tr>
                                         <td><?= $index + 1; ?></td>
+                                        <td>test</td>
                                         <td><?= $row['nama_pembayaran'] ?? '-'; ?></td>
                                         <td><?= $row['bisa_diangsur'] ? 'Ya' : 'Tidak'; ?></td>
                                         <td>Rp. <?= number_format($row['nominal'], 2, ',', '.'); ?></td>
-                                        <td><?= $row['keterangan'] ?? '-'; ?></td>
                                         <td><?= $row['tahun_ajaran'] ?? '-'; ?></td>
                                         <td class="text-center"><?= $row['status_aktif'] ? 'Aktif' : 'Tidak Aktif'; ?>
                                         </td>

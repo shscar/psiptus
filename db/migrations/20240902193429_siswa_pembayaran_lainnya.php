@@ -20,7 +20,8 @@ final class SiswaPembayaranLainnya extends AbstractMigration
     public function change(): void
     {
         $table = $this->table('siswa_pembayaran_lainnya');
-        $table->addColumn('nama_pembayaran', 'string', ['limit' => 100, 'null' => false])
+        $table->addColumn('jenis_dana_pemasukan_id', 'integer')
+            ->addColumn('nama_pembayaran', 'string', ['limit' => 100, 'null' => false])
             ->addColumn('bisa_diangsur', 'boolean', ['default' => true])
             ->addColumn('nominal', 'decimal', ['precision' => 10, 'scale' => 2, 'null' => false])
             ->addColumn('tahun_ajaran_id', 'integer', ['limit' => 9, 'null' => true])

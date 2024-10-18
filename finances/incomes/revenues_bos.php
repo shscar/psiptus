@@ -201,7 +201,7 @@ ob_end_flush();
                                             <th>Deskripsi</th>
                                             <th>Nominal</th>
                                             <th>Sumber Dana</th>
-                                            <th>Tahun Ajaran</th>
+                                            <th>Ajaran</th>
                                             <th>Keterangan</th>
                                             <th>Aksi</th>
                                         </tr>

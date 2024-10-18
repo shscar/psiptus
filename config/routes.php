@@ -28,6 +28,7 @@ $routes = [
     '/pendapatan/tagihan-lain-siswa' => '/finances/incomes/other_student_bills.php',
     '/pendapatan/pemasukan-bos' => '/finances/incomes/revenues_bos.php',
     '/pendapatan/pemasukan-lain' => '/finances/incomes/revenues_other.php',
+    '/pendapatan/jenis-pemasukan' => '/finances/incomes/type_income.php',
 
     // pengeluaran
     '/pengeluaran/kategori-pengeluaran' => '/finances/outlays/expens_category.php',

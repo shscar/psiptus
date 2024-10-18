@@ -166,6 +166,68 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo "Error: " . $e->getMessage();
         }
     }
+
+    // Edit Record
+    if ($action == 'edit') {
+        // Ambil data pengeluaran berdasarkan ID
+        $pengeluaran_id = $_POST['pengeluaran_id'];
+        
+        // Query untuk mendapatkan data pengeluaran
+        $stmt = $db->prepare("SELECT * FROM pengeluaran_dana WHERE id = ?");
+        $stmt->execute([$pengeluaran_id]);
+        $pengeluaran = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Query untuk mendapatkan item pengeluaran
+        $itemStmt = $db->prepare("SELECT * FROM item_pengeluaran_dana WHERE pengeluaran_id = ?");
+        $itemStmt->execute([$pengeluaran_id]);
+        $items = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Kirim data ke frontend dalam format JSON
+        echo json_encode(['pengeluaran' => $pengeluaran, 'items' => $items]);
+        exit;
+    }
+
+    // Update Record
+    if ($action == 'update') {
+        // Ambil variabel dari form
+        $pengeluaran_id = $_POST['pengeluaran_id'];
+        $tanggal_pengeluaran = $_POST['tanggal_pengeluaran'];
+        $pihak_terlibat = $_POST['pihak_terlibat'];
+        $detail_kategori_pengeluaran_id = $_POST['detail_kategori_pengeluaran_id'];
+        $sumber_dana = $_POST['sumber_dana'];
+        $jenis_bayar = $_POST['jenis_bayar'];
+        $total_jumlah = 0;
+
+        // Handle file upload
+        $bukti_pengeluaran = null;
+        if (isset($_FILES['bukti_pengeluaran']) && $_FILES['bukti_pengeluaran']['error'] == UPLOAD_ERR_OK) {
+            $bukti_pengeluaran = handleFileUpload($_FILES['bukti_pengeluaran']);
+        }
+
+        // Update pengeluaran_dana
+        $stmt = $db->prepare("UPDATE pengeluaran_dana SET tanggal_pengeluaran = ?, bukti_pengeluaran = ?, pihak_terlibat = ?, detail_kategori_pengeluaran_id = ?, sumber_dana = ?, jenis_bayar = ?, total_jumlah = ? WHERE id = ?");
+        $stmt->execute([$tanggal_pengeluaran, $bukti_pengeluaran, $pihak_terlibat, $detail_kategori_pengeluaran_id, $sumber_dana, $jenis_bayar, $total_jumlah, $pengeluaran_id]);
+
+        // Hapus semua item pengeluaran lama
+        $itemStmt = $db->prepare("DELETE FROM item_pengeluaran_dana WHERE pengeluaran_id = ?");
+        $itemStmt->execute([$pengeluaran_id]);
+
+        // Tambah ulang item pengeluaran
+        $itemStmt = $db->prepare("INSERT INTO item_pengeluaran_dana (pengeluaran_id, nama_pengeluaran, keterangan, jumlah_barang, nilai_bayar) VALUES (?, ?, ?, ?, ?)");
+        foreach ($_POST['nama_pengeluaran'] as $index => $nama_pengeluaran) {
+            $keterangan = $_POST['keterangan'][$index];
+            $jumlah_barang = $_POST['jumlah_barang'][$index];
+            $nilai_bayar = (float) $jumlah_barang;
+            $itemStmt->execute([$pengeluaran_id, $nama_pengeluaran, $keterangan, $jumlah_barang, $nilai_bayar]);
+        }
+
+        // Redirect atau tampilkan pesan sukses
+        echo "<script>
+            alert('Data pengeluaran berhasil diperbarui.');
+            window.location.href = '/pengeluaran/detail-pengeluaran';
+        </script>";
+    }
+
 }
 
 // Mengakhiri buffering
@@ -260,6 +322,15 @@ td {
                                         </td>
                                         <td class="text-center">
                                             <button class="btn btn-primary" data-bs-toggle="modal"
+                                                data-bs-target="#SModal" data-bs-id="<?= $row['pengeluaran_id']; ?>"
+                                                data-bs-tanggal_pengeluaran="<?= $row['tanggal_pengeluaran']; ?>"
+                                                data-bs-pihak_terlibat="<?= $row['pihak_terlibat']; ?>"
+                                                data-bs-sumber_dana="<?= $row['sumber_dana']; ?>"
+                                                data-bs-total_jumlah="<?= $row['total_jumlah']; ?>"
+                                                data-items='<?= json_encode($row['items']); ?>'>
+                                                <i class="bi bi-search"></i>
+                                            </button>
+                                            <button class="btn btn-warning" data-bs-toggle="modal"
                                                 data-bs-target="#editModal" data-bs-id="<?= $row['pengeluaran_id']; ?>"
                                                 data-bs-tanggal_pengeluaran="<?= $row['tanggal_pengeluaran']; ?>"
                                                 data-bs-pihak_terlibat="<?= $row['pihak_terlibat']; ?>"
@@ -419,11 +490,12 @@ td {
                     </div>
                     <div class="modal-body">
                         <form id="editForm" method="POST" enctype="multipart/form-data">
-                            <input type="hidden" name="action" value="create">
+                            <input type="hidden" name="action" value="update">
+                            <input type="hidden" name="pengeluaran_id" id="editPengeluaranId">
                             <div class="row">
                                 <div class="form-group col-4 mb-3">
-                                    <label for="tanggal_pengeluaran" class="form-label">Tanggal Pengeluaran</label>
-                                    <input type="date" class="form-control" id="tanggal_pengeluaran"
+                                    <label for="editTanggalPengeluaran" class="form-label">Tanggal Pengeluaran</label>
+                                    <input type="date" class="form-control" id="editTanggalPengeluaran"
                                         name="tanggal_pengeluaran" required>
                                 </div>
                                 <div class="form-group col-4 mb-3">
@@ -433,8 +505,8 @@ td {
                                         name="bukti_pengeluaran" accept=".jpg,.jpeg,.png,.pdf">
                                 </div>
                                 <div class="form-group col-4 mb-3">
-                                    <label for="pihak_terlibat" class="form-label">Pihak Terlibat</label>
-                                    <input type="text" class="form-control" id="pihak_terlibat" name="pihak_terlibat"
+                                    <label for="editPihakTerlibat" class="form-label">Pihak Terlibat</label>
+                                    <input type="text" class="form-control" id="editPihakTerlibat" name="pihak_terlibat"
                                         placeholder="Contoh: Bagian Keuangan" required>
                                 </div>
                                 <div class="form-group col-6 mb-3">
@@ -451,8 +523,8 @@ td {
                                     </select>
                                 </div>
                                 <div class="form-group col-6 mb-3">
-                                    <label for="sumber_dana" class="form-label">Sumber Dana</label>
-                                    <select class="form-control" id="sumber_dana" name="sumber_dana" required>
+                                    <label for="editSumberDana" class="form-label">Sumber Dana</label>
+                                    <select class="form-control" id="editSumberDana" name="sumber_dana" required>
                                         <option selected disabled value="">Pilih Sumber Dana</option>
                                         <option value="Dana BOS">Dana BOS</option>
                                         <option value="Dana Sumbangan">Dana Sumbangan</option>
@@ -616,72 +688,7 @@ document.querySelectorAll('input[name="jumlah_barang[]"]').forEach(input => {
 });
 
 
-
-// // Function to open the edit modal and populate the fields with data
-// function openEditModal(data) {
-//     document.getElementById('edit_pengeluaran_id').value = data.pengeluaran_id;
-//     document.getElementById('edit_tanggal_pengeluaran').value = data.tanggal_pengeluaran;
-//     document.getElementById('edit_pihak_terlibat').value = data.pihak_terlibat;
-//     document.getElementById('edit_detail_kategori_pengeluaran_id').value = data.detail_kategori_pengeluaran_id;
-//     document.getElementById('edit_sumber_dana').value = data.sumber_dana;
-
-//     // Populate the item list
-//     let tbody = document.querySelector('#edit-tabel-list-item-pengeluaran tbody');
-//     tbody.innerHTML = ''; // Clear existing rows
-//     data.items.forEach((item, index) => {
-//         let newRow = document.createElement('tr');
-//         newRow.classList.add('row-item-bayar');
-
-//         newRow.innerHTML = `
-//             <td>${index + 1}</td>
-//             <td>
-//                 <input type="text" class="form-control" name="nama_pengeluaran[]" value="${item.nama_pengeluaran}" required>
-//             </td>
-//             <td>
-//                 <textarea class="form-control" name="keterangan[]">${item.item_keterangan}</textarea>
-//             </td>
-//             <td>
-//                 <input type="number" class="form-control" name="jumlah_barang[]" value="${item.jumlah_barang}" required>
-//             </td>
-//             <td>
-//                 <button type="button" class="btn btn-outline-danger remove-row">
-//                     <i class="bi bi-dash-lg"></i>
-//                 </button>
-//             </td>
-//         `;
-//         tbody.appendChild(newRow);
-
-//         // Attach event listener to remove the row
-//         newRow.querySelector('.remove-row').addEventListener('click', function() {
-//             this.parentElement.parentElement.remove();
-//             updateEditTotal();
-//         });
-//     });
-
-//     // Open modal
-//     let editModal = new bootstrap.Modal(document.getElementById('editModal'));
-//     editModal.show();
-// }
-
-// // Function to calculate total for edit modal
-// function updateEditTotal() {
-//     let total = 0;
-//     const jumlahInputs = document.querySelectorAll('#edit-tabel-list-item-pengeluaran input[name="jumlah_barang[]"]');
-//     jumlahInputs.forEach(input => {
-//         total += parseFloat(input.value) || 0;
-//     });
-//     document.querySelector('#edit-total-item-nilai-bayar').textContent = total;
-// }
-
-// // Event listener to update total when editing quantities in the edit modal
-// document.querySelectorAll('#edit-tabel-list-item-pengeluaran input[name="jumlah_barang[]"]').forEach(input => {
-//     input.addEventListener('input', updateEditTotal);
-// });
-
-
-
 document.addEventListener('DOMContentLoaded', function() {
-
     // Handling Delete
     const deleteModal = document.getElementById('deleteModal');
     if (deleteModal) {
@@ -709,130 +716,85 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Function to update total in the edit modal
-    function updateEditTotal() {
-        let total = 0;
-        const jumlahInputs = document.querySelectorAll(
-            '#edit-tabel-list-item-pengeluaran input[name="jumlah_barang[]"]');
-        jumlahInputs.forEach(input => {
-            total += parseFloat(input.value) || 0;
+
+// var editModal = document.getElementById('editModal');
+// editModal.addEventListener('show.bs.modal', function (event) {
+//     // Kode untuk mengisi data ke dalam modal
+// });
+
+// Add event listener to buttons that trigger the modal
+document.querySelectorAll('button[data-bs-target="#editModal"]').forEach(button => {
+    var editModal = document.getElementById('editModal');
+    
+    // editModal.addEventListener('show.bs.modal', function (event) {
+    button.addEventListener('click', function () {
+        // Fetch the data attributes from the clicked button
+        const pengeluaranId = this.getAttribute('data-bs-id');
+        const tanggalPengeluaran = this.getAttribute('data-bs-tanggal_pengeluaran');
+        const pihakTerlibat = this.getAttribute('data-bs-pihak_terlibat');
+        const sumberDana = this.getAttribute('data-bs-sumber_dana');
+        const totalJumlah = this.getAttribute('data-bs-total_jumlah');
+        const items = JSON.parse(this.getAttribute('data-items'));
+        
+            console.log(
+                `ID: ${pengeluaranId}, Tahun ID: ${totalJumlah}`
+            );
+
+        // Populate the form fields in the modal
+        document.getElementById('editPengeluaranId').value = pengeluaranId;
+        document.getElementById('editTanggalPengeluaran').value = tanggalPengeluaran;
+        document.getElementById('editPihakTerlibat').value = pihakTerlibat;
+        document.getElementById('editSumberDana').value = sumberDana;
+        // document.getElementById('editTotalJumlah').value = totalJumlah;
+
+        // Populate the item list
+        const itemList = document.getElementById('editItemList');
+        itemList.innerHTML = '';  // Clear previous items
+
+        items.forEach((item, index) => {
+            let itemRow = `
+                <div class="mb-3">
+                    <label class="form-label">Item ${index + 1}: ${item.nama_pengeluaran}</label>
+                    <input type="hidden" name="items[${index}][nama_pengeluaran]" value="${item.nama_pengeluaran}">
+                    <input type="number" class="form-control" name="items[${index}][jumlah_barang]" value="${item.jumlah_barang}" required>
+                </div>
+            `;
+            itemList.insertAdjacentHTML('beforeend', itemRow);
         });
-        document.querySelector('#edit-total-item-nilai-bayar').textContent = total;
-    }
-
-    // Event listener for adding a new row in edit modal
-    document.querySelector('.add-row-edit').addEventListener('click', function() {
-        let tableBody = document.querySelector('#edit-tabel-list-item-pengeluaran tbody');
-        let rowCount = tableBody.rows.length + 1;
-        let newRow = document.createElement('tr');
-        newRow.classList.add('row-item-bayar');
-
-        newRow.innerHTML = `
-            <td>${rowCount}</td>
-            <td>
-                <input type="text" class="form-control" name="nama_pengeluaran[]" placeholder="Nama Pengeluaran" required>
-            </td>
-            <td>
-                <textarea class="form-control" name="keterangan[]" placeholder="Keterangan"></textarea>
-            </td>
-            <td>
-                <input type="number" class="form-control jumlah" name="jumlah_barang[]" placeholder="Jumlah" required>
-            </td>
-            <td>
-                <button type="button" class="btn btn-outline-danger remove-row-edit">
-                    <i class="bi bi-dash-lg"></i>
-                </button>
-            </td>
-        `;
-        tableBody.appendChild(newRow);
-
-        // Attach input event listener to the new quantity input field
-        newRow.querySelector('input[name="jumlah_barang[]"]').addEventListener('input', function() {
-            updateEditTotal();
-        });
-
-        // Attach event listener to remove the row
-        newRow.querySelector('.remove-row-edit').addEventListener('click', function() {
-            this.parentElement.parentElement.remove();
-            updateEditTotal();
-            updateRowNumbers('#edit-tabel-list-item-pengeluaran');
-        });
-
-        updateEditTotal();
     });
-
-    // Function to update row numbers after deletion
-    function updateRowNumbers(tableSelector) {
-        const rows = document.querySelectorAll(`${tableSelector} tbody tr`);
-        rows.forEach((row, index) => {
-            row.querySelector('td:first-child').textContent = index + 1;
-        });
-    }
-
-    // // Handling Edit Modal Show Event
-    // const editModal = document.getElementById('editModal');
-    // if (editModal) {
-    //     editModal.addEventListener('show.bs.modal', function(event) {
-    //         const button = event.relatedTarget;
-    //         const pengeluaranId = button.getAttribute('data-bs-id');
-    //         const pengeluaranData = JSON.parse(button.getAttribute('data-pengeluaran'));
-
-    //         // Populate form fields with existing data
-    //         document.getElementById('edit_pengeluaran_id').value = pengeluaranData.pengeluaran_id;
-    //         document.getElementById('edit_tanggal_pengeluaran').value = pengeluaranData
-    //             .tanggal_pengeluaran;
-    //         document.getElementById('edit_pihak_terlibat').value = pengeluaranData.pihak_terlibat;
-    //         document.getElementById('edit_detail_kategori_pengeluaran_id').value = pengeluaranData
-    //             .detail_kategori_pengeluaran_id;
-    //         document.getElementById('edit_sumber_dana').value = pengeluaranData.sumber_dana;
-    //         document.getElementById('edit_jenis_bayar').value = pengeluaranData.jenis_bayar;
-
-    //         // Populate the items table
-    //         let tbody = document.querySelector('#edit-tabel-list-item-pengeluaran tbody');
-    //         tbody.innerHTML = ''; // Clear existing rows
-    //         pengeluaranData.items.forEach((item, index) => {
-    //             let newRow = document.createElement('tr');
-    //             newRow.classList.add('row-item-bayar');
-
-    //             newRow.innerHTML = `
-    //                 <td>${index + 1}</td>
-    //                 <td>
-    //                     <input type="text" class="form-control" name="nama_pengeluaran[]" value="${item.nama_pengeluaran}" required>
-    //                 </td>
-    //                 <td>
-    //                     <textarea class="form-control" name="keterangan[]">${item.item_keterangan || ''}</textarea>
-    //                 </td>
-    //                 <td>
-    //                     <input type="number" class="form-control jumlah" name="jumlah_barang[]" value="${item.jumlah_barang}" required>
-    //                 </td>
-    //                 <td>
-    //                     <button type="button" class="btn btn-outline-danger remove-row-edit">
-    //                         <i class="bi bi-dash-lg"></i>
-    //                     </button>
-    //                 </td>
-    //             `;
-    //             tbody.appendChild(newRow);
-
-    //             // Attach input event listener to the quantity input field
-    //             newRow.querySelector('input[name="jumlah_barang[]"]').addEventListener('input',
-    //                 function() {
-    //                     updateEditTotal();
-    //                 });
-
-    //             // Attach event listener to remove the row
-    //             newRow.querySelector('.remove-row-edit').addEventListener('click', function() {
-    //                 this.parentElement.parentElement.remove();
-    //                 updateEditTotal();
-    //                 updateRowNumbers('#edit-tabel-list-item-pengeluaran');
-    //             });
-    //         });
-
-    //         // Update total
-    //         updateEditTotal();
-    //     });
-    // }
 });
+
+// Submit the form for updating
+document.getElementById('editForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    // Collect the form data
+    const formData = new FormData(this);
+
+    // Send the AJAX request to update the data
+    fetch('update_pengeluaran.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Close the modal
+            const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            editModal.hide();
+
+            // Optionally, refresh the table or update the row directly
+            alert('Data updated successfully!');
+        } else {
+            alert('Failed to update data: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+});
+
+
 </script>
 
 <!-- DataTables CSS/JS Dependencies -->

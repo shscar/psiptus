@@ -5,137 +5,20 @@ ob_start();
 include __DIR__ . '/../../layouts/master.php';
 $db = Database::getInstance()->getConnection();
 
+// Query to fetch data from the `jenis_dana_pemasukan_lain` table
 $stmt = $db->prepare("SELECT 
-        t.id,
-        t.nama_tarif,
-        t.nominal,
-        t.deskripsi,
-        t.status_aktif,
-        ta.tahun AS tahun_ajaran,
-        t.tahun_ajaran_id
-    FROM tarif_spp t
-    LEFT JOIN tahun_ajaran ta ON t.tahun_ajaran_id = ta.id
-    ORDER BY t.id DESC
+        j.id,
+        j.nama_pendapatan,
+        j.kategori,
+        j.periode,
+        j.sumber,
+        j.created_at,
+        j.updated_at
+    FROM jenis_dana_pemasukan_lain j
+    ORDER BY j.id DESC
 ");
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// query untuk mengambil data tabel "tahun_ajaran"
-$stmt = $db->prepare("SELECT id, tahun FROM tahun_ajaran ORDER BY tahun DESC");
-$stmt->execute();
-$tahun_ajaran = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Handle Form Submission
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $action = $_POST['action'];
-
-    // Create Record
-    if ($action == 'create') {
-        $nama_tarif = $_POST['nama_tarif'];
-        $nominal = $_POST['nominal'];
-        $tahun_ajaran_id = $_POST['tahun_ajaran_id'];
-        $deskripsi = $_POST['deskripsi'];
-        $status_aktif = isset($_POST['status_aktif']) ? 1 : 0; // Checkbox default to checked
-
-        // Validate input
-        if (!empty($nama_tarif) && !empty($nominal) && !empty($tahun_ajaran_id)) {
-            // Prepare SQL query
-            $sql = "INSERT INTO tarif_spp (nama_tarif, nominal, tahun_ajaran_id, deskripsi, status_aktif) 
-                    VALUES (:nama_tarif, :nominal, :tahun_ajaran_id, :deskripsi, :status_aktif)";
-            $stmt = $conn->prepare($sql);
-
-            // Bind parameters and execute
-            if (
-                $stmt->execute([
-                    'nama_tarif' => $nama_tarif,
-                    'nominal' => $nominal,
-                    'tahun_ajaran_id' => $tahun_ajaran_id,
-                    'deskripsi' => $deskripsi,
-                    'status_aktif' => $status_aktif
-                ])
-            ) {
-                // Redirect to avoid form resubmission
-                echo "<script>
-                        alert('Data tarif berhasil ditambahkan.');
-                        window.location.href = '/pendapatan/tagihan-spp-siswa';
-                    </script>";
-                exit();
-            } else {
-                echo "Gagal menyisipkan Data Tagihan!";
-            }
-        } else {
-            echo "Silakan isi semua bidang yang wajib diisi!";
-        }
-    }
-
-    // Update Record
-    if ($action == 'update') {
-        $id = $_POST['id'];
-        $nama_tarif = $_POST['nama_tarif'];
-        $nominal = $_POST['nominal'];
-        $tahun_ajaran_id = $_POST['tahun_ajaran_id'];
-        $deskripsi = $_POST['deskripsi'];
-        $status_aktif = isset($_POST['status_aktif']) ? 1 : 0; // Checkbox default to checked
-
-        // Validate input
-        if (!empty($id) && !empty($nama_tarif) && !empty($nominal) && !empty($tahun_ajaran_id)) {
-            // Prepare SQL query
-            $sql = "UPDATE tarif_spp 
-                    SET nama_tarif = :nama_tarif, nominal = :nominal, tahun_ajaran_id = :tahun_ajaran_id, deskripsi = :deskripsi, status_aktif = :status_aktif
-                    WHERE id = :id";
-            $stmt = $conn->prepare($sql);
-
-            // Bind parameters and execute
-            if (
-                $stmt->execute([
-                    'id' => $id,
-                    'nama_tarif' => $nama_tarif,
-                    'nominal' => $nominal,
-                    'tahun_ajaran_id' => $tahun_ajaran_id,
-                    'deskripsi' => $deskripsi,
-                    'status_aktif' => $status_aktif
-                ])
-            ) {
-                // Redirect to avoid form resubmission
-                echo "<script>
-                        alert('Data tarif berhasil diperbarui.');
-                        window.location.href = '/pendapatan/tagihan-spp-siswa';
-                    </script>";
-                exit();
-            } else {
-                echo "Gagal memperbarui Data Tagihan!";
-            }
-        } else {
-            echo "Silakan isi semua bidang yang wajib diisi!";
-        }
-    }
-
-
-    // Delete Record
-    if ($action == 'delete') {
-        $id = $_POST['id'];
-
-        if (!empty($id)) {
-            // Prepare SQL query for deletion
-            $sql = "DELETE FROM tarif_spp WHERE id = :id";
-            $stmt = $conn->prepare($sql);
-
-            // Execute the query
-            if ($stmt->execute(['id' => $id])) {
-                // Redirect after successful deletion
-                echo "<script>
-                        alert('Data tarif berhasil dihapus.');
-                        window.location.href = '/pendapatan/tagihan-spp-siswa';
-                    </script>";
-                exit();
-            } else {
-                echo "Gagal menghapus Data Tagihan!";
-            }
-        } else {
-            echo "ID is required!";
-        }
-    }
-}
 
 // Mengakhiri output buffering
 ob_end_flush();
@@ -149,13 +32,13 @@ ob_end_flush();
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-6">
-                    <h3 class="mb-0">Tagihan SPP Siswa</h3>
+                    <h3 class="mb-0">Jenis Pembayaran</h3>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            Tagihan
+                            Jenis
                         </li>
                     </ol>
                 </div>
@@ -182,51 +65,51 @@ ob_end_flush();
                     <div class="row">
                         <div class="col-md-12">
                             <?php if (!empty($results)): ?>
-                            <table id="datatable" class="table table-striped table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Nama Tarif</th>
-                                        <th>Nominal</th>
-                                        <th>Ajaran</th>
-                                        <th>Deskripsi</th>
-                                        <th>Status</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($results as $index => $row): ?>
-                                    <tr>
-                                        <td><?= $index + 1; ?></td>
-                                        <td><?= $row['nama_tarif']; ?></td>
-                                        <td>Rp. <?= number_format($row['nominal'], 2, ',', '.'); ?></td>
-                                        <td><?= $row['tahun_ajaran']; ?></td>
-                                        <td><?= $row['deskripsi'] ?? '-'; ?></td>
-                                        <td class="text-center"><?= $row['status_aktif'] ? 'Aktif' : 'Tidak Aktif'; ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#editModal" data-id="<?= $row['id'] ?? '-'; ?>"
-                                                data-nama_tarif="<?= $row['nama_tarif'] ?? '-'; ?>"
-                                                data-nominal="<?= $row['nominal'] ?? '-'; ?>"
-                                                data-tahun_ajaran_id="<?= $row['tahun_ajaran_id'] ?? '-'; ?>"
-                                                data-deskripsi="<?= $row['deskripsi'] ?? '-'; ?>"
-                                                data-status_aktif="<?= $row['status_aktif'] ?? '0'; ?>">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
+                                <table id="datatable" class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Nama Pendapatan</th>
+                                            <th>Kategori</th>
+                                            <th>Gunakan Periode</th>
+                                            <th>Sumber</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($results as $index => $row): ?>
+                                        <tr>
+                                            <td><?= $index + 1; ?></td>
+                                            <td><?= $row['nama_pendapatan']; ?></td>
+                                            <td><?= $row['kategori']; ?></td>
+                                            <td><?= $row['periode']; ?></td>
+                                            <td><?= $row['sumber'] ?? '-'; ?></td>
+                                            <td class="text-center">
+                                                <!-- Edit Button -->
+                                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#editModal" 
+                                                    data-id="<?= $row['id']; ?>"
+                                                    data-nama_pendapatan="<?= $row['nama_pendapatan']; ?>"
+                                                    data-kategori="<?= $row['kategori']; ?>"
+                                                    data-periode="<?= $row['periode']; ?>"
+                                                    data-sumber="<?= $row['sumber']; ?>">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
 
-                                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?? '-'; ?>"
-                                                data-nama_tarif="<?= $row['nama_tarif'] ?? '-'; ?>">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                                                <!-- Delete Button -->
+                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#deleteModal" 
+                                                    data-bs-id="<?= $row['id']; ?>" 
+                                                    data-nama_pendapatan="<?= $row['nama_pendapatan']; ?>">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
                             <?php else: ?>
-                            <p>No data available.</p>
+                                <p>No data available.</p>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -239,46 +122,30 @@ ob_end_flush();
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="createModalLabel">Tambah Tagihan</h5>
+                            <h5 class="modal-title" id="createModalLabel">Tambah Jenis</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <form id="createForm" method="POST">
                                 <input type="hidden" name="action" value="create">
-                                <div class="mb-3">
-                                    <label for="nama_tarif" class="form-label">Nama Tarif</label>
-                                    <input type="text" class="form-control" id="nama_tarif" name="nama_tarif" required
-                                        placeholder="SPP Bulan September">
+                                <div class="input-grup mb-3">
+                                    <label for="nama_pendapatan" class="form-label">Nama Pendapatan</label>
+                                    <input type="text" class="form-control" id="nama_pendapatan" name="nama_pendapatan" required>
                                 </div>
-                                <div class="input-group mb-3">
-                                    <label for="nominal" class="form-label">Nominal</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">Rp.</span>
-                                        <input type="text" class="form-control" id="nominal" name="nominal" required
-                                            aria-label="Jumlah (ke rupiah)" />
-                                        <span class="input-group-text">.00</span>
-                                    </div>
+                                <div class="input-grup mb-3">
+                                    <label for="kategori" class="form-label">Kategori</label>
+                                    <input type="text" class="form-control" id="kategori" name="kategori" required>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
-                                    <select class="form-select" id="tahun_ajaran_id" name="tahun_ajaran_id" required>
+                                <div class="input-grup mb-3">
+                                    <label for="sumber" class="form-label">Sumber</label>
+                                    <input type="text" class="form-control" id="sumber" name="sumber" required>
+                                </div>
+                                <div class="input-grup mb-3">
+                                    <input type="checkbox" class="form-check-input" id="priode" checked>
+                                    <label class="form-check-label" for="priode">Gunakan Priode</label>
+                                    <select class="form-select" id="priode" name="priode" required>
                                         <option value="">Pilih Tahun Ajaran</option>
-                                        <?php foreach ($tahun_ajaran as $ta): ?>
-                                        <option value="<?php echo $ta['id']; ?>">
-                                            <?php echo $ta['tahun']; ?>
-                                        </option>
-                                        <?php endforeach; ?>
                                     </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="deskripsi" class="form-label">Deskripsi</label>
-                                    <textarea class="form-control" id="deskripsi" name="deskripsi" rows="3"
-                                        placeholder="Masukkan Deskripsi (opsional)"></textarea>
-                                </div>
-                                <div class="mb-3 form-check">
-                                    <input type="checkbox" class="form-check-input" id="status_aktif"
-                                        name="status_aktif" checked>
-                                    <label class="form-check-label" for="status_aktif">Aktif</label>
                                 </div>
                             </form>
                         </div>

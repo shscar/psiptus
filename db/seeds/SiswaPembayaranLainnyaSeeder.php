@@ -18,6 +18,7 @@ class SiswaPembayaranLainnyaSeeder extends AbstractSeed
     {
         $data = [
             [
+                'jenis_dana_pemasukan_id' => 1,
                 'nama_pembayaran' => 'Biaya Seragam Sekolah',
                 'bisa_diangsur' => false,
                 'nominal' => 750000.00,
@@ -28,6 +29,7 @@ class SiswaPembayaranLainnyaSeeder extends AbstractSeed
                 'updated_at' => date('Y-m-d H:i:s'),
             ],
             [
+                'jenis_dana_pemasukan_id' => 1,
                 'nama_pembayaran' => 'Biaya Buku Tahunan',
                 'bisa_diangsur' => true,
                 'nominal' => 500000.00,
@@ -38,12 +40,13 @@ class SiswaPembayaranLainnyaSeeder extends AbstractSeed
                 'updated_at' => date('Y-m-d H:i:s'),
             ],
             [
+                'jenis_dana_pemasukan_id' => 3,
                 'nama_pembayaran' => 'Biaya Kegiatan Sekolah',
                 'bisa_diangsur' => false,
                 'nominal' => 300000.00,
-                'tahun_ajaran_id' => 3,  // Assuming this ID exists in the `tahun_ajaran` table
+                'tahun_ajaran_id' => 3,
                 'keterangan' => 'Pembayaran untuk kegiatan ekstrakurikuler dan acara sekolah lainnya.',
-                'status_aktif' => false, // Tidak aktif
+                'status_aktif' => false,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ],
