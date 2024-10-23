@@ -20,10 +20,93 @@ $stmt = $db->prepare("SELECT
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Handle Form Submission
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $action = $_POST['action'];
+
+    // Create Record
+    if ($action == 'create') {
+        // Mengambil data dari form
+        $nama_pendapatan = $_POST['nama_pendapatan'];
+        $kategori = $_POST['kategori'];
+        $sumber = !empty($_POST['sumber']) ? $_POST['sumber'] : null;
+        $periode = !empty($_POST['periode']) ? $_POST['periode'] : null;
+
+        // Validasi input
+        if (!empty($nama_pendapatan) && !empty($kategori)) {
+            try {
+                // Siapkan query SQL
+                $sql = "INSERT INTO jenis_dana_pemasukan_lain 
+                        (nama_pendapatan, kategori, periode, sumber, created_at, updated_at) 
+                        VALUES (:nama_pendapatan, :kategori, :periode, :sumber, NOW(), NOW())";
+                $stmt = $conn->prepare($sql);
+
+                // Bind parameter dan eksekusi
+                $stmt->execute([
+                    'nama_pendapatan' => $nama_pendapatan,
+                    'kategori' => $kategori,
+                    'periode' => $periode,
+                    'sumber' => $sumber
+                ]);
+
+                // Redirect untuk menghindari form resubmission
+                echo "<script>
+                        alert('Data jenis dana pemasukan lain berhasil ditambahkan.');
+                        window.location.href = '/pendapatan/jenis-pemasukan';
+                    </script>";
+                exit();
+            } catch (PDOException $e) {
+                echo "Gagal menyisipkan data: " . $e->getMessage();
+            }
+        } else {
+            echo "Silakan isi semua bidang yang wajib diisi!";
+        }
+    }
+
+    // Update Record
+    if ($action == 'update') {
+        $id = $_POST['id'];
+        $nama_pendapatan = $_POST['nama_pendapatan'];
+        $kategori = $_POST['kategori'];
+        $periode = !empty($_POST['periode']) ? $_POST['periode'] : null;
+        $sumber = !empty($_POST['sumber']) ? $_POST['sumber'] : null;
+
+        // Validasi input
+        if (!empty($id) && !empty($nama_pendapatan) && !empty($kategori) && !empty($periode)) {
+            try {
+                // Siapkan query SQL untuk update data
+                $sql = "UPDATE jenis_dana_pemasukan_lain 
+                        SET nama_pendapatan = :nama_pendapatan, kategori = :kategori, periode = :periode, sumber = :sumber
+                        WHERE id = :id";
+                $stmt = $conn->prepare($sql);
+
+                // Bind parameter dan eksekusi query
+                $stmt->execute([
+                    'nama_pendapatan' => $nama_pendapatan,
+                    'kategori' => $kategori,
+                    'periode' => $periode,
+                    'sumber' => $sumber,
+                    'id' => $id
+                ]);
+
+                // Redirect atau notifikasi sukses
+                echo "<script>
+                        alert('Data berhasil diperbarui.');
+                        window.location.href = '/pendapatan/jenis-pemasukan';
+                    </script>";
+                exit();
+            } catch (PDOException $e) {
+                echo "Gagal memperbarui data: " . $e->getMessage();
+            }
+        } else {
+            echo "Silakan isi semua bidang yang diperlukan!";
+        }
+    }
+}
+
 // Mengakhiri output buffering
 ob_end_flush();
 ?>
-
 
 <!-- App Main -->
 <main class="app-main">
@@ -117,8 +200,7 @@ ob_end_flush();
             </div>
 
             <!-- /.modal-dialog create -->
-            <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel"
-                aria-hidden="true">
+            <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -128,23 +210,30 @@ ob_end_flush();
                         <div class="modal-body">
                             <form id="createForm" method="POST">
                                 <input type="hidden" name="action" value="create">
-                                <div class="input-grup mb-3">
+                                <div class="form-group mb-3">
                                     <label for="nama_pendapatan" class="form-label">Nama Pendapatan</label>
                                     <input type="text" class="form-control" id="nama_pendapatan" name="nama_pendapatan" required>
                                 </div>
-                                <div class="input-grup mb-3">
+                                <div class="form-group mb-3">
                                     <label for="kategori" class="form-label">Kategori</label>
-                                    <input type="text" class="form-control" id="kategori" name="kategori" required>
+                                    <select class="form-select" id="kategori" name="kategori" required>
+                                        <option value="Internal">Internal</option>
+                                        <option value="External">External</option>
+                                    </select>
                                 </div>
-                                <div class="input-grup mb-3">
+                                <div class="form-group mb-3">
                                     <label for="sumber" class="form-label">Sumber</label>
-                                    <input type="text" class="form-control" id="sumber" name="sumber" required>
+                                    <input type="text" class="form-control" id="sumber" name="sumber">
                                 </div>
-                                <div class="input-grup mb-3">
-                                    <input type="checkbox" class="form-check-input" id="priode" checked>
-                                    <label class="form-check-label" for="priode">Gunakan Priode</label>
-                                    <select class="form-select" id="priode" name="priode" required>
-                                        <option value="">Pilih Tahun Ajaran</option>
+                                <div class="form-group mb-3">
+                                    <input type="checkbox" class="form-check-input" id="use_priode" checked>
+                                    <label class="form-check-label" for="use_priode">Gunakan Periode</label>
+                                </div>
+                                <div id="priodeSelect">
+                                    <select class="form-select" id="priode" name="periode">
+                                        <option value="Tahun Ajaran">Tahun Ajaran</option>
+                                        <option value="Bulan">Bulan</option>
+                                        <option value="Tahun">Tahun</option>
                                     </select>
                                 </div>
                             </form>
@@ -162,48 +251,38 @@ ob_end_flush();
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="editModalLabel">Edit Tagihan</h5>
+                            <h5 class="modal-title" id="editModalLabel">Edit Jenis Pendapatan</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <form id="editForm" method="POST">
                                 <input type="hidden" name="action" value="update">
                                 <input type="hidden" id="edit_id" name="id">
-                                <div class="mb-3">
-                                    <label for="edit_nama_tarif" class="form-label">Nama Tarif</label>
-                                    <input type="text" class="form-control" id="edit_nama_tarif" name="nama_tarif"
-                                        required placeholder="SPP Bulan September">
+                                <div class="form-group mb-3">
+                                    <label for="edit_nama_pendapatan" class="form-label">Nama Pendapatan</label>
+                                    <input type="text" class="form-control" id="edit_nama_pendapatan" name="nama_pendapatan" required>
                                 </div>
-                                <div class="input-group mb-3">
-                                    <label for="edit_nominal" class="form-label">Nominal</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">Rp.</span>
-                                        <input type="text" class="form-control" id="edit_nominal" name="nominal"
-                                            required aria-label="Jumlah (ke rupiah)" />
-                                        <span class="input-group-text">.00</span>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="edit_tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
-                                    <select class="form-select" id="edit_tahun_ajaran_id" name="tahun_ajaran_id"
-                                        required>
-                                        <option value="">Pilih Tahun Ajaran</option>
-                                        <?php foreach ($tahun_ajaran as $ta): ?>
-                                        <option value="<?php echo $ta['id']; ?>">
-                                            <?php echo $ta['tahun']; ?>
-                                        </option>
-                                        <?php endforeach; ?>
+                                <div class="form-group mb-3">
+                                    <label for="edit_kategori" class="form-label">Kategori</label>
+                                    <select class="form-select" id="edit_kategori" name="kategori" required>
+                                        <option value="Internal">Internal</option>
+                                        <option value="External">External</option>
                                     </select>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="edit_deskripsi" class="form-label">Deskripsi</label>
-                                    <textarea class="form-control" id="edit_deskripsi" name="deskripsi" rows="3"
-                                        placeholder="Masukkan Deskripsi (opsional)"></textarea>
+                                <div class="form-group mb-3">
+                                    <label for="edit_sumber" class="form-label">Sumber</label>
+                                    <input type="text" class="form-control" id="edit_sumber" name="sumber">
                                 </div>
-                                <div class="mb-3 form-check">
-                                    <input type="checkbox" class="form-check-input" id="edit_status_aktif"
-                                        name="status_aktif">
-                                    <label class="form-check-label" for="edit_status_aktif">Aktif</label>
+                                <div class="form-group mb-3">
+                                    <input type="checkbox" class="form-check-input" id="use_edit_priode" checked>
+                                    <label class="form-check-label" for="use_edit_priode">Gunakan Periode</label>
+                                </div>
+                                <div id="priodeSelect2">
+                                    <select class="form-select" id="edit_periode" name="periode">
+                                        <option value="Bulan">Bulan</option>
+                                        <option value="Tahun">Tahun</option>
+                                        <option value="Tahun Ajaran">Tahun Ajaran</option>
+                                    </select>
                                 </div>
                             </form>
                         </div>
@@ -258,6 +337,15 @@ $(document).ready(function() {
     });
 });
 
+document.getElementById('use_priode').addEventListener('change', function() {
+    const priodeSelect = document.getElementById('priodeSelect');
+    priodeSelect.style.display = this.checked ? 'block' : 'none';
+});
+document.getElementById('use_edit_priode').addEventListener('change', function() {
+    const priodeSelect = document.getElementById('priodeSelect2');
+    priodeSelect.style.display = this.checked ? 'block' : 'none';
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     // Handling Update
     const editModal = document.getElementById('editModal');
@@ -267,32 +355,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Get data attributes from the button
             const id = button.getAttribute('data-id');
-            const nama_tarif = button.getAttribute('data-nama_tarif');
-            const nominal = button.getAttribute('data-nominal');
-            const tahun_ajaran_id = button.getAttribute('data-tahun_ajaran_id');
-            const deskripsi = button.getAttribute('data-deskripsi');
-            const status_aktif = button.getAttribute('data-status_aktif') === '1';
+            const nama_pendapatan = button.getAttribute('data-nama_pendapatan');
+            const kategori = button.getAttribute('data-kategori');
+            const periode = button.getAttribute('data-periode');
+            const sumber = button.getAttribute('data-sumber');
 
             // Update the modal's content.
             const modalTitle = editModal.querySelector('.modal-title');
-            modalTitle.textContent = `Edit Data Tagihan: ${nama_tarif}`;
+            modalTitle.textContent = `Edit Data Tagihan: ${nama_pendapatan}`;
 
             // Populate the form in the modal with the data
             document.getElementById('edit_id').value = id;
-            document.getElementById('edit_nama_tarif').value = nama_tarif;
-            document.getElementById('edit_nominal').value = nominal;
-            document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;
-            document.getElementById('edit_deskripsi').value = deskripsi;
-            document.getElementById('edit_status_aktif').checked = status_aktif;
+            document.getElementById('edit_nama_pendapatan').value = nama_pendapatan;
+            document.getElementById('edit_kategori').value = kategori;
+            // document.getElementById('edit_periode').value = periode;
+            document.getElementById('edit_sumber').value = sumber;
 
+            const editPeriode = document.getElementById('edit_periode');
+            editPeriode.value = periode;
 
-            // Men-debug untuk memastikan nilai diambil dengan benar
-            // console.log(
-            //     `ID: ${id}, Tahun Ajaran ID: ${tahun_ajaran_id}`
-            // );
+            // Debugging untuk memastikan nilai diambil dengan benar
+            console.log(`ID: ${id}, Periode: ${periode}`);
+            console.log(`Opsi yang tersedia: ${Array.from(editPeriode.options).map(option => option.value)}`);
 
             // Men-debug untuk memastikan apakah option yang benar terpilih
-            console.log(`Tahun Ajaran yang terpilih: ${edit_tahun_ajaran_id.value}`);
+            // console.log(`Tahun Ajaran yang terpilih: ${edit_periode.value}`);
         });
     }
 
