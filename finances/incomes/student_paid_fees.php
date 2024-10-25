@@ -1,3 +1,9 @@
+<!-- Tambahkan stylesheet dan JavaScript untuk AdminLTE 4 dan Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/css/adminlte.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/js/adminlte.min.js"></script>
 <?php
     // Memulai output buffering
     ob_start();
@@ -30,29 +36,6 @@
     ob_end_flush();
 ?>
 
-<!-- <style>
-    #autocomplete-list {
-        border: 1px solid #ced4da;
-        position: absolute;
-        background-color: #fff;
-        max-height: 200px;
-        overflow-y: auto;
-        width: 100%;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        z-index: 99;
-    }
-
-    #autocomplete-list .list-group-item {
-        cursor: pointer;
-        background-color: #fff;
-        border: 1px solid #ced4da;
-    }
-
-    #autocomplete-list .list-group-item:hover {
-        background-color: #f4f6f9;
-    }
-</style> -->
-
 <!--begin::App Main-->
 <main class="app-main">
     <!--begin::App Content Header-->
@@ -66,7 +49,7 @@
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            student fee
+                            student paid fee
                         </li>
                     </ol>
                 </div>
@@ -77,46 +60,6 @@
     <!--begin::App Content-->
     <div class="app-content">
         <div class="container-fluid">
-
-        
-<style>
-    /* Optimized autocomplete list styling for AdminLTE 4 */
-    #autocomplete-list {
-        border: 1px solid #ced4da;
-        border-radius: 0.25rem;
-        z-index: 99;
-        position: absolute;
-        background-color: #f8f9fa;
-        max-height: 200px;
-        overflow-y: auto;
-        width: 100%;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    }
-
-    #autocomplete-list div {
-        padding: 10px;
-        cursor: pointer;
-        background-color: #fff;
-        border-bottom: 1px solid #dee2e6;
-    }
-
-    #autocomplete-list div:hover {
-        background-color: #f1f1f1;
-    }
-
-    /* To highlight the active element */
-    #autocomplete-list .autocomplete-active {
-        background-color: #007bff;
-        color: #fff;
-    }
-</style>
-
-<!-- AdminLTE 4 Input Field -->
-<div class="form-group">
-    <label for="nama_siswa">Nama Siswa</label>
-    <input class="form-control" type="text" id="nama_siswa" name="nama_siswa" autocomplete="off">
-    <div id="autocomplete-list"></div>
-</div>
 
             <!-- Modal Structure -->
             <div class="modal fade" id="createDataModal" tabindex="-1" aria-labelledby="createDataModalLabel"
@@ -130,22 +73,24 @@
                         <div class="modal-body">
                             <form>
                                 <div class="mb-3 row">
-                                    <label for="namaSiswa" class="col-sm-3 col-form-label">Nama Siswa</label>
+                                    <label for="nama_siswa" class="col-sm-3 col-form-label">Nama Siswa</label>
                                     <div class="col-sm-9">
                                         <div class="form-group">
-                                                <label for="nama_siswa">Nama Siswa</label>
-                                                <input class="form-control" type="text" id="nama_siswa" name="nama_siswa" autocomplete="off">
-                                                <div id="autocomplete-list" class="list-group"></div>
-                                                
-                                            <!-- <input class="form-control" type="text" id="nama_siswa" name="nama_siswa" autocomplete="off">
-                                            <div id="autocomplete-list"></div> -->
-                                            <!-- <button class="btn btn-outline-secondary" type="button" id="cariSiswaBtn">
-                                                <i class="bi bi-search"></i>
-                                                Search
-                                            </button> -->
-                                            <!-- <button class="btn btn-success" type="button" id="tambahSiswaBtn">+
-                                                Tambah</button> -->
+                                            <!-- Select2 untuk memilih nama siswa -->
+                                            <select class="form-control select2" id="nama_siswa" name="nama_siswa" style="width: 100%;">
+                                                <option value="">Pilih Nama Siswa</option>
+                                                <?php foreach ($siswaData as $siswa): ?>
+                                                    <option value="<?php echo $siswa['nis']; ?>"><?php echo $siswa['nama']; ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
                                         </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="nis_siswa" class="col-sm-3 col-form-label">NIS Siswa</label>
+                                    <div class="col-sm-9">
+                                        <!-- Input untuk menampilkan NIS setelah pemilihan nama siswa -->
+                                        <input type="text" class="form-control" id="nis_siswa" name="nis_siswa" readonly>
                                     </div>
                                 </div>
 
@@ -352,7 +297,6 @@
 
         </div>
     </div>
-    <!--end::App Content-->
 </main>
 <!--end::App Main-->
 
@@ -361,6 +305,7 @@
 <!-- DataTables Buttons JS (Opsional, jika menggunakan tombol) -->
 <script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <!-- Inisialisasi DataTables -->
 <script>
@@ -435,86 +380,21 @@
     });
 </script>
 
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-    const input = document.getElementById('nama_siswa');
-    const nisInput = document.getElementById('nis_siswa'); // Input untuk NIS
-    const autocompleteList = document.getElementById('autocomplete-list');
-
-    // Data siswa yang diambil dari PHP (ubah ini menjadi data siswa nyata dari server)
-    const suggestions = <?php echo json_encode($siswaData); ?>; // [{nis: '123', nama: 'Ahmad Hidayat'}, ...]
-
-    input.addEventListener('input', function () {
-        const value = this.value;
-        autocompleteList.innerHTML = ''; // Bersihkan list autocomplete 
-        if (!value) {
-            return; // Tidak ada input, jangan tampilkan apa-apa
-        }
-
-        // Filter saran yang sesuai
-        const filteredSuggestions = suggestions.filter(suggestion =>
-            suggestion.nama.toLowerCase().includes(value.toLowerCase())
-        );
-
-        // Tampilkan daftar autocomplete
-        filteredSuggestions.forEach(suggestion => {
-            const item = document.createElement('div');
-            item.textContent = suggestion.nama;
-            item.addEventListener('click', function () {
-                // Masukkan nama dan NIS ke input
-                input.value = suggestion.nama;
-                nisInput.value = suggestion.nis;
-                autocompleteList.innerHTML = ''; // Hilangkan daftar setelah pemilihan
-            });
-            autocompleteList.appendChild(item);
-        });
+$(document).ready(function() {
+    // Inisialisasi Select2
+    $('#nama_siswa').select2({
+        placeholder: 'Cari nama siswa',
+        allowClear: true
     });
 
-    // Hilangkan daftar autocomplete ketika input sudah selesai
-    input.addEventListener('blur', function () {
-        setTimeout(function () {
-            autocompleteList.innerHTML = ''; // Hilangkan daftar setelah input selesai
-        }, 100); // Tambahkan sedikit jeda untuk memastikan klik terdaftar
+    // Event listener untuk mendapatkan NIS ketika pilihan siswa berubah
+    $('#nama_siswa').on('change', function () {
+        const selectedNis = $(this).val();
+        $('#nis_siswa').val(selectedNis || ''); // Set nilai NIS sesuai pilihan siswa
     });
 });
-
-    // document.addEventListener('DOMContentLoaded', function () {
-    //     const input = document.getElementById('nama_siswa');
-    //     const autocompleteList = document.getElementById('autocomplete-list');
-
-    //     let suggestions = ['Ahmad Hidayat', 'Budi Santoso', 'Citra Permata', 'Dewi Lestari']; // Contoh data
-
-    //     input.addEventListener('input', function () {
-    //         const value = this.value;
-    //         autocompleteList.innerHTML = ''; // Bersihkan list autocomplete
-    //         if (!value) {
-    //             return; // Tidak ada input, jangan tampilkan apa-apa
-    //         }
-            
-    //         // Filter saran yang sesuai
-    //         const filteredSuggestions = suggestions.filter(suggestion =>
-    //             suggestion.toLowerCase().includes(value.toLowerCase())
-    //         );
-            
-    //         // Tampilkan daftar autocomplete
-    //         filteredSuggestions.forEach(suggestion => {
-    //             const item = document.createElement('div');
-    //             item.textContent = suggestion;
-    //             item.addEventListener('click', function () {
-    //                 input.value = suggestion;
-    //                 autocompleteList.innerHTML = ''; // Hilangkan daftar setelah pemilihan
-    //             });
-    //             autocompleteList.appendChild(item);
-    //         });
-    //     });
-
-    //     // Hilangkan daftar autocomplete ketika input sudah selesai
-    //     input.addEventListener('blur', function () {
-    //         setTimeout(function () {
-    //             autocompleteList.innerHTML = ''; // Hilangkan daftar setelah input selesai
-    //         }, 100); // Tambahkan sedikit jeda untuk memastikan klik terdaftar
-    //     });
-    // });
 </script>
 
 <!-- DataTables CSS/JS Dependencies -->

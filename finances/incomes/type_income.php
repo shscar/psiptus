@@ -26,7 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Create Record
     if ($action == 'create') {
-        // Mengambil data dari form
         $nama_pendapatan = $_POST['nama_pendapatan'];
         $kategori = $_POST['kategori'];
         $sumber = !empty($_POST['sumber']) ? $_POST['sumber'] : null;
@@ -35,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Validasi input
         if (!empty($nama_pendapatan) && !empty($kategori)) {
             try {
-                // Siapkan query SQL
                 $sql = "INSERT INTO jenis_dana_pemasukan_lain 
                         (nama_pendapatan, kategori, periode, sumber, created_at, updated_at) 
                         VALUES (:nama_pendapatan, :kategori, :periode, :sumber, NOW(), NOW())";
@@ -68,13 +66,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $id = $_POST['id'];
         $nama_pendapatan = $_POST['nama_pendapatan'];
         $kategori = $_POST['kategori'];
-        $periode = !empty($_POST['periode']) ? $_POST['periode'] : null;
+
+        // Jika checkbox "Gunakan Periode" dicentang, ambil nilai periode dari select, jika tidak set null
+        $use_periode = isset($_POST['use_edit_priode']) ? 1 : 0;
+        $periode = $use_periode ? $_POST['periode'] : null;
         $sumber = !empty($_POST['sumber']) ? $_POST['sumber'] : null;
 
         // Validasi input
-        if (!empty($id) && !empty($nama_pendapatan) && !empty($kategori) && !empty($periode)) {
+        if (!empty($id) && !empty($nama_pendapatan) && !empty($kategori)) {
             try {
-                // Siapkan query SQL untuk update data
                 $sql = "UPDATE jenis_dana_pemasukan_lain 
                         SET nama_pendapatan = :nama_pendapatan, kategori = :kategori, periode = :periode, sumber = :sumber
                         WHERE id = :id";
@@ -102,6 +102,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo "Silakan isi semua bidang yang diperlukan!";
         }
     }
+    
+    // Delete Record
+    if ($action == 'delete') {
+        $id = $_POST['id'];
+
+        if (!empty($id)) {
+            try {
+                $sql = "DELETE FROM jenis_dana_pemasukan_lain WHERE id = :id";
+                $stmt = $conn->prepare($sql);
+
+                // Bind parameter dan eksekusi
+                $stmt->execute(['id' => $id]);
+
+                // Redirect untuk menghindari form resubmission
+                echo "<script>
+                        alert('Data pendapatan berhasil dihapus.');
+                        window.location.href = '/pendapatan/jenis-pemasukan';
+                    </script>";
+                exit();
+            } catch (PDOException $e) {
+                echo "Gagal menghapus data pendapatan: " . $e->getMessage();
+            }
+        } else {
+            echo "ID tidak valid!";
+        }
+    }
 }
 
 // Mengakhiri output buffering
@@ -115,22 +141,21 @@ ob_end_flush();
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-6">
-                    <h3 class="mb-0">Jenis Pembayaran</h3>
+                    <h3 class="mb-0">Jenis Pendapatan</h3>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            Jenis
+                            type income
                         </li>
                     </ol>
                 </div>
             </div>
-            <!--end::Row-->
         </div>
-        <!--end::Container-->
     </div>
     <!-- Content Header -->
+
     <!-- App Content -->
     <div class="app-content">
         <div class="container-fluid">
@@ -168,7 +193,6 @@ ob_end_flush();
                                             <td><?= $row['periode']; ?></td>
                                             <td><?= $row['sumber'] ?? '-'; ?></td>
                                             <td class="text-center">
-                                                <!-- Edit Button -->
                                                 <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
                                                     data-bs-target="#editModal" 
                                                     data-id="<?= $row['id']; ?>"
@@ -178,8 +202,6 @@ ob_end_flush();
                                                     data-sumber="<?= $row['sumber']; ?>">
                                                     <i class="bi bi-pencil"></i>
                                                 </button>
-
-                                                <!-- Delete Button -->
                                                 <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
                                                     data-bs-target="#deleteModal" 
                                                     data-bs-id="<?= $row['id']; ?>" 
@@ -257,7 +279,7 @@ ob_end_flush();
                         <div class="modal-body">
                             <form id="editForm" method="POST">
                                 <input type="hidden" name="action" value="update">
-                                <input type="hidden" id="edit_id" name="id">
+                                <input type="hidden" name="id" id="edit_id">
                                 <div class="form-group mb-3">
                                     <label for="edit_nama_pendapatan" class="form-label">Nama Pendapatan</label>
                                     <input type="text" class="form-control" id="edit_nama_pendapatan" name="nama_pendapatan" required>
@@ -273,16 +295,18 @@ ob_end_flush();
                                     <label for="edit_sumber" class="form-label">Sumber</label>
                                     <input type="text" class="form-control" id="edit_sumber" name="sumber">
                                 </div>
-                                <div class="form-group mb-3">
-                                    <input type="checkbox" class="form-check-input" id="use_edit_priode" checked>
-                                    <label class="form-check-label" for="use_edit_priode">Gunakan Periode</label>
-                                </div>
-                                <div id="priodeSelect2">
-                                    <select class="form-select" id="edit_periode" name="periode">
-                                        <option value="Bulan">Bulan</option>
-                                        <option value="Tahun">Tahun</option>
-                                        <option value="Tahun Ajaran">Tahun Ajaran</option>
-                                    </select>
+                                <div class="form-group">
+                                    <div class="mb-2">
+                                        <input type="checkbox" class="form-check-input" id="use_edit_priode" name="use_edit_priode">
+                                        <label class="form-check-label" for="use_edit_priode">Gunakan Periode</label>
+                                    </div>
+                                    <div id="priodeSelect2" class="mb-3">
+                                        <select class="form-select" id="edit_periode" name="periode">
+                                            <option value="Bulan">Bulan</option>
+                                            <option value="Tahun">Tahun</option>
+                                            <option value="Tahun Ajaran">Tahun Ajaran</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -341,10 +365,6 @@ document.getElementById('use_priode').addEventListener('change', function() {
     const priodeSelect = document.getElementById('priodeSelect');
     priodeSelect.style.display = this.checked ? 'block' : 'none';
 });
-document.getElementById('use_edit_priode').addEventListener('change', function() {
-    const priodeSelect = document.getElementById('priodeSelect2');
-    priodeSelect.style.display = this.checked ? 'block' : 'none';
-});
 
 document.addEventListener('DOMContentLoaded', function() {
     // Handling Update
@@ -361,25 +381,29 @@ document.addEventListener('DOMContentLoaded', function() {
             const sumber = button.getAttribute('data-sumber');
 
             // Update the modal's content.
-            const modalTitle = editModal.querySelector('.modal-title');
-            modalTitle.textContent = `Edit Data Tagihan: ${nama_pendapatan}`;
-
-            // Populate the form in the modal with the data
             document.getElementById('edit_id').value = id;
             document.getElementById('edit_nama_pendapatan').value = nama_pendapatan;
             document.getElementById('edit_kategori').value = kategori;
-            // document.getElementById('edit_periode').value = periode;
             document.getElementById('edit_sumber').value = sumber;
 
+            // Handling the "Gunakan Periode" checkbox and periode dropdown
+            const useEditPeriode = document.getElementById('use_edit_priode');
+            const priodeSelect = document.getElementById('priodeSelect2');
             const editPeriode = document.getElementById('edit_periode');
-            editPeriode.value = periode;
 
-            // Debugging untuk memastikan nilai diambil dengan benar
-            console.log(`ID: ${id}, Periode: ${periode}`);
-            console.log(`Opsi yang tersedia: ${Array.from(editPeriode.options).map(option => option.value)}`);
+            if (periode) {
+                useEditPeriode.checked = true;
+                priodeSelect.style.display = 'block';
+                editPeriode.value = periode;
+            } else {
+                useEditPeriode.checked = false;
+                priodeSelect.style.display = 'none';
+            }
 
-            // Men-debug untuk memastikan apakah option yang benar terpilih
-            // console.log(`Tahun Ajaran yang terpilih: ${edit_periode.value}`);
+            // Toggle visibility of the periode dropdown when the checkbox changes
+            useEditPeriode.addEventListener('change', function() {
+                priodeSelect.style.display = this.checked ? 'block' : 'none';
+            });
         });
     }
 
@@ -389,11 +413,11 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteModal.addEventListener('show.bs.modal', function(event) {
             const button = event.relatedTarget;
             const id = button.getAttribute('data-bs-id');
-            const nama_tarif = button.getAttribute('data-nama_tarif');
+            const nama_pendapatan = button.getAttribute('data-nama_pendapatan');
 
             // Update the modal's content.
             const modalTitle = deleteModal.querySelector('.modal-title');
-            modalTitle.textContent = `Hapus Data Tagihan: ${nama_tarif}`;
+            modalTitle.textContent = `Hapus Data Tagihan: ${nama_pendapatan}`;
 
             // Populate the form with the id
             const form = deleteModal.querySelector('#deleteForm');

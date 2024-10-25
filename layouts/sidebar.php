@@ -18,6 +18,7 @@ $dropdownRoutes = [
         '/pendapatan/tagihan-spp-siswa',
         '/pendapatan/tagihan-lain-siswa',
         '/pendapatan/pemasukan-bos',
+        '/pendapatan/pemasukan-lain',
         '/pendapatan/jenis-pemasukan'
     ],
     'sid-03' => ['/pengeluaran/kategori-pengeluaran', '/pengeluaran/detail-pengeluaran'],
@@ -136,7 +137,8 @@ foreach ($dropdownRoutes as $key => $routes) {
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="/pendapatan/pemasukan-lain" 
+                                class="nav-link <?php echo isActive('/pendapatan/pemasukan-lain', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Pendapatan lain-lain</p>
                             </a>
