@@ -200,13 +200,13 @@ foreach ($dropdownRoutes as $key => $routes) {
                                 <p>Belanja</p>
                             </a>
                         </li> -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Maintance</p>
-                            </a>
-                        </li>
                     </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="/test" target="_blank" class="nav-link">
+                        <i class="nav-icon bi bi-arrow-bar-right"></i>
+                        <p>Maintance/test</p>
+                    </a>
                 </li>
 
             </ul>

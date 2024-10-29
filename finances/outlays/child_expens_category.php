@@ -13,10 +13,10 @@ if (isset($_GET['kategori_id'])) {
     // Tampilkan data dalam format tabel
     if ($details) {
         foreach ($details as $index => $detail) {
-            echo '<tr class="row">
-                    <td class="col-md-1 text-center">' . ($index + 1) . '</td>
-                    <td class="col-md-9">' . htmlspecialchars($detail['judul']) . '</td>
-                    <td class="col-md-2 text-center">
+            echo '<tr>
+                    <td class="text-center">' . ($index + 1) . '</td>
+                    <td class="">' . htmlspecialchars($detail['judul']) . '</td>
+                    <td class=" text-center">
                         <button class="btn btn-warning btn-sm edit-detail" 
                             data-bs-toggle="modal" 
                             data-bs-target="#editDetailModal" 
@@ -36,47 +36,82 @@ if (isset($_GET['kategori_id'])) {
                     </td>
                 </tr>
             ';
+            echo json_encode($detail);
         }
         echo "<script>
             // Handle klik pada tombol edit detail kategori
 
-            // function handleEditDetailButtons() {
-                document.querySelectorAll('.edit-detail').forEach(function (button) {
-                    button.addEventListener('click', function () {
-                        const id = this.getAttribute('data-detail-id');
-                        const kategori_id = this.getAttribute('data-kategori-id');
-                        const judul = this.getAttribute('data-judul');
+            function fillEditModal(response) {
+                // Parse data yang diterima dari server
+                const data = JSON.parse(response);
 
-                        // Mendapatkan modal edit kategori
-                        const editDetailModal = document.getElementById('editDetailModal');
+                // Mendapatkan modal edit kategori
+                const editDetailModal = document.getElementById('editDetailModal');
 
-                        // Up modal's header.
-                        const modalTitle = editDetailModal.querySelector('.modal-title');
-                        modalTitle.textContent = `Edit Kategori: ` + judul;
+                // Update modal's header.
+                const modalTitle = editDetailModal.querySelector('.modal-title');
+                modalTitle.textContent = `Edit Kategori: ` + data.judul;
 
-                        // Memastikan elemen ada sebelum mengisi form
-                        const detailIdElement = document.getElementById('edit_detail_id');
-                        const kategoriIdElement = document.getElementById('edit_kategori_id');
-                        const judulElement = document.getElementById('edit_judul');
+                // Memastikan elemen ada sebelum mengisi form
+                const detailIdElement = document.getElementById('edit_detail_id');
+                const kategoriIdElement = document.getElementById('edit_kategori_id');
+                const judulElement = document.getElementById('edit_judul');
 
-                        if (detailIdElement && kategoriIdElement && judulElement) {
-                            detailIdElement.value = id || '';
-                            judulElement.value = judul || '';
+                if (detailIdElement && kategoriIdElement && judulElement) {
+                    detailIdElement.value = data.id || '';
+                    judulElement.value = data.judul || '';
 
-                            // Pilih kategori yang sesuai
-                            const options = kategoriIdElement.options;
-                            for (let i = 0; i < options.length; i++) {
-                                if (options[i].value == kategori_id) {
-                                    options[i].selected = true;
-                                    break;
-                                }
-                            }
-                        } else {
-                            console.error('Elemen tidak ditemukan di dalam DOM.');
+                    // Pilih kategori yang sesuai
+                    const options = kategoriIdElement.options;
+                    for (let i = 0; i < options.length; i++) {
+                        if (options[i].value == data.kategori_id) {
+                            options[i].selected = true;
+                            break;
                         }
-                    });
-                });
-            // }
+                    }
+                } else {
+                    console.error('Elemen tidak ditemukan di dalam DOM.');
+                }
+            }
+
+
+            // // function handleEditDetailButtons() {
+            //     document.querySelectorAll('.edit-detail').forEach(function (button) {
+            //         button.addEventListener('click', function () {
+            //             const id = this.getAttribute('data-detail-id');
+            //             const kategori_id = this.getAttribute('data-kategori-id');
+            //             const judul = this.getAttribute('data-judul');
+
+            //             // Mendapatkan modal edit kategori
+            //             const editDetailModal = document.getElementById('editDetailModal');
+
+            //             // Up modal's header.
+            //             const modalTitle = editDetailModal.querySelector('.modal-title');
+            //             modalTitle.textContent = `Edit Kategori: ` + judul;
+
+            //             // Memastikan elemen ada sebelum mengisi form
+            //             const detailIdElement = document.getElementById('edit_detail_id');
+            //             const kategoriIdElement = document.getElementById('edit_kategori_id');
+            //             const judulElement = document.getElementById('edit_judul');
+
+            //             if (detailIdElement && kategoriIdElement && judulElement) {
+            //                 detailIdElement.value = id || '';
+            //                 judulElement.value = judul || '';
+
+            //                 // Pilih kategori yang sesuai
+            //                 const options = kategoriIdElement.options;
+            //                 for (let i = 0; i < options.length; i++) {
+            //                     if (options[i].value == kategori_id) {
+            //                         options[i].selected = true;
+            //                         break;
+            //                     }
+            //                 }
+            //             } else {
+            //                 console.error('Elemen tidak ditemukan di dalam DOM.');
+            //             }
+            //         });
+            //     });
+            // // }
 
 
             // Handling Delete
