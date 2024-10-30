@@ -422,7 +422,7 @@ try {
                 <div class="modal fade" id="editDetailModal" tabindex="-1" aria-labelledby="editDetailModalLabel"
                     aria-hidden="true">
                     <div class="modal-dialog">
-                        <form method="POST">
+                        <form method="POST" id="editDetailForm">
                             <input type="hidden" name="action" value="update_detail">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -517,15 +517,6 @@ try {
                 }
             });
         });
-        // // Reset modal setiap kali ditutup
-        // const editDetailModal = document.getElementById('editDetailModal');
-        // editDetailModal.addEventListener('hidden.bs.modal', function() {
-        //     // Reset form elements
-        //     document.getElementById('edit_detail_id').value = '';
-        //     document.getElementById('edit_kategori_id').selectedIndex = 0; // Reset to first option
-        //     document.getElementById('edit_judul').value = '';
-        // });
-        // handleEditDetailButtons();
 
         // Handling Delete
         const deleteKatModal = document.getElementById('deleteKatModal');
@@ -549,28 +540,6 @@ try {
                 detailInfo.textContent = name;
             });
         }
-
-        // Menampilkan Modal Tambah dan Reset Form
-        // Reset form modal tambah kategori
-        const addCategoryButton = document.getElementById('add-category');
-        if (addCategoryButton) {
-            addCategoryButton.addEventListener('click', function () {
-                const addCategoryModal = document.getElementById('addCategoryModal');
-                if (addCategoryModal) {
-                    addCategoryModal.querySelector('form').reset();
-                }
-            });
-        }
-        // Reset form modal tambah detail
-        const addDetailButton = document.getElementById('add-detail');
-        if (addDetailButton) {
-            addDetailButton.addEventListener('click', function () {
-                const addDetailModal = document.getElementById('addDetailModal');
-                if (addDetailModal) {
-                    addDetailModal.querySelector('form').reset();
-                }
-            });
-        }
     });
 </script>
 
@@ -592,6 +561,66 @@ try {
             error: function () {
                 alert('Gagal mengambil data');
             }
+        });
+    }
+
+    // Menghapus deklarasi kedua dari editDetailModal
+    const editDetailModal = document.getElementById('editDetailModal');
+    if (editDetailModal) {
+        editDetailModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-detail-id');
+            const kategori_id = button.getAttribute('data-kategori-id');
+            const judul = button.getAttribute('data-judul');
+
+            // Update the modal's content.
+            const modalTitle = editDetailModal.querySelector('.modal-title');
+            modalTitle.textContent = `Edit Kategori: ` + judul;
+
+            const detailIdElement = document.getElementById('edit_id'); // Pastikan ID ini sesuai dengan elemen di HTML
+            const kategoriIdElement = document.getElementById('kategori_id'); // Ganti dengan ID yang sesuai
+            const judulElement = document.getElementById('edit_judul'); // Pastikan ID ini sesuai dengan elemen di HTML
+
+            if (detailIdElement && kategoriIdElement && judulElement) {
+                detailIdElement.value = id || '';
+                judulElement.value = judul || '';
+
+                // Pilih kategori yang sesuai
+                const options = kategoriIdElement.options;
+                for (let i = 0; i < options.length; i++) {
+                    if (options[i].value == kategori_id) {
+                        options[i].selected = true;
+                        break;
+                    }
+                }
+            } else {
+                console.error('Elemen tidak ditemukan di dalam DOM.');
+            }
+
+            console.log(`ID: ${id}, IDkat: ${kategori_id}, jud: ${judul}`);
+        });
+    }
+
+    // Handling Delete
+    const deleteDetailModal = document.getElementById('deleteDetailModal');
+    if (deleteDetailModal) {
+        deleteDetailModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+
+            const id = button.getAttribute('data-id');
+            const judul = button.getAttribute('data-judul');
+
+            // Update the modal's content.
+            const modalTitle = deleteDetailModal.querySelector('.modal-title');
+            modalTitle.textContent = `Delete Kategori: ` + judul;
+
+            // Populate the form with the id
+            const form = deleteDetailModal.querySelector('#deleteDetailForm');
+            form.querySelector('#delete-id').value = id;
+
+            // Update the confirmation message with category judul
+            const detailInfo = deleteDetailModal.querySelector('#detail-info');
+            detailInfo.textContent = judul;
         });
     }
 </script>
