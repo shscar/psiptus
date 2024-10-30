@@ -18,19 +18,43 @@ class KategoriPengeluaranSeeder extends AbstractSeed
     {
         $data = [
             [
-                'nama_kategori' => 'Pengeluaran Operasional',
+                'nama_kategori' => 'Pemeliharaan Bangunan',
                 'icon' => 'bi-gear',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ],
             [
-                'nama_kategori' => 'Biaya Listrik',
+                'nama_kategori' => 'Utilitas',
                 'icon' => 'bi-lightning',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ],
             [
-                'nama_kategori' => 'Biaya Perawatan Gedung',
+                'nama_kategori' => 'Buku dan ATK',
+                'icon' => 'bi-building',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'nama_kategori' => 'Perangkat Dan Teknologi',
+                'icon' => 'bi-building',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'nama_kategori' => 'Kegiatan Ekstrakurikuler',
+                'icon' => 'bi-building',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'nama_kategori' => 'Kegiatan Akademik',
+                'icon' => 'bi-building',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'nama_kategori' => 'Pengeluaran Kesejahteraan Siswa',
                 'icon' => 'bi-building',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),

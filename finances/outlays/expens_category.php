@@ -221,10 +221,11 @@ try {
                                             <?php foreach ($kategori as $kat): ?>
                                                 <li class="nav-item mb-2 d-flex justify-content-between align-items-center"
                                                     role="presentation" data-id="<?= $kat['id'] ?>">
-                                                    <a class="nav-link rounded-4 flex-grow-1"
+                                                    <a class="nav-link rounded-4 flex-grow-1 me-4"
                                                         id="pills-kategori-tab-<?= $kat['id'] ?>" data-bs-toggle="pill"
                                                         href="javascript:void(0)" role="tab" aria-controls="pills-kategori"
-                                                        aria-selected="false" onclick="getDetails(<?= $kat['id'] ?>)">
+                                                        aria-selected="false"
+                                                        onclick="getDetails(<?= $kat['id'] ?>, '<?= $kat['id'] ?>')">
                                                         <i class="<?= $kat['icon'] ?>"></i>
                                                         <span class="menu-title"><?= $kat['nama_kategori'] ?></span>
                                                     </a>
@@ -266,7 +267,6 @@ try {
                             </button>
                         </div>
                         <div class="card-body">
-                            <h3 class="card-title text-danger">Edit Detail sedang Maintance</h3>
                             <table class="table table-striped table-bordered">
                                 <thead>
                                     <tr>
@@ -482,7 +482,6 @@ try {
                     </div>
                 </div>
 
-
             </div>
         </div>
 
@@ -540,28 +539,6 @@ try {
                 detailInfo.textContent = name;
             });
         }
-
-        // Menampilkan Modal Tambah dan Reset Form
-        // Reset form modal tambah kategori
-        const addCategoryButton = document.getElementById('add-category');
-        if (addCategoryButton) {
-            addCategoryButton.addEventListener('click', function () {
-                const addCategoryModal = document.getElementById('addCategoryModal');
-                if (addCategoryModal) {
-                    addCategoryModal.querySelector('form').reset();
-                }
-            });
-        }
-        // Reset form modal tambah detail
-        const addDetailButton = document.getElementById('add-detail');
-        if (addDetailButton) {
-            addDetailButton.addEventListener('click', function () {
-                const addDetailModal = document.getElementById('addDetailModal');
-                if (addDetailModal) {
-                    addDetailModal.querySelector('form').reset();
-                }
-            });
-        }
     });
 </script>
 
@@ -570,6 +547,9 @@ try {
 <!-- Script AJAX untuk menampilkan detail berdasarkan kategori yang dipilih -->
 <script>
     function getDetails(kategoriId) {
+        // Simpan kategori yang dipilih ke localStorage
+        // localStorage.setItem('selectedKategori', kategoriId);
+
         // AJAX request untuk mendapatkan detail kategori
         $.ajax({
             url: '/child-expens-category',
@@ -579,10 +559,82 @@ try {
             },
             success: function (response) {
                 $('#detail-content').html(response);
+                // Memperbarui URL tanpa memuat ulang halaman
+                history.pushState(null, '', '/pengeluaran/kategori-pengeluaran#' + kategoriId);
             },
             error: function () {
                 alert('Gagal mengambil data');
             }
+        });
+    }
+    // Fungsi untuk memuat kategori yang dipilih saat halaman dimuat
+    $(document).ready(function () {
+        var selectedKategori = localStorage.getItem('selectedKategori');
+        if (selectedKategori) {
+            getDetails(selectedKategori);
+            // Menandai kategori yang aktif
+            $('#list-menu .nav-item .nav-link').removeClass('active');
+            $('#list-menu .nav-item[data-id="' + selectedKategori + '"] .nav-link').addClass('active');
+        }
+    });
+
+    // Handling Edit
+    const editDetailModal = document.getElementById('editDetailModal');
+    if (editDetailModal) {
+        editDetailModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-detail-id');
+            const kategori_id = button.getAttribute('data-kategori-id');
+            const judul = button.getAttribute('data-judul');
+
+            // Update the modal's content.
+            const modalTitle = editDetailModal.querySelector('.modal-title');
+            modalTitle.textContent = `Edit Kategori: ` + judul;
+
+            const detailIdElement = document.getElementById('edit_detail_id');
+            const kategoriIdElement = document.getElementById('edit_kategori_id');
+            const judulElement = document.getElementById('edit_judul');
+
+            if (detailIdElement && kategoriIdElement && judulElement) {
+                detailIdElement.value = id || '';
+                judulElement.value = judul || '';
+
+                // Pilih kategori yang sesuai
+                const options = kategoriIdElement.options;
+                for (let i = 0; i < options.length; i++) {
+                    if (options[i].value == kategori_id) {
+                        options[i].selected = true;
+                        break;
+                    }
+                }
+            } else {
+                console.error('Elemen tidak ditemukan di dalam DOM.');
+            }
+
+            console.log(`ID: ${id}, IDkat: ${kategori_id}, jud: ${judul}`);
+        });
+    }
+
+    // Handling Delete
+    const deleteDetailModal = document.getElementById('deleteDetailModal');
+    if (deleteDetailModal) {
+        deleteDetailModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+
+            const id = button.getAttribute('data-id');
+            const judul = button.getAttribute('data-judul');
+
+            // Update the modal's content.
+            const modalTitle = deleteDetailModal.querySelector('.modal-title');
+            modalTitle.textContent = `Delete Kategori: ` + judul;
+
+            // Populate the form with the id
+            const form = deleteDetailModal.querySelector('#deleteDetailForm');
+            form.querySelector('#delete-id').value = id;
+
+            // Update the confirmation message with category judul
+            const detailInfo = deleteDetailModal.querySelector('#detail-info');
+            detailInfo.textContent = judul;
         });
     }
 </script>
@@ -592,7 +644,6 @@ try {
     // initialize the icon picker and done
     $('.iconpicker').iconpicker({
         // customize the icon picker with the following options
-        // THANKS FOR WATCHING!
         title: 'My Icon Picker',
         selected: false,
         defaultValue: false,
