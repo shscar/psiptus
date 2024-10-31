@@ -54,13 +54,13 @@ ob_end_flush();
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-6">
-                    <h3 class="mb-0">Simple Tables</h3>
+                    <h3 class="mb-0">Data Siswa</h3>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            Simple Tables
+                            student
                         </li>
                     </ol>
                 </div>
@@ -83,9 +83,9 @@ ob_end_flush();
                                 </button>
                             </div>
                             <?php
-                                if (!empty($success)) {
-                                    echo '<div class="alert alert-success">' . $success . '</div>';
-                                }
+                            if (!empty($success)) {
+                                echo '<div class="alert alert-success">' . $success . '</div>';
+                            }
                             ?>
                         </div>
 
@@ -114,20 +114,20 @@ ob_end_flush();
                                                 <td><?= htmlspecialchars($row['kelas']) ?: '-'; ?></td>
                                                 <td class="project-state">
                                                     <?php
-                                                        $status = htmlspecialchars($row['status']) ?: '-';
-                                                        switch ($status) {
-                                                            case 'Aktif':
-                                                                $badgeClass = 'badge bg-success';
-                                                                $statusText = 'Aktif';
-                                                                break;
-                                                            case 'Tidak Aktif':
-                                                                $badgeClass = 'badge bg-danger';
-                                                                $statusText = 'Tidak Aktif';
-                                                                break;
-                                                            default:
-                                                                $badgeClass = 'badge bg-secondary';
-                                                                $statusText = 'Unknown';
-                                                        }
+                                                    $status = htmlspecialchars($row['status']) ?: '-';
+                                                    switch ($status) {
+                                                        case 'Aktif':
+                                                            $badgeClass = 'badge bg-success';
+                                                            $statusText = 'Aktif';
+                                                            break;
+                                                        case 'Tidak Aktif':
+                                                            $badgeClass = 'badge bg-danger';
+                                                            $statusText = 'Tidak Aktif';
+                                                            break;
+                                                        default:
+                                                            $badgeClass = 'badge bg-secondary';
+                                                            $statusText = 'Unknown';
+                                                    }
                                                     ?>
                                                     <span class="<?php echo $badgeClass; ?>"><?php echo $statusText; ?></span>
                                                 </td>

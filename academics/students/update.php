@@ -110,7 +110,7 @@ $siswa_kelas_id = isset($siswa['kelas_id']) ? $siswa['kelas_id'] : null;
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-6">
-                    <h3 class="mb-0">Edit S</h3>
+                    <h3 class="mb-0">Edit Siswa</h3>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">

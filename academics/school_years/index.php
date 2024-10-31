@@ -102,13 +102,13 @@ ob_end_flush();
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-6">
-                    <h3 class="mb-0">Simple Tables</h3>
+                    <h3 class="mb-0">Tahun Ajaran</h3>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            Simple Tables
+                            sch yrs
                         </li>
                     </ol>
                 </div>
@@ -144,26 +144,26 @@ ob_end_flush();
                                 </thead>
                                 <tbody>
                                     <?php foreach ($tahun_ajaran as $index => $row): ?>
-                                    <tr>
-                                        <td><?= $index + 1; ?></td>
-                                        <td><?= $row['tahun']; ?></td>
-                                        <td><?= $row['status']; ?></td>
-                                        <td class="text-center">
-                                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#editModal" data-bs-id="<?= $row['id'] ?>"
-                                                data-bs-tahun="<?= $row['tahun'] ?>"
-                                                data-bs-status="<?= $row['status'] ?>">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                        </td>
-                                        <td class="text-center">
-                                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?>"
-                                                data-bs-tahun="<?= $row['tahun'] ?>">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
+                                        <tr>
+                                            <td><?= $index + 1; ?></td>
+                                            <td><?= $row['tahun']; ?></td>
+                                            <td><?= $row['status']; ?></td>
+                                            <td class="text-center">
+                                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#editModal" data-bs-id="<?= $row['id'] ?>"
+                                                    data-bs-tahun="<?= $row['tahun'] ?>"
+                                                    data-bs-status="<?= $row['status'] ?>">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?>"
+                                                    data-bs-tahun="<?= $row['tahun'] ?>">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
@@ -272,56 +272,56 @@ ob_end_flush();
 
 <!-- Inisialisasi DataTables -->
 <script>
-$(document).ready(function() {
-    $('#datatable').DataTable({
-        "paging": true,
-        "lengthChange": true,
-        "searching": true,
-        "ordering": true,
-        "info": true,
-        "autoWidth": false,
-        "responsive": true
+    $(document).ready(function () {
+        $('#datatable').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true
+        });
     });
-});
 
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
 
-    const editModal = document.getElementById('editModal');
-    if (editModal) {
-        editModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-bs-id');
-            const tahun = button.getAttribute('data-bs-tahun');
-            const status = button.getAttribute('data-bs-status');
+        const editModal = document.getElementById('editModal');
+        if (editModal) {
+            editModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-bs-id');
+                const tahun = button.getAttribute('data-bs-tahun');
+                const status = button.getAttribute('data-bs-status');
 
-            // Update the modal's content.
-            const modalTitle = editModal.querySelector('.modal-title');
-            modalTitle.textContent = `Edit Data: ${tahun}`;
+                // Update the modal's content.
+                const modalTitle = editModal.querySelector('.modal-title');
+                modalTitle.textContent = `Edit Data: ${tahun}`;
 
-            const form = editModal.querySelector('#editForm');
-            form.querySelector('#edit-id').value = id;
-            form.querySelector('#edit-tahun').value = tahun;
-            form.querySelector('#edit-status').value = status;
-        });
-    }
+                const form = editModal.querySelector('#editForm');
+                form.querySelector('#edit-id').value = id;
+                form.querySelector('#edit-tahun').value = tahun;
+                form.querySelector('#edit-status').value = status;
+            });
+        }
 
-    const deleteModal = document.getElementById('deleteModal');
-    if (deleteModal) {
-        deleteModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-bs-id');
-            const tahun = button.getAttribute('data-bs-tahun');
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-bs-id');
+                const tahun = button.getAttribute('data-bs-tahun');
 
-            // Update the modal's content.
-            const modalTitle = deleteModal.querySelector('.modal-title');
-            modalTitle.textContent = `Delete Data: ${tahun}`;
+                // Update the modal's content.
+                const modalTitle = deleteModal.querySelector('.modal-title');
+                modalTitle.textContent = `Delete Data: ${tahun}`;
 
-            // Update the modal's content.
-            const form = deleteModal.querySelector('#deleteForm');
-            form.querySelector('#delete-id').value = id;
-        });
-    }
-});
+                // Update the modal's content.
+                const form = deleteModal.querySelector('#deleteForm');
+                form.querySelector('#delete-id').value = id;
+            });
+        }
+    });
 </script>
 
 <!-- DataTables CSS/JS Dependencies -->

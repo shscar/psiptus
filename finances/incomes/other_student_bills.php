@@ -162,7 +162,7 @@ ob_end_flush();
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            Tagihan
+                            oth student bil
                         </li>
                     </ol>
                 </div>
@@ -190,7 +190,6 @@ ob_end_flush();
                                 <thead>
                                     <tr>
                                         <th>No</th>
-                                        <th>Jenis</th>
                                         <th>Nama Pembayaran</th>
                                         <th>Diangsur</th>
                                         <th>Nominal</th>
@@ -203,7 +202,6 @@ ob_end_flush();
                                     <?php foreach ($results as $index => $row): ?>
                                     <tr>
                                         <td><?= $index + 1; ?></td>
-                                        <td>test</td>
                                         <td><?= $row['nama_pembayaran'] ?? '-'; ?></td>
                                         <td><?= $row['bisa_diangsur'] ? 'Ya' : 'Tidak'; ?></td>
                                         <td>Rp. <?= number_format($row['nominal'], 2, ',', '.'); ?></td>

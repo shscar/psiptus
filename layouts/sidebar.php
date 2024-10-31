@@ -17,11 +17,13 @@ $dropdownRoutes = [
         '/pendapatan/pembayaran-siswa',
         '/pendapatan/tagihan-spp-siswa',
         '/pendapatan/tagihan-lain-siswa',
+    ],
+    'sid-03' => [
         '/pendapatan/pemasukan-bos',
         '/pendapatan/pemasukan-lain',
         '/pendapatan/jenis-pemasukan'
     ],
-    'sid-03' => ['/pengeluaran/kategori-pengeluaran', '/pengeluaran/detail-pengeluaran'],
+    'sid-04' => ['/pengeluaran/kategori-pengeluaran', '/pengeluaran/detail-pengeluaran'],
 ];
 
 $activeDropdown = null;
@@ -71,27 +73,27 @@ foreach ($dropdownRoutes as $key => $routes) {
                         style="<?php echo $activeDropdown === 'sid-01' ? 'display: block;' : 'display: none;'; ?>">
                         <li class="nav-item">
                             <a href="/siswa"
-                                class="nav-link <?php echo isActive($dropdownRoutes['sid-01']['siswa-i'], $requestUri); ?>">
+                                class="nav-link ms-3 <?php echo isActive($dropdownRoutes['sid-01']['siswa-i'], $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Data Siswa</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/tahun-ajaran"
-                                class="nav-link <?php echo isActive('/tahun-ajaran', $requestUri); ?>">
+                                class="nav-link ms-3 <?php echo isActive('/tahun-ajaran', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Tahun Ajaran</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/tingkat-kelas"
-                                class="nav-link <?php echo isActive('/tingkat-kelas', $requestUri); ?>">
+                                class="nav-link ms-3 <?php echo isActive('/tingkat-kelas', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Grub Kelas</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/kelas" class="nav-link <?php echo isActive('/kelas', $requestUri); ?>">
+                            <a href="/kelas" class="nav-link ms-3 <?php echo isActive('/kelas', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Kelas</p>
                             </a>
@@ -102,7 +104,7 @@ foreach ($dropdownRoutes as $key => $routes) {
                     <a href="#" class="nav-link <?php echo $activeDropdown === 'sid-02' ? 'active' : ''; ?>">
                         <i class="nav-icon bi bi-cash-coin"></i>
                         <p>
-                            Pendapatan
+                            T&P Siswa
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
@@ -110,42 +112,75 @@ foreach ($dropdownRoutes as $key => $routes) {
                         style="<?php echo $activeDropdown === 'sid-02' ? 'display: block;' : 'display: none;'; ?>">
                         <li class="nav-item">
                             <a href="/pendapatan/tagihan-spp-siswa"
-                                class="nav-link <?php echo isActive('/pendapatan/tagihan-spp-siswa', $requestUri); ?>">
+                                class="nav-link ms-3 <?php echo isActive('/pendapatan/tagihan-spp-siswa', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Tagihan SPP Siswa</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pendapatan/tagihan-lain-siswa"
-                                class="nav-link <?php echo isActive('/pendapatan/tagihan-lain-siswa', $requestUri); ?>">
+                                class="nav-link ms-3 <?php echo isActive('/pendapatan/tagihan-lain-siswa', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Tagihan Lain Siswa</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pendapatan/pembayaran-siswa"
-                                class="nav-link <?php echo isActive('/pendapatan/pembayaran-siswa', $requestUri); ?>">
+                                class="nav-link ms-3 <?php echo isActive('/pendapatan/pembayaran-siswa', $requestUri); ?>">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Pembayaran Siswa</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown <?php echo $activeDropdown === 'sid-03' ? 'menu-open' : ''; ?>">
+                    <a href="#" class="nav-link <?php echo $activeDropdown === 'sid-03' ? 'active' : ''; ?>">
+                        <i class="nav-icon bi bi-cash-coin"></i>
+                        <p>
+                            Pendapatan
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview"
+                        style="<?php echo $activeDropdown === 'sid-03' ? 'display: block;' : 'display: none;'; ?>">
+                        <li class="nav-item">
+                            <a href="/pendapatan/tagihan-spp-siswa"
+                                class="nav-link ms-3 <?php echo isActive('/pendapatan/tagihan-spp-siswa', $requestUri); ?>">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Tagihan SPP Siswa</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pendapatan/tagihan-lain-siswa"
+                                class="nav-link ms-3 <?php echo isActive('/pendapatan/tagihan-lain-siswa', $requestUri); ?>">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Tagihan Lain Siswa</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pendapatan/pembayaran-siswa"
+                                class="nav-link ms-3 <?php echo isActive('/pendapatan/pembayaran-siswa', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Pembayaran Siswa</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pendapatan/pemasukan-bos"
-                                class="nav-link <?php echo isActive('/pendapatan/pemasukan-bos', $requestUri); ?>">
+                                class="nav-link ms-3 <?php echo isActive('/pendapatan/pemasukan-bos', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Dana BOS</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/pendapatan/pemasukan-lain" 
-                                class="nav-link <?php echo isActive('/pendapatan/pemasukan-lain', $requestUri); ?>">
+                            <a href="/pendapatan/pemasukan-lain"
+                                class="nav-link ms-3 <?php echo isActive('/pendapatan/pemasukan-lain', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Pendapatan lain-lain</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/pendapatan/jenis-pemasukan" 
-                                class="nav-link <?php echo isActive('/pendapatan/jenis-pemasukan', $requestUri); ?>">
+                            <a href="/pendapatan/jenis-pemasukan"
+                                class="nav-link ms-3 <?php echo isActive('/pendapatan/jenis-pemasukan', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Jenis Pendapatan</p>
                             </a>
@@ -170,8 +205,8 @@ foreach ($dropdownRoutes as $key => $routes) {
                         </li> -->
                     </ul>
                 </li>
-                <li class="nav-item dropdown <?php echo $activeDropdown === 'sid-03' ? 'menu-open' : ''; ?>">
-                    <a href="#" class="nav-link <?php echo $activeDropdown === 'sid-03' ? 'active' : ''; ?>">
+                <li class="nav-item dropdown <?php echo $activeDropdown === 'sid-04' ? 'menu-open' : ''; ?>">
+                    <a href="#" class="nav-link <?php echo $activeDropdown === 'sid-04' ? 'active' : ''; ?>">
                         <i class="nav-icon bi bi-cash-stack"></i>
                         <p>
                             pengeluaran
@@ -179,17 +214,17 @@ foreach ($dropdownRoutes as $key => $routes) {
                         </p>
                     </a>
                     <ul class="nav nav-treeview"
-                        style="<?php echo $activeDropdown === 'sid-03' ? 'display: block;' : 'display: none;'; ?>">
+                        style="<?php echo $activeDropdown === 'sid-04' ? 'display: block;' : 'display: none;'; ?>">
                         <li class="nav-item">
                             <a href="/pengeluaran/kategori-pengeluaran"
-                                class="nav-link <?php echo isActive('/pengeluaran/kategori-pengeluaran', $requestUri); ?>">
+                                class="nav-link ms-3 <?php echo isActive('/pengeluaran/kategori-pengeluaran', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Jenis Pengeluaran</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pengeluaran/detail-pengeluaran"
-                                class="nav-link <?php echo isActive('/pengeluaran/detail-pengeluaran', $requestUri); ?>">
+                                class="nav-link ms-3 <?php echo isActive('/pengeluaran/detail-pengeluaran', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Detail Pengeluaran</p>
                             </a>
