@@ -144,27 +144,6 @@ foreach ($dropdownRoutes as $key => $routes) {
                     <ul class="nav nav-treeview"
                         style="<?php echo $activeDropdown === 'sid-03' ? 'display: block;' : 'display: none;'; ?>">
                         <li class="nav-item">
-                            <a href="/pendapatan/tagihan-spp-siswa"
-                                class="nav-link ms-3 <?php echo isActive('/pendapatan/tagihan-spp-siswa', $requestUri); ?>">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Tagihan SPP Siswa</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pendapatan/tagihan-lain-siswa"
-                                class="nav-link ms-3 <?php echo isActive('/pendapatan/tagihan-lain-siswa', $requestUri); ?>">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Tagihan Lain Siswa</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pendapatan/pembayaran-siswa"
-                                class="nav-link ms-3 <?php echo isActive('/pendapatan/pembayaran-siswa', $requestUri); ?>">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Pembayaran Siswa</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a href="/pendapatan/pemasukan-bos"
                                 class="nav-link ms-3 <?php echo isActive('/pendapatan/pemasukan-bos', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>

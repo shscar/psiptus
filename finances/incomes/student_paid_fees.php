@@ -1,9 +1,3 @@
-<!-- Tambahkan stylesheet dan JavaScript untuk AdminLTE 4 dan Select2 -->
-<link href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/css/adminlte.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/js/adminlte.min.js"></script>
 <?php
 // Memulai output buffering
 ob_start();
@@ -54,6 +48,13 @@ try {
 ob_end_flush();
 ?>
 
+<!-- Tambahkan stylesheet dan JavaScript untuk AdminLTE 4 dan Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/css/adminlte.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/js/adminlte.min.js"></script>
+
 <!--begin::App Main-->
 <main class="app-main">
     <!--begin::App Content Header-->
@@ -99,9 +100,9 @@ ob_end_flush();
                                                 style="width: 100%;">
                                                 <option value="">Pilih Nama Siswa</option>
                                                 <?php foreach ($siswaData as $siswa): ?>
-                                                    <option value="<?php echo $siswa['nis']; ?>">
-                                                        <?php echo $siswa['nama']; ?>
-                                                    </option>
+                                                <option value="<?php echo $siswa['nis']; ?>">
+                                                    <?php echo $siswa['nama']; ?>
+                                                </option>
                                                 <?php endforeach; ?>
                                             </select>
                                         </div>
@@ -233,14 +234,14 @@ ob_end_flush();
                                         $dibayar = 0;
                                         $kurang = $row['nominal'] - $dibayar;
                                         ?>
-                                        <tr>
-                                            <td><?= $no++; ?></td>
-                                            <td><?= htmlspecialchars($row['nama_pembayaran']); ?></td>
-                                            <td><?= number_format($row['nominal'], 2, ',', '.'); ?></td>
-                                            <td><?= number_format($dibayar, 2, ',', '.'); ?></td>
-                                            <td><?= number_format($kurang, 2, ',', '.'); ?></td>
-                                            <td><button class="btn btn-success btn-sm pilihBtn">+ Pilih</button></td>
-                                        </tr>
+                                    <tr>
+                                        <td><?= $no++; ?></td>
+                                        <td><?= htmlspecialchars($row['nama_pembayaran']); ?></td>
+                                        <td><?= number_format($row['nominal'], 2, ',', '.'); ?></td>
+                                        <td><?= number_format($dibayar, 2, ',', '.'); ?></td>
+                                        <td><?= number_format($kurang, 2, ',', '.'); ?></td>
+                                        <td><button class="btn btn-success btn-sm pilihBtn">+ Pilih</button></td>
+                                    </tr>
                                     <?php } ?>
                                 </tbody>
                             </table>
@@ -330,74 +331,74 @@ ob_end_flush();
 
 <!-- Inisialisasi DataTables -->
 <script>
-    // document.getElementById('jenisPembayaranTable').addEventListener('click', function () {
-    //     var pembayaranModal = new bootstrap.Modal(document.getElementById('jenisPembayaranModal'));
-    //     pembayaranModal.show();
-    // });
-    $(document).ready(function () {
-        // Initialize DataTables
-        $('#jenisPembayaranTable, #content').DataTable({
-            "paging": true,
-            "lengthChange": true,
-            "searching": true,
-            "ordering": true,
-            "info": true,
-            "autoWidth": false,
-            "responsive": true
-        });
+// document.getElementById('jenisPembayaranTable').addEventListener('click', function () {
+//     var pembayaranModal = new bootstrap.Modal(document.getElementById('jenisPembayaranModal'));
+//     pembayaranModal.show();
+// });
+$(document).ready(function() {
+    // Initialize DataTables
+    $('#jenisPembayaranTable, #content').DataTable({
+        "paging": true,
+        "lengthChange": true,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "autoWidth": false,
+        "responsive": true
+    });
 
-        // Initialize modals
-        var createDataModal = new bootstrap.Modal(document.getElementById('createDataModal'));
-        var jenisPembayaranModal = new bootstrap.Modal(document.getElementById('jenisPembayaranModal'));
+    // Initialize modals
+    var createDataModal = new bootstrap.Modal(document.getElementById('createDataModal'));
+    var jenisPembayaranModal = new bootstrap.Modal(document.getElementById('jenisPembayaranModal'));
 
-        // Open second modal and hide the first
-        document.getElementById('openModal2').addEventListener('click', function () {
-            createDataModal.hide();
-            jenisPembayaranModal.show();
-        });
+    // Open second modal and hide the first
+    document.getElementById('openModal2').addEventListener('click', function() {
+        createDataModal.hide();
+        jenisPembayaranModal.show();
+    });
 
-        // Handle closing of second modal
-        document.getElementById('jenisPembayaranModal').addEventListener('hidden.bs.modal', function () {
-            createDataModal.show();
-        });
+    // Handle closing of second modal
+    document.getElementById('jenisPembayaranModal').addEventListener('hidden.bs.modal', function() {
+        createDataModal.show();
+    });
 
-        // Handle "Pilih" button click in the jenisPembayaranTable
-        $('#jenisPembayaranTable').on('click', '.pilihBtn', function () {
-            var row = $(this).closest('tr');
-            var jenisPembayaran = row.find('td:nth-child(2)').text();
+    // Handle "Pilih" button click in the jenisPembayaranTable
+    $('#jenisPembayaranTable').on('click', '.pilihBtn', function() {
+        var row = $(this).closest('tr');
+        var jenisPembayaran = row.find('td:nth-child(2)').text();
 
-            // Check if already selected to prevent duplicates
-            if ($('#selectedPembayaran').find(`[data-jenis="${jenisPembayaran}"]`).length === 0) {
-                $('#selectedPembayaran').append(`
+        // Check if already selected to prevent duplicates
+        if ($('#selectedPembayaran').find(`[data-jenis="${jenisPembayaran}"]`).length === 0) {
+            $('#selectedPembayaran').append(`
                 <button class="btn btn-outline-success me-2" data-jenis="${jenisPembayaran}">
                     ${jenisPembayaran} <span class="removeItem">&times;</span>
                 </button>
             `);
-            }
-        });
-
-        // Remove selected item on click
-        $('#selectedPembayaran').on('click', '.removeItem', function () {
-            $(this).closest('button').remove();
-        });
+        }
     });
+
+    // Remove selected item on click
+    $('#selectedPembayaran').on('click', '.removeItem', function() {
+        $(this).closest('button').remove();
+    });
+});
 </script>
 
 
 <script>
-    $(document).ready(function () {
-        // Inisialisasi Select2
-        $('#nama_siswa').select2({
-            placeholder: 'Cari nama siswa',
-            allowClear: true
-        });
-
-        // Event listener untuk mendapatkan NIS ketika pilihan siswa berubah
-        $('#nama_siswa').on('change', function () {
-            const selectedNis = $(this).val();
-            $('#nis_siswa').val(selectedNis || ''); // Set nilai NIS sesuai pilihan siswa
-        });
+$(document).ready(function() {
+    // Inisialisasi Select2
+    $('#nama_siswa').select2({
+        placeholder: 'Cari nama siswa',
+        allowClear: true
     });
+
+    // Event listener untuk mendapatkan NIS ketika pilihan siswa berubah
+    $('#nama_siswa').on('change', function() {
+        const selectedNis = $(this).val();
+        $('#nis_siswa').val(selectedNis || ''); // Set nilai NIS sesuai pilihan siswa
+    });
+});
 </script>
 
 <!-- DataTables CSS/JS Dependencies -->

@@ -21,12 +21,13 @@ final class PengeluaranDana extends AbstractMigration
     {
         $table = $this->table('pengeluaran_dana');
         $table->addColumn('tanggal_pengeluaran', 'date', ['null' => false])
-            ->addColumn('bukti_pengeluaran', 'string', ['limit' => 255, 'null' => true, 'default' => null])
-            ->addColumn('pihak_terlibat', 'string', ['limit' => 255, 'null' => false])
+            ->addColumn('sumber_dana', 'string', ['null' => false])
+            ->addColumn('pihak_terlibat', 'string', ['null' => true])
+            ->addColumn('ket_pengeluaran', 'string', ['null' => true, 'default' => null])
             ->addColumn('detail_kategori_pengeluaran_id', 'integer', ['null' => false])
-            ->addColumn('sumber_dana', 'string', ['limit' => 255, 'default' => 1])
             ->addColumn('jenis_bayar', 'integer', ['null' => false])
             ->addColumn('total_jumlah', 'decimal', ['precision' => 15, 'scale' => 2, 'default' => 0])
+            ->addColumn('bukti_pengeluaran_id', 'integer', ['null' => true, 'default' => null])
             ->addTimestamps()
             ->create();
     }

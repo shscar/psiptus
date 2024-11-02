@@ -3,14 +3,6 @@
 include __DIR__ . '/../../layouts/master.php';
 $db = Database::getInstance()->getConnection();
 
-// Ambil semua kategori
-try {
-    $stmt = $db->query("SELECT * FROM kategori_pengeluaran");
-    $kategori = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo "Gagal mengambil kategori: " . $e->getMessage();
-}
-
 // Handle Form Submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $action = $_POST['action'];
@@ -63,6 +55,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
+    // Handle Form Submission for Deletion
+    if ($action === 'delete_category') {
+        $id = $_POST['id'];
+
+        if (!empty($id)) {
+            try {
+                $db->beginTransaction();
+
+                // Delete related details from detail_kategori_pengeluaran
+                $stmtDetails = $db->prepare("DELETE FROM detail_kategori_pengeluaran WHERE kategori_id = :id");
+                $stmtDetails->execute(['id' => $id]);
+
+                // Delete the category from kategori_pengeluaran
+                $stmtCategory = $db->prepare("DELETE FROM kategori_pengeluaran WHERE id = :id");
+                $stmtCategory->execute(['id' => $id]);
+
+                $db->commit();
+                // Redirect to kategori-pengeluaran page
+                echo "<script>
+                    alert('Kategori dan detail terkait berhasil dihapus.');
+                    window.location.href = '/pengeluaran/kategori-pengeluaran';
+                </script>";
+                exit();
+            } catch (PDOException $e) {
+                $db->rollBack();
+                echo "Gagal menghapus kategori dan detail: " . $e->getMessage();
+            }
+        } else {
+            echo "ID tidak valid!";
+        }
+    }
+
     // Tambah Detail Kategori
     if ($action === 'tambah_detail') {
         $kategori_id = $_POST['kategori_id'];
@@ -109,29 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-    // Delete Record
-    if ($action === 'delete_category') {
-        $id = $_POST['id'];
-
-        if (!empty($id)) {
-            try {
-                $stmt = $db->prepare("DELETE FROM kategori_pengeluaran WHERE id = :id");
-                $stmt->execute(['id' => $id]);
-
-                // Redirect to kategori-pengeluaran page
-                echo "<script>
-                    alert('Detail pengeluaran berhasil dihapus.');
-                    window.location.href = '/pengeluaran/kategori-pengeluaran';
-                </script>";
-                exit();
-            } catch (PDOException $e) {
-                echo "Gagal menghapus kategori: " . $e->getMessage();
-            }
-        } else {
-            echo "ID tidak valid!";
-        }
-    }
-
+    // Delete Detail Kategori
     if ($action === 'delete_detail_category') {
         $id = $_POST['id'];
 
@@ -153,15 +155,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo "ID tidak valid!";
         }
     }
-
-
 }
+
+// Fetch categories and their details in advance
+$kategori = $db->query("SELECT k.id, k.nama_kategori, k.icon,
+    GROUP_CONCAT(d.judul SEPARATOR ', ') AS detail_list
+    FROM kategori_pengeluaran k
+    LEFT JOIN detail_kategori_pengeluaran d ON k.id = d.kategori_id
+    GROUP BY k.id")->fetchAll(PDO::FETCH_ASSOC);
 
 // Ambil semua detail kategori
 try {
-    $stmt = $db->query("SELECT detail_kategori_pengeluaran.*, kategori_pengeluaran.nama_kategori 
-                         FROM detail_kategori_pengeluaran 
-                         INNER JOIN kategori_pengeluaran ON detail_kategori_pengeluaran.kategori_id = kategori_pengeluaran.id");
+    $stmt = $db->query("SELECT dk.*, k.nama_kategori 
+        FROM detail_kategori_pengeluaran dk
+        INNER JOIN kategori_pengeluaran k ON dk.kategori_id = k.id");
     $details = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "Gagal mengambil detail kategori: " . $e->getMessage();
@@ -173,10 +180,10 @@ try {
 <link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
 <link href="../../assets/bootstrap/css/bootstrapicons-iconpicker.css" rel="stylesheet">
 <style>
-    .container {
-        margin: 150px auto;
-        max-width: 640px;
-    }
+.container {
+    margin: 150px auto;
+    max-width: 640px;
+}
 </style>
 
 <!--begin::App Main-->
@@ -191,7 +198,7 @@ try {
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            Pengeluaran
+                            expn category
                         </li>
                     </ol>
                 </div>
@@ -214,42 +221,52 @@ try {
                             </button>
                         </div>
                         <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div id="list-menu">
-                                        <ul class="nav nav-pills flex-column" id="pills-tab" role="tablist">
-                                            <?php foreach ($kategori as $kat): ?>
-                                                <li class="nav-item mb-2 d-flex justify-content-between align-items-center"
-                                                    role="presentation" data-id="<?= $kat['id'] ?>">
-                                                    <a class="nav-link rounded-4 flex-grow-1 me-4"
-                                                        id="pills-kategori-tab-<?= $kat['id'] ?>" data-bs-toggle="pill"
-                                                        href="javascript:void(0)" role="tab" aria-controls="pills-kategori"
-                                                        aria-selected="false"
-                                                        onclick="getDetails(<?= $kat['id'] ?>, '<?= $kat['id'] ?>')">
-                                                        <i class="<?= $kat['icon'] ?>"></i>
-                                                        <span class="menu-title"><?= $kat['nama_kategori'] ?></span>
-                                                    </a>
-
-                                                    <div class="ms-auto me-2">
-                                                        <button class="btn btn-info btn-sm rounded-2" data-bs-toggle="modal"
+                            <div class="row g-0">
+                                <div id="list-menu">
+                                    <ul class="nav flex-column nav-pills" id="pills-tab" role="tablist"
+                                        aria-orientation="vertical">
+                                        <?php foreach ($kategori as $kat): ?>
+                                        <li class="nav-item mb-2 d-flex align-items-center" role="presentation"
+                                            data-id="<?= $kat['id'] ?>">
+                                            <a class="nav-link rounded-4 flex-grow-1"
+                                                id="pills-kategori-tab-<?= $kat['id'] ?>" data-bs-toggle="pill"
+                                                href="javascript:void(0)" role="tab" aria-controls="pills-kategori"
+                                                aria-selected="false"
+                                                onclick="getDetails(<?= $kat['id'] ?>, '<?= $kat['id'] ?>')">
+                                                <i class="bi <?= $kat['icon'] ?>"></i>
+                                                <span class="menu-title"><?= $kat['nama_kategori'] ?></span>
+                                            </a>
+                                            <div class="dropdown ms-auto">
+                                                <button class="btn btn-link p-0" type="button"
+                                                    id="settings-<?= $kat['id'] ?>" data-bs-toggle="dropdown"
+                                                    aria-expanded="false">
+                                                    <i class="bi bi-three-dots-vertical"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end"
+                                                    aria-labelledby="settings-<?= $kat['id'] ?>">
+                                                    <li>
+                                                        <button class="dropdown-item" data-bs-toggle="modal"
                                                             data-bs-target="#editCategoryModal"
                                                             data-id_kategori="<?= $kat['id'] ?>"
                                                             data-name="<?= $kat['nama_kategori'] ?>"
                                                             data-icon="<?= $kat['icon'] ?>">
-                                                            <i class="bi bi-pencil-square"></i>
+                                                            Edit
                                                         </button>
-
-                                                        <button class="btn btn-danger btn-sm rounded-2"
-                                                            data-bs-toggle="modal" data-bs-target="#deleteKatModal"
+                                                    </li>
+                                                    <li>
+                                                        <button class="dropdown-item" data-bs-toggle="modal"
+                                                            data-bs-target="#deleteKatModal"
                                                             data-id="<?= $kat['id']; ?>"
-                                                            data-name="<?= $kat['nama_kategori'] ?>">
-                                                            <i class="bi bi-trash"></i>
+                                                            data-name="<?= htmlspecialchars($kat['nama_kategori']); ?>"
+                                                            data-details="<?= htmlspecialchars($kat['detail_list']); ?>">
+                                                            Delete
                                                         </button>
-                                                    </div>
-                                                </li>
-                                            <?php endforeach; ?>
-                                        </ul>
-                                    </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <?php endforeach; ?>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -369,9 +386,13 @@ try {
                                 <form id="deleteKatForm" method="POST">
                                     <input type="hidden" name="action" value="delete_category">
                                     <input type="hidden" id="delete-id" name="id">
-                                    <p>Apakah Anda yakin ingin menghapus <span id="detail-info"></span>?. Semua data
+                                    <p>Apakah Anda yakin ingin menghapus <span id="detail-info"></span>? Semua data
                                         detail juga akan ikut terhapus.</p>
                                     <p>Tindakan ini tidak dapat dikembalikan.</p>
+                                    <div id="related-details" class="mt-3">
+                                        <h6>Detail Terkait:</h6>
+                                        <ul id="details-list" class="list-group"></ul>
+                                    </div>
                                 </form>
                             </div>
                             <div class="modal-footer">
@@ -399,7 +420,7 @@ try {
                                         <label for="kategori_id" class="form-label">Pilih Kategori</label>
                                         <select class="form-select" id="kategori_id" name="kategori_id">
                                             <?php foreach ($kategori as $kat): ?>
-                                                <option value="<?= $kat['id'] ?>"><?= $kat['nama_kategori'] ?></option>
+                                            <option value="<?= $kat['id'] ?>"><?= $kat['nama_kategori'] ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -436,7 +457,7 @@ try {
                                         <label for="edit_kategori_id" class="form-label">Pilih Kategori</label>
                                         <select class="form-select" id="edit_kategori_id" name="kategori_id">
                                             <?php foreach ($kategori as $kat): ?>
-                                                <option value="<?= $kat['id'] ?>"><?= $kat['nama_kategori'] ?></option>
+                                            <option value="<?= $kat['id'] ?>"><?= $kat['nama_kategori'] ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -492,211 +513,218 @@ try {
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Handle klik pada tombol edit kategori
-        document.querySelectorAll('.btn-info').forEach(function (button) {
-            button.addEventListener('click', function () {
-                const id = this.getAttribute('data-id_kategori');
-                const nama_kategori = this.getAttribute('data-name');
-                const data_icon = this.getAttribute('data-icon');
+document.querySelectorAll('.dropdown-item').forEach(function(button) {
+    button.addEventListener('click', function() {
+        const id = this.getAttribute('data-id_kategori');
+        const nama_kategori = this.getAttribute('data-name');
+        const data_icon = this.getAttribute('data-icon');
 
-                // Mendapatkan modal edit kategori
-                const editCategoryModal = document.getElementById('editCategoryModal');
+        // Mendapatkan modal edit kategori
+        const editCategoryModal = document.getElementById('editCategoryModal');
 
-                // Up modal's header.
-                const modalTitle = editCategoryModal.querySelector('.modal-title');
-                modalTitle.textContent = `Edit Kategori: ${nama_kategori}`;
+        // Up modal's header.
+        const modalTitle = editCategoryModal.querySelector('.modal-title');
+        modalTitle.textContent = `Edit Kategori: ${nama_kategori}`;
 
-                // Memastikan elemen ada sebelum mengisi form
-                if (document.getElementById('edit_id') && document.getElementById(
-                    'edit_nama_kategori') && document.getElementById('edit_data_icon')) {
-                    document.getElementById('edit_id').value = id || '';
-                    document.getElementById('edit_nama_kategori').value = nama_kategori || '';
-                    document.getElementById('edit_data_icon').value = data_icon || '';
-                }
-            });
-        });
-
-        // Handling Delete
-        const deleteKatModal = document.getElementById('deleteKatModal');
-        if (deleteKatModal) {
-            deleteKatModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-
-                const id = button.getAttribute('data-id');
-                const name = button.getAttribute('data-name');
-
-                // Update the modal's content.
-                const modalTitle = deleteKatModal.querySelector('.modal-title');
-                modalTitle.textContent = `Hapus Kategori: ${name}`;
-
-                // Populate the form with the id
-                const form = deleteKatModal.querySelector('#deleteKatForm');
-                form.querySelector('#delete-id').value = id;
-
-                // Update the confirmation message with category name
-                const detailInfo = deleteKatModal.querySelector('#detail-info');
-                detailInfo.textContent = name;
-            });
+        // Memastikan elemen ada sebelum mengisi form
+        if (document.getElementById('edit_id') && document.getElementById(
+                'edit_nama_kategori') && document.getElementById('edit_data_icon')) {
+            document.getElementById('edit_id').value = id || '';
+            document.getElementById('edit_nama_kategori').value = nama_kategori || '';
+            document.getElementById('edit_data_icon').value = data_icon || '';
         }
     });
+});
+// Show modal with populated data
+const deleteKatModal = document.getElementById('deleteKatModal');
+deleteKatModal.addEventListener('show.bs.modal', function(event) {
+    const button = event.relatedTarget;
+
+    // Get data attributes from the button
+    const id = button.getAttribute('data-id');
+    const name = button.getAttribute('data-name');
+    const details = button.getAttribute('data-details');
+
+    // Set modal content
+    deleteKatModal.querySelector('.modal-title').textContent = `Hapus Kategori: ${name}`;
+    deleteKatModal.querySelector('#delete-id').value = id;
+    deleteKatModal.querySelector('#detail-info').textContent = name;
+
+    // Populate related details in the list
+    const detailsList = deleteKatModal.querySelector('#details-list');
+    detailsList.innerHTML = ''; // Clear previous details
+
+    if (details) {
+        details.split(', ').forEach(function(detail) {
+            const listItem = document.createElement('li');
+            listItem.className = 'list-group-item';
+            listItem.textContent = detail;
+            detailsList.appendChild(listItem);
+        });
+    } else {
+        const emptyItem = document.createElement('li');
+        emptyItem.className = 'list-group-item text-muted';
+        emptyItem.textContent = 'Tidak ada detail terkait';
+        detailsList.appendChild(emptyItem);
+    }
+});
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script> -->
 
 <!-- Script AJAX untuk menampilkan detail berdasarkan kategori yang dipilih -->
 <script>
-    function getDetails(kategoriId) {
-        // Simpan kategori yang dipilih ke localStorage
-        // localStorage.setItem('selectedKategori', kategoriId);
+function getDetails(kategoriId) {
+    // Simpan kategori yang dipilih ke localStorage
+    // localStorage.setItem('selectedKategori', kategoriId);
 
-        // AJAX request untuk mendapatkan detail kategori
-        $.ajax({
-            url: '/child-expens-category',
-            method: 'GET',
-            data: {
-                kategori_id: kategoriId
-            },
-            success: function (response) {
-                $('#detail-content').html(response);
-                // Memperbarui URL tanpa memuat ulang halaman
-                history.pushState(null, '', '/pengeluaran/kategori-pengeluaran#' + kategoriId);
-            },
-            error: function () {
-                alert('Gagal mengambil data');
-            }
-        });
-    }
-    // Fungsi untuk memuat kategori yang dipilih saat halaman dimuat
-    $(document).ready(function () {
-        var selectedKategori = localStorage.getItem('selectedKategori');
-        if (selectedKategori) {
-            getDetails(selectedKategori);
-            // Menandai kategori yang aktif
-            $('#list-menu .nav-item .nav-link').removeClass('active');
-            $('#list-menu .nav-item[data-id="' + selectedKategori + '"] .nav-link').addClass('active');
+    // AJAX request untuk mendapatkan detail kategori
+    $.ajax({
+        url: '/child-expens-category',
+        method: 'GET',
+        data: {
+            kategori_id: kategoriId
+        },
+        success: function(response) {
+            $('#detail-content').html(response);
+            // Memperbarui URL tanpa memuat ulang halaman
+            history.pushState(null, '', '/pengeluaran/kategori-pengeluaran#' + kategoriId);
+        },
+        error: function() {
+            alert('Gagal mengambil data');
         }
     });
+}
+// Fungsi untuk memuat kategori yang dipilih saat halaman dimuat
+$(document).ready(function() {
+    var selectedKategori = localStorage.getItem('selectedKategori');
+    if (selectedKategori) {
+        getDetails(selectedKategori);
+        // Menandai kategori yang aktif
+        $('#list-menu .nav-item .nav-link').removeClass('active');
+        $('#list-menu .nav-item[data-id="' + selectedKategori + '"] .nav-link').addClass('active');
+    }
+});
 
-    // Handling Edit
-    const editDetailModal = document.getElementById('editDetailModal');
-    if (editDetailModal) {
-        editDetailModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-detail-id');
-            const kategori_id = button.getAttribute('data-kategori-id');
-            const judul = button.getAttribute('data-judul');
+// Handling Edit
+const editDetailModal = document.getElementById('editDetailModal');
+if (editDetailModal) {
+    editDetailModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const id = button.getAttribute('data-detail-id');
+        const kategori_id = button.getAttribute('data-kategori-id');
+        const judul = button.getAttribute('data-judul');
 
-            // Update the modal's content.
-            const modalTitle = editDetailModal.querySelector('.modal-title');
-            modalTitle.textContent = `Edit Kategori: ` + judul;
+        // Update the modal's content.
+        const modalTitle = editDetailModal.querySelector('.modal-title');
+        modalTitle.textContent = `Edit Kategori: ` + judul;
 
-            const detailIdElement = document.getElementById('edit_detail_id');
-            const kategoriIdElement = document.getElementById('edit_kategori_id');
-            const judulElement = document.getElementById('edit_judul');
+        const detailIdElement = document.getElementById('edit_detail_id');
+        const kategoriIdElement = document.getElementById('edit_kategori_id');
+        const judulElement = document.getElementById('edit_judul');
 
-            if (detailIdElement && kategoriIdElement && judulElement) {
-                detailIdElement.value = id || '';
-                judulElement.value = judul || '';
+        if (detailIdElement && kategoriIdElement && judulElement) {
+            detailIdElement.value = id || '';
+            judulElement.value = judul || '';
 
-                // Pilih kategori yang sesuai
-                const options = kategoriIdElement.options;
-                for (let i = 0; i < options.length; i++) {
-                    if (options[i].value == kategori_id) {
-                        options[i].selected = true;
-                        break;
-                    }
+            // Pilih kategori yang sesuai
+            const options = kategoriIdElement.options;
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value == kategori_id) {
+                    options[i].selected = true;
+                    break;
                 }
-            } else {
-                console.error('Elemen tidak ditemukan di dalam DOM.');
             }
+        } else {
+            console.error('Elemen tidak ditemukan di dalam DOM.');
+        }
 
-            console.log(`ID: ${id}, IDkat: ${kategori_id}, jud: ${judul}`);
-        });
-    }
+        console.log(`ID: ${id}, IDkat: ${kategori_id}, jud: ${judul}`);
+    });
+}
 
-    // Handling Delete
-    const deleteDetailModal = document.getElementById('deleteDetailModal');
-    if (deleteDetailModal) {
-        deleteDetailModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
+// Handling Delete
+const deleteDetailModal = document.getElementById('deleteDetailModal');
+if (deleteDetailModal) {
+    deleteDetailModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
 
-            const id = button.getAttribute('data-id');
-            const judul = button.getAttribute('data-judul');
+        const id = button.getAttribute('data-id');
+        const judul = button.getAttribute('data-judul');
 
-            // Update the modal's content.
-            const modalTitle = deleteDetailModal.querySelector('.modal-title');
-            modalTitle.textContent = `Delete Kategori: ` + judul;
+        // Update the modal's content.
+        const modalTitle = deleteDetailModal.querySelector('.modal-title');
+        modalTitle.textContent = `Delete Kategori: ` + judul;
 
-            // Populate the form with the id
-            const form = deleteDetailModal.querySelector('#deleteDetailForm');
-            form.querySelector('#delete-id').value = id;
+        // Populate the form with the id
+        const form = deleteDetailModal.querySelector('#deleteDetailForm');
+        form.querySelector('#delete-id').value = id;
 
-            // Update the confirmation message with category judul
-            const detailInfo = deleteDetailModal.querySelector('#detail-info');
-            detailInfo.textContent = judul;
-        });
-    }
+        // Update the confirmation message with category judul
+        const detailInfo = deleteDetailModal.querySelector('#detail-info');
+        detailInfo.textContent = judul;
+    });
+}
 </script>
 
 <script src="../../assets/bootstrap/js/bootstrapicon-iconpicker.js"></script>
 <script>
-    // initialize the icon picker and done
-    $('.iconpicker').iconpicker({
-        // customize the icon picker with the following options
-        title: 'My Icon Picker',
-        selected: false,
-        defaultValue: false,
-        placement: "bottom",
-        collision: "none",
-        animation: true,
-        hideOnSelect: true,
-        showFooter: true,
-        searchInFooter: false,
-        mustAccept: false,
-        selectedCustomClass: "bg-primary",
-        fullClassFormatter: function (e) {
-            return e;
-        },
-        input: "input,.iconpicker-input",
-        inputSearch: false,
-        container: false,
-        component: ".input-group-addon,.iconpicker-component",
-        templates: {
-            popover: '<div class="iconpicker-popover popover" role="tooltip"><div class="arrow"></div>' +
-                '<div class="popover-title"></div><div class="popover-content"></div></div>',
-            footer: '<div class="popover-footer"></div>',
-            buttons: '<button class="iconpicker-btn iconpicker-btn-cancel btn btn-default btn-sm">Cancel</button>',
-            search: '<input type="search" class="form-control iconpicker-search" placeholder="Type to filter" />',
-            iconpicker: '<div class="iconpicker"><div class="iconpicker-items"></div></div>',
-            iconpickerItem: '<a role="button" href="javascript:;" class="iconpicker-item"><i></i></a>'
-        }
-    });
+// initialize the icon picker and done
+$('.iconpicker').iconpicker({
+    // customize the icon picker with the following options
+    title: 'My Icon Picker',
+    selected: false,
+    defaultValue: false,
+    placement: "bottom",
+    collision: "none",
+    animation: true,
+    hideOnSelect: true,
+    showFooter: true,
+    searchInFooter: false,
+    mustAccept: false,
+    selectedCustomClass: "bg-primary",
+    fullClassFormatter: function(e) {
+        return e;
+    },
+    input: "input,.iconpicker-input",
+    inputSearch: false,
+    container: false,
+    component: ".input-group-addon,.iconpicker-component",
+    templates: {
+        popover: '<div class="iconpicker-popover popover" role="tooltip"><div class="arrow"></div>' +
+            '<div class="popover-title"></div><div class="popover-content"></div></div>',
+        footer: '<div class="popover-footer"></div>',
+        buttons: '<button class="iconpicker-btn iconpicker-btn-cancel btn btn-default btn-sm">Cancel</button>',
+        search: '<input type="search" class="form-control iconpicker-search" placeholder="Type to filter" />',
+        iconpicker: '<div class="iconpicker"><div class="iconpicker-items"></div></div>',
+        iconpickerItem: '<a role="button" href="javascript:;" class="iconpicker-item"><i></i></a>'
+    }
+});
 </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-1VDDWMRSTH"></script>
 <script>
-    window.dataLayer = window.dataLayer || [];
+window.dataLayer = window.dataLayer || [];
 
-    function gtag() {
-        dataLayer.push(arguments);
-    }
-    gtag('js', new Date());
-    gtag('config', 'G-1VDDWMRSTH');
+function gtag() {
+    dataLayer.push(arguments);
+}
+gtag('js', new Date());
+gtag('config', 'G-1VDDWMRSTH');
 </script>
 <script>
-    try {
-        fetch(new Request("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js", {
-            method: 'HEAD',
-            mode: 'no-cors'
-        })).then(function (response) {
-            return true;
-        }).catch(function (e) {
-            var carbonScript = document.createElement("script");
-            carbonScript.src = "//cdn.carbonads.com/carbon.js?serve=CK7DKKQU&placement=wwwjqueryscriptnet";
-            carbonScript.id = "_carbonads_js";
-            document.getElementById("carbon-block").appendChild(carbonScript);
-        });
-    } catch (error) {
-        console.log(error);
-    }
+try {
+    fetch(new Request("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js", {
+        method: 'HEAD',
+        mode: 'no-cors'
+    })).then(function(response) {
+        return true;
+    }).catch(function(e) {
+        var carbonScript = document.createElement("script");
+        carbonScript.src = "//cdn.carbonads.com/carbon.js?serve=CK7DKKQU&placement=wwwjqueryscriptnet";
+        carbonScript.id = "_carbonads_js";
+        document.getElementById("carbon-block").appendChild(carbonScript);
+    });
+} catch (error) {
+    console.log(error);
+}
 </script>
