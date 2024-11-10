@@ -741,7 +741,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <select class="form-select detail-kategori-select" name="nama_pengeluaran[]" style="display: none;" required>
                     <option selected disabled value="">Pilih pengeluaran</option>
                     <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
-                            <option value="<?php echo $dkp['id']; ?>"><?php echo $dkp['judul']; ?></option>
+                                <option value="<?php echo $dkp['id']; ?>"><?php echo $dkp['judul']; ?></option>
                     <?php endforeach; ?>
                 </select>
             </td>

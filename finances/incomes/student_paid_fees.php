@@ -18,14 +18,10 @@ $stmt->execute();
 $tagihanData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fungsi untuk mengambil data siswa dari tabel 'siswa'
-function getSiswaData($db)
-{
-    $stmt = $db->prepare("SELECT nis, nama_lengkap AS nama FROM siswa");
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-// Mengambil data siswa untuk digunakan di JavaScript
-$siswaData = getSiswaData($db);
+
+// Ambil data siswa dari database untuk digunakan di Select2
+$stmt = $db->query("SELECT nis, nama_lengkap FROM siswa WHERE status = 'Aktif'");
+$students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // script untuk mengambil 2 tabel dari "tarif spp" dan "pembayaran siswa"
 try {
@@ -49,11 +45,7 @@ ob_end_flush();
 ?>
 
 <!-- Tambahkan stylesheet dan JavaScript untuk AdminLTE 4 dan Select2 -->
-<link href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/css/adminlte.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/js/adminlte.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
 <!--begin::App Main-->
 <main class="app-main">
@@ -90,28 +82,25 @@ ob_end_flush();
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form>
+                            <form id="studentForm">
+                                <!-- Dropdown untuk memilih siswa dengan Select2 -->
                                 <div class="mb-3 row">
-                                    <label for="nama_siswa" class="col-sm-3 col-form-label">Nama Siswa</label>
+                                    <label for="student_name" class="col-sm-3 col-form-label">Nama Siswa</label>
                                     <div class="col-sm-9">
-                                        <div class="form-group">
-                                            <!-- Select2 untuk memilih nama siswa -->
-                                            <select class="form-control select2" id="nama_siswa" name="nama_siswa"
-                                                style="width: 100%;">
-                                                <option value="">Pilih Nama Siswa</option>
-                                                <?php foreach ($siswaData as $siswa): ?>
-                                                <option value="<?php echo $siswa['nis']; ?>">
-                                                    <?php echo $siswa['nama']; ?>
+                                        <select id="student_name" class="form-control select2" name="student_name">
+                                            <option value="">Pilih Nama Siswa</option>
+                                            <?php foreach ($students as $student): ?>
+                                                <option value="<?= $student['nis']; ?>"><?= $student['nama_lengkap']; ?>
                                                 </option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </div>
+                                            <?php endforeach; ?>
+                                        </select>
                                     </div>
                                 </div>
+
+                                <!-- Input untuk menampilkan NIS setelah pemilihan siswa -->
                                 <div class="mb-3 row">
                                     <label for="nis_siswa" class="col-sm-3 col-form-label">NIS Siswa</label>
                                     <div class="col-sm-9">
-                                        <!-- Input untuk menampilkan NIS setelah pemilihan nama siswa -->
                                         <input type="text" class="form-control" id="nis_siswa" name="nis_siswa"
                                             readonly>
                                     </div>
@@ -128,7 +117,7 @@ ob_end_flush();
                                 <div class="mb-3 row">
                                     <label for="tanggalBayar" class="col-sm-3 col-form-label">Tanggal Bayar</label>
                                     <div class="col-sm-9">
-                                        <input type="date" class="form-control" id="tanggalBayar" value="2024-09-26">
+                                        <input type="date" class="form-control" id="tanggalBayar">
                                     </div>
                                 </div>
 
@@ -147,6 +136,7 @@ ob_end_flush();
 
                                 <!-- ... other fields ... -->
                                 <hr>
+                                <!-- Tabel List Item Pengeluaran -->
                                 <div class="form-group">
                                     <table class="table table-striped table-bordered" id="tabel-list-item-pengeluaran">
                                         <thead>
@@ -158,19 +148,7 @@ ob_end_flush();
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr class="row-item-bayar">
-                                                <td>1</td>
-                                                <td>
-                                                    <label for="jenis" class="form-label">SPP Februari 2023</label>
-                                                </td>
-                                                <td>
-                                                    <label for="tagihan" class="form-label">350.000</label>
-                                                </td>
-                                                <td>
-                                                    <input type="jumlah_bayar" class="form-control"
-                                                        name="jumlah_bayar[]" required>
-                                                </td>
-                                            </tr>
+                                            <!-- Row akan ditambahkan secara dinamis oleh JavaScript -->
                                         </tbody>
                                         <tfoot>
                                             <tr id="row-total-bayar">
@@ -234,14 +212,14 @@ ob_end_flush();
                                         $dibayar = 0;
                                         $kurang = $row['nominal'] - $dibayar;
                                         ?>
-                                    <tr>
-                                        <td><?= $no++; ?></td>
-                                        <td><?= htmlspecialchars($row['nama_pembayaran']); ?></td>
-                                        <td><?= number_format($row['nominal'], 2, ',', '.'); ?></td>
-                                        <td><?= number_format($dibayar, 2, ',', '.'); ?></td>
-                                        <td><?= number_format($kurang, 2, ',', '.'); ?></td>
-                                        <td><button class="btn btn-success btn-sm pilihBtn">+ Pilih</button></td>
-                                    </tr>
+                                        <tr>
+                                            <td><?= $no++; ?></td>
+                                            <td><?= htmlspecialchars($row['nama_pembayaran']); ?></td>
+                                            <td><?= number_format($row['nominal'], 2, ',', '.'); ?></td>
+                                            <td><?= number_format($dibayar, 2, ',', '.'); ?></td>
+                                            <td><?= number_format($kurang, 2, ',', '.'); ?></td>
+                                            <td><button class="btn btn-success btn-sm pilihBtn">+ Pilih</button></td>
+                                        </tr>
                                     <?php } ?>
                                 </tbody>
                             </table>
@@ -253,6 +231,7 @@ ob_end_flush();
                 </div>
             </div>
 
+            <!-- Layouts Table -->
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Grade Level </h3>
@@ -279,23 +258,6 @@ ob_end_flush();
                         <tbody>
                             <tr>
                                 <td>1</td>
-                                <td>Alberd</td>
-                                <td>XI Teknik</td>
-                                <td>25 Sep 2024</td>
-                                <td>
-                                    <ul>
-                                        <li>ATS</li>
-                                        <li>UKK</li>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <button class="btn btn-success">Detail</button>
-                                    <button class="btn btn-warning">Edit</button>
-                                    <button class="btn btn-danger">Delete</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
                                 <td>Nightcore</td>
                                 <td>XII Bisnis</td>
                                 <td>23 Sep 2024</td>
@@ -327,24 +289,36 @@ ob_end_flush();
 <!-- DataTables Buttons JS (Opsional, jika menggunakan tombol) -->
 <script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Inisialisasi DataTables -->
 <script>
-// document.getElementById('jenisPembayaranTable').addEventListener('click', function () {
-//     var pembayaranModal = new bootstrap.Modal(document.getElementById('jenisPembayaranModal'));
-//     pembayaranModal.show();
-// });
-$(document).ready(function() {
-    // Initialize DataTables
-    $('#jenisPembayaranTable, #content').DataTable({
-        "paging": true,
-        "lengthChange": true,
-        "searching": true,
-        "ordering": true,
-        "info": true,
-        "autoWidth": false,
-        "responsive": true
+    $(document).ready(function () {
+        // Initialize DataTables
+        $('#jenisPembayaranTable, #content').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true
+        });
+        // Inisialisasi Select2 untuk data siswa
+        $('#createDataModal').on('shown.bs.modal', function () {
+            $('#student_name').select2({
+                placeholder: 'Pilih Nama Siswa',
+                dropdownParent: $('#createDataModal')
+            });
+        });
+        // Saat siswa dipilih, tampilkan NIS secara otomatis
+        $('#student_name').on('select2:select', function (e) {
+            const nis = e.params.data.id;
+            $('#nis_siswa').val(nis);
+        });
+
     });
 
     // Initialize modals
@@ -352,54 +326,61 @@ $(document).ready(function() {
     var jenisPembayaranModal = new bootstrap.Modal(document.getElementById('jenisPembayaranModal'));
 
     // Open second modal and hide the first
-    document.getElementById('openModal2').addEventListener('click', function() {
+    document.getElementById('openModal2').addEventListener('click', function () {
         createDataModal.hide();
         jenisPembayaranModal.show();
     });
 
     // Handle closing of second modal
-    document.getElementById('jenisPembayaranModal').addEventListener('hidden.bs.modal', function() {
+    document.getElementById('jenisPembayaranModal').addEventListener('hidden.bs.modal', function () {
         createDataModal.show();
     });
 
     // Handle "Pilih" button click in the jenisPembayaranTable
-    $('#jenisPembayaranTable').on('click', '.pilihBtn', function() {
+    $('#jenisPembayaranTable').on('click', '.pilihBtn', function () {
         var row = $(this).closest('tr');
         var jenisPembayaran = row.find('td:nth-child(2)').text();
+        var tagihan = row.find('td:nth-child(3)').text();
+        var dibayar = row.find('td:nth-child(4)').text();
+        var kurang = row.find('td:nth-child(5)').text();
 
         // Check if already selected to prevent duplicates
         if ($('#selectedPembayaran').find(`[data-jenis="${jenisPembayaran}"]`).length === 0) {
             $('#selectedPembayaran').append(`
-                <button class="btn btn-outline-success me-2" data-jenis="${jenisPembayaran}">
-                    ${jenisPembayaran} <span class="removeItem">&times;</span>
-                </button>
-            `);
+            <button class="btn btn-outline-success me-2" data-jenis="${jenisPembayaran}">
+                ${jenisPembayaran} <span class="removeItem">&times;</span>
+            </button>
+        `);
+
+            // Append to row-item-bayar in the main table
+            $('#tabel-list-item-pengeluaran tbody').append(`
+            <tr class="row-item-bayar">
+                <td>${$('#tabel-list-item-pengeluaran tbody tr').length + 1}</td>
+                <td><label for="jenis" class="form-label">${jenisPembayaran}</label></td>
+                <td><label for="tagihan" class="form-label">${tagihan}</label></td>
+                <td><input type="number" class="form-control" name="jumlah_bayar[]" required></td>
+            </tr>
+        `);
         }
     });
 
     // Remove selected item on click
-    $('#selectedPembayaran').on('click', '.removeItem', function() {
+    $('#selectedPembayaran').on('click', '.removeItem', function () {
+        var jenisPembayaran = $(this).closest('button').data('jenis');
         $(this).closest('button').remove();
+
+        // Remove corresponding row in the main table
+        $('#tabel-list-item-pengeluaran tbody .row-item-bayar').filter(function () {
+            return $(this).find('td:nth-child(2) label').text() === jenisPembayaran;
+        }).remove();
+
+        // Reorder row numbers
+        $('#tabel-list-item-pengeluaran tbody .row-item-bayar').each(function (index) {
+            $(this).find('td:first-child').text(index + 1);
+        });
     });
-});
 </script>
 
-
-<script>
-$(document).ready(function() {
-    // Inisialisasi Select2
-    $('#nama_siswa').select2({
-        placeholder: 'Cari nama siswa',
-        allowClear: true
-    });
-
-    // Event listener untuk mendapatkan NIS ketika pilihan siswa berubah
-    $('#nama_siswa').on('change', function() {
-        const selectedNis = $(this).val();
-        $('#nis_siswa').val(selectedNis || ''); // Set nilai NIS sesuai pilihan siswa
-    });
-});
-</script>
 
 <!-- DataTables CSS/JS Dependencies -->
 <link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">

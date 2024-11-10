@@ -20,7 +20,7 @@ class PengeluaranDanaSeeder extends AbstractSeed
         $pengeluaranDanaData = [
             [
                 'tanggal_pengeluaran' => '2024-09-01',
-                'bukti_pengeluaran' => 'bukti_pengeluaran1.jpg',
+                'bukti_pengeluaran_id' => null,
                 'pihak_terlibat' => 'Supplier Alat Tulis',
                 'detail_kategori_pengeluaran_id' => 1,
                 'sumber_dana' => 'Dana Sekolah',
@@ -31,7 +31,7 @@ class PengeluaranDanaSeeder extends AbstractSeed
             ],
             [
                 'tanggal_pengeluaran' => '2024-09-10',
-                'bukti_pengeluaran' => 'bukti_pengeluaran2.pdf',
+                'bukti_pengeluaran_id' => null,
                 'pihak_terlibat' => 'CV Jasa Listrik',
                 'detail_kategori_pengeluaran_id' => 2,
                 'sumber_dana' => 'Donasi Alumni',
@@ -42,7 +42,7 @@ class PengeluaranDanaSeeder extends AbstractSeed
             ],
             [
                 'tanggal_pengeluaran' => '2024-09-15',
-                'bukti_pengeluaran' => null,
+                'bukti_pengeluaran_id' => null,
                 'pihak_terlibat' => 'Toko Perlengkapan Gedung',
                 'detail_kategori_pengeluaran_id' => 3,
                 'sumber_dana' => 'Dana Pemerintah',
@@ -64,6 +64,7 @@ class PengeluaranDanaSeeder extends AbstractSeed
             for ($i = 1; $i <= 5; $i++) {
                 $itemPengeluaranDanaData[] = [
                     'pengeluaran_id' => $id,
+                    'detail_kategori_pengeluaran_id' => null,
                     'nama_pengeluaran' => "Item $i untuk Pengeluaran $id",
                     'keterangan' => "Keterangan pengeluaran item $i untuk pengeluaran $id",
                     'jumlah_barang' => rand(1, 30),

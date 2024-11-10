@@ -40,7 +40,6 @@
         <script src="../assets/js/adminlte.js"></script>
         <!--end::Required Plugin(AdminLTE)-->
 
-
 </body>
 <!--end::Body-->
 

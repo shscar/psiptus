@@ -53,7 +53,7 @@ class JenisDanaPemasukanLain extends AbstractSeed
             [
                 'nama_pendapatan' => 'Penyewaan gedung atau lapangan (seminar)',
                 'kategori' => 'external',
-                'periode' => '',
+                'periode' => 'Tahun',
                 'sumber' => 'Sponsor',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
@@ -77,7 +77,7 @@ class JenisDanaPemasukanLain extends AbstractSeed
             [
                 'nama_pendapatan' => 'Dana dari Lembaga Internasional (Non-Pemerintah)',
                 'kategori' => 'external',
-                'periode' => '',
+                'periode' => 'Tahun',
                 'sumber' => 'Sponsor',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),

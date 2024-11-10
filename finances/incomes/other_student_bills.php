@@ -261,7 +261,7 @@ ob_end_flush();
                                     <label for="nominal" class="form-label">Nominal</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp.</span>
-                                        <input type="text" class="form-control" id="nominal" name="nominal" required
+                                        <input type="number" class="form-control" id="nominal" name="nominal" required
                                             aria-label="Jumlah (ke rupiah)" />
                                         <span class="input-group-text">.00</span>
                                     </div>
@@ -323,7 +323,7 @@ ob_end_flush();
                                     <label for="edit_nominal" class="form-label">Nominal</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp.</span>
-                                        <input type="text" class="form-control" id="edit_nominal" name="nominal"
+                                        <input type="number" class="form-control" id="edit_nominal" name="nominal"
                                             required aria-label="Jumlah (ke rupiah)" />
                                         <span class="input-group-text">.00</span>
                                     </div>

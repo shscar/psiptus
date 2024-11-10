@@ -21,7 +21,8 @@ final class ItemPengeluaranDana extends AbstractMigration
     {
         $table = $this->table('item_pengeluaran_dana');
         $table->addColumn('pengeluaran_id', 'integer', ['null' => false])
-            ->addColumn('nama_pengeluaran', 'string', ['limit' => 255, 'null' => false])
+            ->addColumn('detail_kategori_pengeluaran_id', 'integer', ['null' => true])
+            ->addColumn('nama_pengeluaran', 'string', ['null' => true])
             ->addColumn('keterangan', 'text', ['null' => true, 'default' => null])
             ->addColumn('jumlah_barang', 'integer', ['null' => false])
             ->addColumn('nilai_bayar', 'decimal', ['precision' => 15, 'scale' => 2, 'default' => 0])

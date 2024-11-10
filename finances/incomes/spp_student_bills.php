@@ -5,22 +5,48 @@ ob_start();
 include __DIR__ . '/../../layouts/master.php';
 $db = Database::getInstance()->getConnection();
 
-$stmt = $db->prepare("SELECT 
+// SQL query to join tables and get all associated class names for each tarif_spp record
+$stmt = $db->prepare("
+    SELECT 
         t.id,
         t.nama_tarif,
         t.nominal,
         t.deskripsi,
         t.status_aktif,
         ta.tahun AS tahun_ajaran,
-        t.tahun_ajaran_id
+        t.tahun_ajaran_id,
+        k.nama_kelas
     FROM tarif_spp t
     LEFT JOIN tahun_ajaran ta ON t.tahun_ajaran_id = ta.id
-    ORDER BY t.id DESC
+    LEFT JOIN tarif_spp_kelas ts_k ON t.id = ts_k.tarif_spp_id
+    LEFT JOIN kelas k ON ts_k.kelas_id = k.id
+    ORDER BY t.id DESC, k.nama_kelas
 ");
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// query untuk mengambil data tabel "tahun_ajaran"
+// Group data by tarif_spp ID to handle multiple classes per tarif
+$tarifData = [];
+foreach ($results as $row) {
+    $tarifId = $row['id'];
+    if (!isset($tarifData[$tarifId])) {
+        $tarifData[$tarifId] = [
+            'id' => $row['id'],
+            'nama_tarif' => $row['nama_tarif'],
+            'nominal' => $row['nominal'],
+            'deskripsi' => $row['deskripsi'],
+            'status_aktif' => $row['status_aktif'],
+            'tahun_ajaran' => $row['tahun_ajaran'],
+            'tahun_ajaran_id' => $row['tahun_ajaran_id'],
+            'kelas' => [],
+        ];
+    }
+    if ($row['nama_kelas']) {
+        $tarifData[$tarifId]['kelas'][] = $row['nama_kelas'];
+    }
+}
+
+// Query for the "tahun_ajaran" table
 $stmt = $db->prepare("SELECT id, tahun FROM tahun_ajaran ORDER BY tahun DESC");
 $stmt->execute();
 $tahun_ajaran = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -36,32 +62,50 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $tahun_ajaran_id = $_POST['tahun_ajaran_id'];
         $deskripsi = $_POST['deskripsi'];
         $status_aktif = isset($_POST['status_aktif']) ? 1 : 0; // Checkbox default to checked
+        $kelas = $_POST['kelas']; // Array of selected classes
 
         // Validate input
-        if (!empty($nama_tarif) && !empty($nominal) && !empty($tahun_ajaran_id)) {
-            // Prepare SQL query
-            $sql = "INSERT INTO tarif_spp (nama_tarif, nominal, tahun_ajaran_id, deskripsi, status_aktif) 
-                    VALUES (:nama_tarif, :nominal, :tahun_ajaran_id, :deskripsi, :status_aktif)";
-            $stmt = $conn->prepare($sql);
+        if (!empty($nama_tarif) && !empty($nominal) && !empty($tahun_ajaran_id) && !empty($kelas)) {
+            // Begin transaction
+            $conn->beginTransaction();
 
-            // Bind parameters and execute
-            if (
+            try {
+                // Prepare SQL query to insert into tarif_spp table
+                $sql = "INSERT INTO tarif_spp (nama_tarif, nominal, tahun_ajaran_id, deskripsi, status_aktif) 
+                        VALUES (:nama_tarif, :nominal, :tahun_ajaran_id, :deskripsi, :status_aktif)";
+                $stmt = $conn->prepare($sql);
                 $stmt->execute([
                     'nama_tarif' => $nama_tarif,
                     'nominal' => $nominal,
                     'tahun_ajaran_id' => $tahun_ajaran_id,
                     'deskripsi' => $deskripsi,
                     'status_aktif' => $status_aktif
-                ])
-            ) {
+                ]);
+                $tarif_spp_id = $conn->lastInsertId(); // Get the inserted tarif_spp_id
+
+                // Insert into tarif_spp_kelas table for each selected class
+                $sqlKelas = "INSERT INTO tarif_spp_kelas (tarif_spp_id, kelas_id) VALUES (:tarif_spp_id, :kelas_id)";
+                $stmtKelas = $conn->prepare($sqlKelas);
+                foreach ($kelas as $kelas_id) {
+                    $stmtKelas->execute([
+                        'tarif_spp_id' => $tarif_spp_id,
+                        'kelas_id' => $kelas_id
+                    ]);
+                }
+
+                // Commit transaction
+                $conn->commit();
+
                 // Redirect to avoid form resubmission
                 echo "<script>
                         alert('Data tarif berhasil ditambahkan.');
                         window.location.href = '/pendapatan/tagihan-spp-siswa';
                     </script>";
                 exit();
-            } else {
-                echo "Gagal menyisipkan Data Tagihan!";
+            } catch (Exception $e) {
+                // Rollback transaction if an error occurs
+                $conn->rollBack();
+                echo "Gagal menyisipkan Data Tagihan: " . $e->getMessage();
             }
         } else {
             echo "Silakan isi semua bidang yang wajib diisi!";
@@ -83,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $sql = "UPDATE tarif_spp 
                     SET nama_tarif = :nama_tarif, nominal = :nominal, tahun_ajaran_id = :tahun_ajaran_id, deskripsi = :deskripsi, status_aktif = :status_aktif
                     WHERE id = :id";
-            $stmt = $conn->prepare($sql);
+            $stmt = $db->prepare($sql);
 
             // Bind parameters and execute
             if (
@@ -110,26 +154,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-
     // Delete Record
     if ($action == 'delete') {
         $id = $_POST['id'];
 
         if (!empty($id)) {
-            // Prepare SQL query for deletion
-            $sql = "DELETE FROM tarif_spp WHERE id = :id";
-            $stmt = $conn->prepare($sql);
+            // Begin transaction
+            $conn->beginTransaction();
 
-            // Execute the query
-            if ($stmt->execute(['id' => $id])) {
+            try {
+                // Delete from tarif_spp_kelas table first (if exists)
+                $sqlKelas = "DELETE FROM tarif_spp_kelas WHERE tarif_spp_id = :id";
+                $stmtKelas = $conn->prepare($sqlKelas);
+                $stmtKelas->execute(['id' => $id]);
+
+                // Then, delete from tarif_spp table
+                $sqlTarif = "DELETE FROM tarif_spp WHERE id = :id";
+                $stmtTarif = $conn->prepare($sqlTarif);
+                $stmtTarif->execute(['id' => $id]);
+
+                // Commit transaction
+                $conn->commit();
+
                 // Redirect after successful deletion
                 echo "<script>
                         alert('Data tarif berhasil dihapus.');
                         window.location.href = '/pendapatan/tagihan-spp-siswa';
                     </script>";
                 exit();
-            } else {
-                echo "Gagal menghapus Data Tagihan!";
+            } catch (Exception $e) {
+                // Rollback transaction if an error occurs
+                $conn->rollBack();
+                echo "Gagal menghapus Data Tagihan: " . $e->getMessage();
             }
         } else {
             echo "ID is required!";
@@ -137,10 +193,60 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+$stmt = $db->prepare("SELECT id, nama_kelas FROM kelas");
+$stmt->execute();
+$kelasData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 // Mengakhiri output buffering
 ob_end_flush();
 ?>
 
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet">
+
+<!-- Output the data as a JSON array for JavaScript to use -->
+<script>
+    const tarifData = <?php echo json_encode($tarifData); ?>;
+    const kelasData = <?php echo json_encode($kelasData); ?>;
+</script>
+<style>
+    td {
+        padding: 20px;
+        background: #eaeaea;
+        max-width: 400px;
+        margin: 50px auto;
+    }
+
+    .list-circle {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    #kelas_tags {
+        width: 100% !important;
+        border-radius: 0.375rem;
+        padding: 0.375rem 0.75rem;
+    }
+
+    .select2-container .select2-selection--multiple {
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        padding: 0.375rem;
+        min-height: 2.5rem;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #0d6efd;
+        color: #fff;
+        border-radius: 0.25rem;
+        margin-top: 0.25rem;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice:hover {
+        background-color: #0b5ed7;
+    }
+</style>
 
 <!-- App Main -->
 <main class="app-main">
@@ -176,48 +282,60 @@ ob_end_flush();
                         data-bs-target="#createModal">
                         <i class="bi bi-plus-lg pe-1"></i> Tambah Data
                     </button>
-
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-12">
-                            <?php if (!empty($results)): ?>
+                            <?php if (!empty($tarifData)): ?>
                                 <table id="datatable" class="table table-striped table-bordered">
                                     <thead>
                                         <tr>
                                             <th>No</th>
                                             <th>Nama Tarif</th>
                                             <th>Nominal</th>
-                                            <th>Ajaran</th>
-                                            <th>Deskripsi</th>
+                                            <th>Tahun Ajaran</th>
+                                            <th>Kelas</th>
                                             <th>Status</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach ($results as $index => $row): ?>
+                                        <?php
+                                        $no = 1;
+                                        foreach ($tarifData as $tarif):
+                                            ?>
                                             <tr>
-                                                <td><?= $index + 1; ?></td>
-                                                <td><?= $row['nama_tarif']; ?></td>
-                                                <td>Rp. <?= number_format($row['nominal'], 2, ',', '.'); ?></td>
-                                                <td><?= $row['tahun_ajaran']; ?></td>
-                                                <td><?= $row['deskripsi'] ?? '-'; ?></td>
-                                                <td class="text-center"><?= $row['status_aktif'] ? 'Aktif' : 'Tidak Aktif'; ?>
+                                                <td><?= $no++; ?></td>
+                                                <td><?= $tarif['nama_tarif']; ?></td>
+                                                <td>Rp. <?= number_format($tarif['nominal'], 2, ',', '.'); ?></td>
+                                                <td><?= $tarif['tahun_ajaran']; ?></td>
+                                                <td>
+                                                    <?php if (!empty($tarif['kelas'])): ?>
+                                                        <ul class="list-circle m-0">
+                                                            <?php foreach ($tarif['kelas'] as $kelas): ?>
+                                                                <li><?= $kelas; ?></li>
+                                                            <?php endforeach; ?>
+                                                        </ul>
+                                                    <?php else: ?>
+                                                        -- Tidak ada kelas --
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="text-center"><?= $tarif['status_aktif'] ? 'Aktif' : 'Tidak Aktif'; ?>
                                                 </td>
                                                 <td class="text-center">
                                                     <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                                                        data-bs-target="#editModal" data-id="<?= $row['id'] ?? '-'; ?>"
-                                                        data-nama_tarif="<?= $row['nama_tarif'] ?? '-'; ?>"
-                                                        data-nominal="<?= $row['nominal'] ?? '-'; ?>"
-                                                        data-tahun_ajaran_id="<?= $row['tahun_ajaran_id'] ?? '-'; ?>"
-                                                        data-deskripsi="<?= $row['deskripsi'] ?? '-'; ?>"
-                                                        data-status_aktif="<?= $row['status_aktif'] ?? '0'; ?>">
+                                                        data-bs-target="#editModal" data-id="<?= $tarif['id']; ?>"
+                                                        data-nama_tarif="<?= $tarif['nama_tarif']; ?>"
+                                                        data-nominal="<?= $tarif['nominal']; ?>"
+                                                        data-tahun_ajaran_id="<?= $tarif['tahun_ajaran_id']; ?>"
+                                                        data-deskripsi="<?= $tarif['deskripsi']; ?>"
+                                                        data-status_aktif="<?= $tarif['status_aktif']; ?>"
+                                                        data-kelas='<?= json_encode($tarif['kelas']); ?>'>
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
-
                                                     <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                        data-bs-target="#deleteModal" data-bs-id="<?= $row['id'] ?? '-'; ?>"
-                                                        data-nama_tarif="<?= $row['nama_tarif'] ?? '-'; ?>">
+                                                        data-bs-target="#deleteModal" data-bs-id="<?= $tarif['id']; ?>"
+                                                        data-nama_tarif="<?= $tarif['nama_tarif']; ?>">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 </td>
@@ -231,6 +349,7 @@ ob_end_flush();
                         </div>
                     </div>
                 </div>
+
             </div>
 
             <!-- /.modal-dialog create -->
@@ -245,12 +364,12 @@ ob_end_flush();
                         <div class="modal-body">
                             <form id="createForm" method="POST">
                                 <input type="hidden" name="action" value="create">
-                                <div class="mb-3">
+                                <div class="form-group mb-3">
                                     <label for="nama_tarif" class="form-label">Nama Tarif</label>
                                     <input type="text" class="form-control" id="nama_tarif" name="nama_tarif" required
                                         placeholder="SPP Bulan September">
                                 </div>
-                                <div class="input-group mb-3">
+                                <div class="form-group mb-3">
                                     <label for="nominal" class="form-label">Nominal</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp.</span>
@@ -259,23 +378,28 @@ ob_end_flush();
                                         <span class="input-group-text">.00</span>
                                     </div>
                                 </div>
-                                <div class="mb-3">
+                                <div class="form-group mb-3">
                                     <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
                                     <select class="form-select" id="tahun_ajaran_id" name="tahun_ajaran_id" required>
                                         <option value="">Pilih Tahun Ajaran</option>
                                         <?php foreach ($tahun_ajaran as $ta): ?>
-                                            <option value="<?php echo $ta['id']; ?>">
-                                                <?php echo $ta['tahun']; ?>
-                                            </option>
+                                            <option value="<?php echo $ta['id']; ?>"><?php echo $ta['tahun']; ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-                                <div class="mb-3">
+                                <div class="form-group mb-3">
+                                    <label for="kelas_tags" class="form-label">Kelas</label>
+                                    <select class="form-control" id="kelas_tags" name="kelas[]" multiple="multiple"
+                                        data-placeholder="Pilih Kelas">
+                                        <!-- Options will be dynamically added here by JavaScript -->
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
                                     <label for="deskripsi" class="form-label">Deskripsi</label>
                                     <textarea class="form-control" id="deskripsi" name="deskripsi" rows="3"
                                         placeholder="Masukkan Deskripsi (opsional)"></textarea>
                                 </div>
-                                <div class="mb-3 form-check">
+                                <div class="form-group mb-3 form-check">
                                     <input type="checkbox" class="form-check-input" id="status_aktif"
                                         name="status_aktif" checked>
                                     <label class="form-check-label" for="status_aktif">Aktif</label>
@@ -359,6 +483,8 @@ ob_end_flush();
                         </div>
                         <div class="modal-body">
                             <p>Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dikembalikan.</p>
+                            <p>Daftar Kelas:</p>
+                            <ul class="class-list"></ul> <!-- Placeholder for class list -->
                         </div>
                         <div class="modal-footer">
                             <form id="deleteForm" method="POST">
@@ -377,8 +503,8 @@ ob_end_flush();
 </main>
 <!-- App Main -->
 
-<!-- Inisialisasi DataTables -->
 <script>
+    // Inisialisasi DataTables
     $(document).ready(function () {
         $('#datatable').DataTable({
             "paging": true,
@@ -388,6 +514,21 @@ ob_end_flush();
             "info": true,
             "autoWidth": false,
             "responsive": true
+        });
+    });
+
+    // Memetakan data kelas untuk Select2
+    const validKelas = kelasData.map(function (item) {
+        return {
+            id: item.id,
+            text: item.nama_kelas
+        };
+    });
+    $('#createModal').on('shown.bs.modal', function () {
+        $('#kelas_tags').select2({
+            data: validKelas,
+            width: '100%',
+            dropdownParent: $('#createModal')
         });
     });
 
@@ -406,6 +547,9 @@ ob_end_flush();
                 const deskripsi = button.getAttribute('data-deskripsi');
                 const status_aktif = button.getAttribute('data-status_aktif') === '1';
 
+                // Parse kelas data as JSON
+                // const kelasData = JSON.parse(button.getAttribute('data-kelas'));
+
                 // Update the modal's content.
                 const modalTitle = editModal.querySelector('.modal-title');
                 modalTitle.textContent = `Edit Data Tagihan: ${nama_tarif}`;
@@ -418,36 +562,62 @@ ob_end_flush();
                 document.getElementById('edit_deskripsi').value = deskripsi;
                 document.getElementById('edit_status_aktif').checked = status_aktif;
 
+                // Clear previous selections and set selected values for kelas
+                // $('#edit_kelas_tags').val(null).trigger('change'); // Clear existing selection
+                // $('#edit_kelas_tags').val(kelasData).trigger('change'); // Set new selection
+
 
                 // Men-debug untuk memastikan nilai diambil dengan benar
-                // console.log(
-                //     `ID: ${id}, Tahun Ajaran ID: ${tahun_ajaran_id}`
-                // );
+                console.log(
+                    `ID: ${id}, A: ${tahun_ajaran_id}`
+                );
 
-                // Men-debug untuk memastikan apakah option yang benar terpilih
-                console.log(`Tahun Ajaran yang terpilih: ${edit_tahun_ajaran_id.value}`);
+                // Debugging to ensure kelas data is loaded
+                // console.log(`Data Kelas: ${JSON.stringify(kelasData)}`);
             });
         }
 
-        // Handling Delete
-        const deleteModal = document.getElementById('deleteModal');
+        // Handling Deleteconst deleteModal = document.getElementById('deleteModal');
         if (deleteModal) {
             deleteModal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
                 const id = button.getAttribute('data-bs-id');
                 const nama_tarif = button.getAttribute('data-nama_tarif');
 
-                // Update the modal's content.
+                // Update the modal's title
                 const modalTitle = deleteModal.querySelector('.modal-title');
                 modalTitle.textContent = `Hapus Data Tagihan: ${nama_tarif}`;
 
                 // Populate the form with the id
                 const form = deleteModal.querySelector('#deleteForm');
                 form.querySelector('#delete-id').value = id;
+
+                // Get the list of classes for the selected tarif
+                const classListContainer = deleteModal.querySelector('.class-list');
+                classListContainer.innerHTML = ''; // Clear previous content
+
+                // Retrieve and display associated classes
+                if (tarifData[id] && tarifData[id].kelas.length > 0) {
+                    tarifData[id].kelas.forEach(kelas => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = kelas;
+                        classListContainer.appendChild(listItem);
+                    });
+                } else {
+                    const noClassItem = document.createElement('li');
+                    noClassItem.textContent = 'Tidak ada kelas terkait';
+                    classListContainer.appendChild(noClassItem);
+                }
+
+                // Debugging output
+                // console.log(
+                //     `ID: ${id}, Tarif: ${nama_tarif}, Kelas: ${tarifData[id]?.kelas || 'No classes'}`);
             });
         }
     })
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
 
 <!-- DataTables CSS/JS Dependencies -->
 <link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
