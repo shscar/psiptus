@@ -5,22 +5,24 @@ include __DIR__ . '/../../layouts/master.php';
 $db = Database::getInstance()->getConnection();
 
 // Query untuk mengambil data pengeluaran dan item pengeluaran
-$stmt = $db->prepare("SELECT 
-            pd.id AS pengeluaran_id,
-            pd.tanggal_pengeluaran,
-            pd.bukti_pengeluaran,
-            pd.pihak_terlibat,
-            pd.sumber_dana,
-            pd.jenis_bayar,
-            pd.total_jumlah,
-            ipd.nama_pengeluaran,
-            ipd.keterangan AS item_keterangan,
-            ipd.jumlah_barang,
-            ipd.nilai_bayar
-        FROM pengeluaran_dana pd
-        LEFT JOIN item_pengeluaran_dana ipd ON pd.id = ipd.pengeluaran_id
-        ORDER BY pd.tanggal_pengeluaran DESC
-    ");
+$stmt = $db->prepare("
+    SELECT 
+        pd.id AS pengeluaran_id,
+        pd.tanggal_pengeluaran,
+        bpd.file_path AS bukti_pengeluaran,
+        pd.pihak_terlibat,
+        pd.sumber_dana,
+        pd.jenis_bayar,
+        pd.total_jumlah,
+        ipd.nama_pengeluaran,
+        ipd.keterangan AS item_keterangan,
+        ipd.jumlah_barang,
+        ipd.nilai_bayar
+    FROM pengeluaran_dana pd
+    LEFT JOIN item_pengeluaran_dana ipd ON pd.id = ipd.pengeluaran_id
+    LEFT JOIN bukti_pengeluaran_dana bpd ON pd.bukti_pengeluaran_id = bpd.id
+    ORDER BY pd.tanggal_pengeluaran DESC
+");
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -28,7 +30,6 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $combinedResults = [];
 foreach ($results as $row) {
     $pengeluaranId = $row['pengeluaran_id'];
-
     // Cek apakah pengeluaran_id sudah ada di array $combinedResults
     if (!isset($combinedResults[$pengeluaranId])) {
         // Jika belum ada, buat entry baru di array
@@ -43,17 +44,20 @@ foreach ($results as $row) {
             'items' => [] // Array kosong untuk item pengeluaran
         ];
     }
-
-    // Tambahkan item pengeluaran ke dalam array items
-    $combinedResults[$pengeluaranId]['items'][] = [
-        'nama_pengeluaran' => $row['nama_pengeluaran'],
-        'item_keterangan' => $row['item_keterangan'],
-        'jumlah_barang' => $row['jumlah_barang'],
-        'nilai_bayar' => $row['nilai_bayar']
-    ];
+    // Jika ada data item pengeluaran, tambahkan ke dalam array items
+    if (!empty($row['nama_pengeluaran'])) {
+        $combinedResults[$pengeluaranId]['items'][] = [
+            'nama_pengeluaran' => $row['nama_pengeluaran'],
+            'item_keterangan' => $row['item_keterangan'],
+            'jumlah_barang' => $row['jumlah_barang'],
+            'nilai_bayar' => $row['nilai_bayar']
+        ];
+    }
 }
+
 // Mengubah array terstruktur menjadi array numerik untuk kemudahan iterasi
 $combinedResults = array_values($combinedResults);
+
 // Menampilkan hasil untuk debugging
 // echo '<pre>';
 // print_r($combinedResults);
@@ -292,7 +296,7 @@ td {
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <!-- <h3 class="card-title text-danger">Edit Detail sedang Maintance</h3> -->
+                        <!-- <h3 class="card-title text-danger">Edit Detail sedang maintenance</h3> -->
                         <div class="col-md-12">
                             <?php if (!empty($combinedResults)): ?>
                             <table id="datatable" class="table table-striped table-bordered">
@@ -387,8 +391,7 @@ td {
                                     <div class="card-body">
                                         <div class="row">
                                             <div class="form-group col-4 mb-3">
-                                                <label for="tanggal_pengeluaran" class="form-label">Tanggal
-                                                    Pengeluaran</label>
+                                                <label for="tanggal_pengeluaran" class="form-label">Tanggal</label>
                                                 <input type="date" class="form-control" id="tanggal_pengeluaran"
                                                     name="tanggal_pengeluaran" required>
                                             </div>
