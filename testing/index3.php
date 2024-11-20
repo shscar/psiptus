@@ -1,16 +1,51 @@
 <?php
 $db = Database::getInstance()->getConnection();
 
-// Assuming you are using PDO or a similar DB library
-$query = "SELECT id, nama_kelas FROM kelas";
-$stmt = $db->prepare($query);
+// PHP to prepare and fetch data
+$stmt = $db->prepare("
+    SELECT 
+        t.id,
+        t.nama_tarif,
+        t.nominal,
+        t.deskripsi,
+        t.status_aktif,
+        ta.tahun AS tahun_ajaran,
+        t.tahun_ajaran_id,
+        k.nama_kelas
+    FROM tarif_spp t
+    LEFT JOIN tahun_ajaran ta ON t.tahun_ajaran_id = ta.id
+    LEFT JOIN tarif_spp_kelas ts_k ON t.id = ts_k.tarif_spp_id
+    LEFT JOIN kelas k ON ts_k.kelas_id = k.id
+    ORDER BY t.id DESC, k.nama_kelas
+");
 $stmt->execute();
-$kelasData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Group data by tarif_spp ID to handle multiple classes per tarif
+$tarifData = [];
+foreach ($results as $row) {
+    $tarifId = $row['id'];
+    if (!isset($tarifData[$tarifId])) {
+        $tarifData[$tarifId] = [
+            'id' => $row['id'],
+            'nama_tarif' => $row['nama_tarif'],
+            'nominal' => $row['nominal'],
+            'deskripsi' => $row['deskripsi'],
+            'status_aktif' => $row['status_aktif'],
+            'tahun_ajaran' => $row['tahun_ajaran'],
+            'tahun_ajaran_id' => $row['tahun_ajaran_id'],
+            'kelas' => [],
+        ];
+    }
+    if ($row['nama_kelas']) {
+        $tarifData[$tarifId]['kelas'][] = $row['nama_kelas'];
+    }
+}
 ?>
 
 <!-- Output the data as a JSON array for JavaScript to use -->
 <script>
-const kelasData = <?php echo json_encode($kelasData); ?>;
+    const tarifData = <?php echo json_encode($tarifData); ?>;
 </script>
 
 <!DOCTYPE html>
@@ -24,99 +59,85 @@ const kelasData = <?php echo json_encode($kelasData); ?>;
     <link href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/css/adminlte.min.css" rel="stylesheet">
     <!-- Select2 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet">
-    <style>
-    /* Styling dasar untuk input Select2 */
-    #kelas_tags {
-        width: 100% !important;
-        /* Pastikan input Select2 menggunakan lebar penuh */
-        border-radius: 0.375rem;
-        /* Sesuaikan dengan Bootstrap */
-        padding: 0.375rem 0.75rem;
-    }
 
-    /* Styling agar Select2 lebih menyatu dengan desain form */
-    .select2-container .select2-selection--multiple {
-        border: 1px solid #ced4da;
-        /* Warna border yang cocok dengan Bootstrap */
-        border-radius: 0.375rem;
-        padding: 0.375rem;
-        min-height: 2.5rem;
-    }
-
-    /* Styling untuk tag yang dipilih */
-    .select2-container--default .select2-selection--multiple .select2-selection__choice {
-        background-color: #0d6efd;
-        /* Warna tag dipilih sesuai dengan warna utama Bootstrap */
-        color: #fff;
-        border-radius: 0.25rem;
-        padding: 0.25rem;
-        margin-top: 0.25rem;
-    }
-
-    /* Hover effect untuk tag */
-    .select2-container--default .select2-selection--multiple .select2-selection__choice:hover {
-        background-color: #0b5ed7;
-    }
-
-    /* Atur font-size di dalam modal untuk input Select2 */
-    .modal-body .select2-container--default .select2-selection--multiple .select2-selection__choice {
-        font-size: 0.875rem;
-    }
-    </style>
 </head>
 
 <body>
-    <div class="container mt-4">
-        <h3>Select Kelas</h3>
-        <!-- Tag Input -->
-        <div class="form-group">
-            <label for="kelas_tags">Kelas</label>
-            <select class="form-control" id="kelas_tags" name="kelas[]" multiple="multiple"
-                data-placeholder="Select Kelas">
-                <!-- Options will be dynamically added here -->
-            </select>
-        </div>
-    </div>
+    <!-- Button to open modal -->
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editkelasModal"
+        data-id="<?= $tarif['id']; ?>" data-nama_tarif="<?= $tarif['nama_tarif']; ?>">
+        <s class="bi bi-list-stars"></s>saasa
+    </button>
+
+    <!-- JavaScript to handle the modal -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const editModal = document.getElementById('editkelasModal');
+
+            if (editModal) {
+                editModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const tarifId = button.getAttribute('data-id');
+                    const itemListContainer = document.getElementById('itemList');
+                    const itemInput = document.getElementById('itemInput');
+
+                    // Clear previous class list items
+                    itemListContainer.innerHTML = '';
+
+                    // Populate existing classes for the selected tarif ID
+                    if (tarifData[tarifId] && tarifData[tarifId].kelas.length > 0) {
+                        tarifData[tarifId].kelas.forEach(kelas => {
+                            addClassItem(kelas);
+                        });
+                    } else {
+                        itemListContainer.innerHTML = '<p class="text-muted">No classes associated.</p>';
+                    }
+
+                    // Update the hidden field with the selected tarif ID
+                    document.getElementById('edit_kelas_id').value = tarifId;
+
+                    // Function to add a class item to the list
+                    function addClassItem(kelas) {
+                        const listItem = document.createElement('div');
+                        listItem.classList.add('d-flex', 'justify-content-between', 'align-items-center',
+                            'p-2',
+                            'border', 'mb-2', 'rounded', 'bg-light');
+
+                        const className = document.createElement('span');
+                        className.textContent = kelas;
+
+                        const deleteButton = document.createElement('button');
+                        deleteButton.classList.add('btn', 'btn-dark', 'btn-sm', 'delete-button');
+                        deleteButton.textContent = 'Delete';
+                        deleteButton.onclick = () => listItem.remove();
+
+                        listItem.appendChild(className);
+                        listItem.appendChild(deleteButton);
+                        itemListContainer.appendChild(listItem);
+                    }
+
+                    // Add new class item from the input
+                    document.getElementById('addItemButton').onclick = function () {
+                        const newItem = itemInput.value.trim();
+                        if (newItem) {
+                            addClassItem(newItem);
+                            itemInput.value = ''; // Clear the input field
+                        }
+                    };
+
+                    console.log(
+                        `ID: ${tarifId}, Kelas: ${tarifData[tarifId]?.kelas || 'No classes'}`
+                    );
+                });
+            }
+        });
+    </script>
 
     <!-- AdminLTE 4 and jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/js/adminlte.min.js"></script>
     <!-- Select2 JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
-
-    <script>
-    $(document).ready(function() {
-        // Prepare valid kelas options
-        const validKelas = kelasData.map(function(item) {
-            return {
-                id: item.id, // ID of the kelas
-                text: item.nama_kelas // Text to display
-            };
-        });
-
-        // Initialize Select2 with tags option
-        $('#kelas_tags').select2({
-            tags: true, // Allow tagging
-            data: validKelas,
-            createTag: function(params) {
-                // Check if the entered tag exists in the valid data
-                const existingTag = validKelas.find(function(kelas) {
-                    return kelas.text.toLowerCase() === params.term.toLowerCase();
-                });
-
-                // If the entered tag is valid, allow it, otherwise return null
-                if (existingTag) {
-                    return {
-                        id: existingTag.id,
-                        text: existingTag.text
-                    };
-                } else {
-                    return null;
-                }
-            }
-        });
-    });
-    </script>
 </body>
 
 </html>

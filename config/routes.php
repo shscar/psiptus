@@ -3,7 +3,7 @@
 
 $routes = [
     '/dashboard' => '/dashboards/index.php',
-    '/test' => '/testing/index3.php',
+    '/test' => '/testing/index2.php',
     // '/login' => '/dashboard/login.php',
 
     '/guru-staff' => '/teachers_employees/index.php',
@@ -29,6 +29,8 @@ $routes = [
     '/pendapatan/pemasukan-bos' => '/finances/incomes/revenues_bos.php',
     '/pendapatan/pemasukan-lain' => '/finances/incomes/revenues_other.php',
     '/pendapatan/jenis-pemasukan' => '/finances/incomes/type_income.php',
+    // child
+    '/child-update-tarif' => '/finances/incomes/child_tarif_spp_kelas_realtime.php',
 
     // pengeluaran
     '/pengeluaran/kategori-pengeluaran' => '/finances/outlays/expens_category.php',
