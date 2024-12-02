@@ -281,6 +281,7 @@ ob_end_flush();
     const tarifData = <?php echo json_encode($tarifData); ?>;
     const kelasData = <?php echo json_encode($kelasData); ?>;
 </script>
+
 <style>
     td {
         padding: 20px;
@@ -299,13 +300,13 @@ ob_end_flush();
     #kelas_tags {
         width: 100% !important;
         border-radius: 0.375rem;
-        /* padding: 0.375rem 0.75rem; */
+        padding: 0.375rem 0.75rem;
     }
 
     .select2-container .select2-selection--multiple {
         border: 1px solid #ced4da;
         border-radius: 0.375rem;
-        padding: 0.150rem;
+        padding: 0.375rem;
         min-height: 2.5rem;
     }
 
@@ -314,11 +315,6 @@ ob_end_flush();
         color: #fff;
         border-radius: 0.25rem;
         margin-top: 0.25rem;
-    }
-
-    .select2-container--default .select2-selection--multiple .select2-selection__choice .select2-selection__choice__remove{
-        background-color: red;
-        color: #fff;
     }
 
     .select2-container--default .select2-selection--multiple .select2-selection__choice:hover {
@@ -577,7 +573,7 @@ ob_end_flush();
                                         <div class="form-group">
                                             <select class="form-select" id="itemSelect" name="kelas_id[]"
                                                 style="width: 87%;"></select>
-                                            <button type="submit" class="btn btn-success" id="addItemButton">Add</button>
+                                            <button type="submit" class="btn btn-dark" id="addItemButton">Add</button>
                                         </div>
                                     </div>
                                 </div>
@@ -586,6 +582,7 @@ ob_end_flush();
                             <div class="mt-3" id="itemList">
                                 <!-- Item akan ditambahkan di sini -->
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -790,7 +787,7 @@ ob_end_flush();
                 'rounded', 'bg-light');
             div.innerHTML = `
                 <span>${itemText}</span>
-                <button type="button" class="btn btn-danger btn-sm delete-button" data-id="${tarifSppKelasId}" data-kelas="${itemText}">
+                <button type="button" class="btn btn-dark btn-sm delete-button" data-id="${tarifSppKelasId}" data-kelas="${itemText}">
                     Delete
                 </button>
             `;

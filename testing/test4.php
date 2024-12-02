@@ -1,8 +1,7 @@
 <?php
-// Memulai output buffering
-ob_start();
-include __DIR__ . '/../../layouts/master.php';
+include __DIR__ . '/../layouts/master.php';
 $db = Database::getInstance()->getConnection();
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
@@ -75,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Redirect atau tampilkan pesan sukses
         echo "<script>
             alert('Data telah berhasil masuk.');
-            window.location.href = '/pendapatan/pembayaran-siswa';
+            window.location.href = '/test4';
         </script>";
     } catch (Exception $e) {
         // Rollback transaksi jika ada kesalahan
@@ -88,8 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $stmt = $db->query("SELECT id, nis, nama_lengkap, kelas_id FROM siswa WHERE status = 'Aktif'");
 $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Mengakhiri output buffering
-ob_end_flush();
 ?>
 
 <!DOCTYPE html>

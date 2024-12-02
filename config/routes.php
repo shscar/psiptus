@@ -3,7 +3,10 @@
 
 $routes = [
     '/dashboard' => '/dashboards/index.php',
-    '/test' => '/testing/index2.php',
+    '/test' => '/testing/index.php',
+    '/test2' => '/testing/index2.php',
+    '/test4' => '/testing/test4.php',
+    '/test5' => '/testing/test5.php',
     // '/login' => '/dashboard/login.php',
 
     '/guru-staff' => '/teachers_employees/index.php',
