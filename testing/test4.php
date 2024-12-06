@@ -1,485 +1,545 @@
 <?php
+// Memulai buffering
+ob_start();
 include __DIR__ . '/../layouts/master.php';
 $db = Database::getInstance()->getConnection();
 
+// Query untuk mengambil data pengeluaran dan item pengeluaran
+$stmt = $db->prepare("
+    SELECT 
+        pd.id AS pengeluaran_id,
+        pd.tanggal_pengeluaran,
+        bpd.file_path AS bukti_pengeluaran,
+        pd.pihak_terlibat,
+        pd.sumber_dana,
+        pd.jenis_bayar,
+        pd.total_jumlah,
+        ipd.nama_pengeluaran,
+        ipd.keterangan AS item_keterangan,
+        ipd.jumlah_barang,
+        ipd.nilai_bayar
+    FROM pengeluaran_dana pd
+    LEFT JOIN item_pengeluaran_dana ipd ON pd.id = ipd.pengeluaran_id
+    LEFT JOIN bukti_pengeluaran_dana bpd ON pd.bukti_pengeluaran_id = bpd.id
+    ORDER BY pd.tanggal_pengeluaran DESC
+");
+$stmt->execute();
+$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        // Mulai transaksi
-        $db->beginTransaction();
-
-        // Ambil data dari form
-        $siswa_id = $_POST['student_id'];
-        $tanggal_bayar = $_POST['tanggal_bayar'];
-        $jenis_bayar = $_POST['jenis_bayar'];
-        $no_invoice = 'INV-' . time(); // Generate No. Invoice
-        $total_bayar = 0;
-
-        // Hitung total bayar dari jumlah_bayar[]
-        if (isset($_POST['jumlah_bayar']) && is_array($_POST['jumlah_bayar'])) {
-            foreach ($_POST['jumlah_bayar'] as $jumlah) {
-                $total_bayar += floatval($jumlah);
-            }
-        }
-
-        // Masukkan data ke tabel riwayat_transaksi_siswa
-        $stmt = $db->prepare("INSERT INTO riwayat_transaksi_siswa 
-            (siswa_id, no_invoice, tanggal_bayar, jenis_bayar, total_bayar) 
-            VALUES (:siswa_id, :no_invoice, :tanggal_bayar, :jenis_bayar, :total_bayar)");
-        $stmt->execute([
-            ':siswa_id' => $siswa_id,
-            ':no_invoice' => $no_invoice,
-            ':tanggal_bayar' => $tanggal_bayar,
-            ':jenis_bayar' => $jenis_bayar,
-            ':total_bayar' => $total_bayar
-        ]);
-
-        // Dapatkan ID dari transaksi yang baru dimasukkan
-        $riwayat_transaksi_id = $db->lastInsertId();
-
-        // Masukkan data ke tabel detail_riwayat_transaksi_siswa_tarifspp
-        if (isset($_POST['item_type']) && is_array($_POST['item_type'])) {
-            foreach ($_POST['item_type'] as $key => $type) {
-                $item_id = $_POST['item_id'][$key];
-                $jumlah_bayar = floatval($_POST['jumlah_bayar'][$key]);
-
-                if ($type === 'tarif_spp') {
-                    $stmt = $db->prepare("INSERT INTO detail_riwayat_transaksi_siswa_tarifspp 
-                        (riwayat_transaksi_id, tarif_spp_id, jumlah_bayar) 
-                        VALUES (:riwayat_transaksi_id, :tarif_spp_id, :jumlah_bayar)");
-                    $stmt->execute([
-                        ':riwayat_transaksi_id' => $riwayat_transaksi_id,
-                        ':tarif_spp_id' => $item_id,
-                        ':jumlah_bayar' => $jumlah_bayar
-                    ]);
-                }
-
-                // Masukkan data ke tabel detail_riwayat_transaksi_siswa_pembayaranlain
-                if ($type === 'pembayaran_lain') {
-                    $stmt = $db->prepare("INSERT INTO detail_riwayat_transaksi_siswa_pembayaranlain 
-                        (riwayat_transaksi_id, siswa_pembayaran_lainnya_id, jumlah_bayar) 
-                        VALUES (:riwayat_transaksi_id, :pembayaran_lain_id, :jumlah_bayar)");
-                    $stmt->execute([
-                        ':riwayat_transaksi_id' => $riwayat_transaksi_id,
-                        ':pembayaran_lain_id' => $item_id,
-                        ':jumlah_bayar' => $jumlah_bayar
-                    ]);
-                }
-            }
-        }
-
-        // Commit transaksi
-        $db->commit();
-
-        // Redirect atau tampilkan pesan sukses
-        echo "<script>
-            alert('Data telah berhasil masuk.');
-            window.location.href = '/test4';
-        </script>";
-    } catch (Exception $e) {
-        // Rollback transaksi jika ada kesalahan
-        $db->rollBack();
-        echo "Terjadi kesalahan: " . $e->getMessage();
+// Gabungkan data ke dalam array terstruktur
+$combinedResults = [];
+foreach ($results as $row) {
+    $pengeluaranId = $row['pengeluaran_id'];
+    // Cek apakah pengeluaran_id sudah ada di array $combinedResults
+    if (!isset($combinedResults[$pengeluaranId])) {
+        // Jika belum ada, buat entry baru di array
+        $combinedResults[$pengeluaranId] = [
+            'pengeluaran_id' => $row['pengeluaran_id'],
+            'tanggal_pengeluaran' => $row['tanggal_pengeluaran'],
+            'bukti_pengeluaran' => $row['bukti_pengeluaran'],
+            'pihak_terlibat' => $row['pihak_terlibat'],
+            'sumber_dana' => $row['sumber_dana'],
+            'jenis_bayar' => $row['jenis_bayar'],
+            'total_jumlah' => $row['total_jumlah'],
+            'items' => [] // Array kosong untuk item pengeluaran
+        ];
+    }
+    // Jika ada data item pengeluaran, tambahkan ke dalam array items
+    if (!empty($row['nama_pengeluaran'])) {
+        $combinedResults[$pengeluaranId]['items'][] = [
+            'nama_pengeluaran' => $row['nama_pengeluaran'],
+            'item_keterangan' => $row['item_keterangan'],
+            'jumlah_barang' => $row['jumlah_barang'],
+            'nilai_bayar' => $row['nilai_bayar']
+        ];
     }
 }
 
-// Ambil data siswa dari database untuk digunakan di Select2
-$stmt = $db->query("SELECT id, nis, nama_lengkap, kelas_id FROM siswa WHERE status = 'Aktif'");
-$students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Mengubah array terstruktur menjadi array numerik untuk kemudahan iterasi
+$combinedResults = array_values($combinedResults);
 
+// Menampilkan hasil untuk debugging
+// echo '<pre>';
+// print_r($combinedResults);
+// echo '</pre>';
+
+// query untuk mengambil data tabel "detail_kategori_pengeluaran"
+$stmt = $db->prepare("SELECT * FROM detail_kategori_pengeluaran ORDER BY id DESC");
+$stmt->execute();
+$detail_kategori_pengeluaran = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fungsi untuk menangani unggah file dan mengubah nama file
+function handleFileUpload($file)
+{
+    $uploadDir = 'assets/images/dana_pengeluaran/';
+    $timestamp = date('YmdHis');
+    $uniqueCode = substr(bin2hex(random_bytes(3)), 0, 6); // Kode unik dengan panjang 6 karakter
+    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $newFileName = "{$timestamp}-{$uniqueCode}.{$extension}";
+    $filePath = $uploadDir . $newFileName;
+
+    // Pindahkan file ke folder tujuan
+    if (move_uploaded_file($file['tmp_name'], $filePath)) {
+        return $filePath; // Kembalikan path lengkap untuk disimpan di database
+    }
+    return null; // Gagal upload
+}
+
+// Handle Form Submission
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $action = $_POST['action'];
+
+    // Create Record
+    if ($action == 'create') {
+        echo '<pre>';
+        print_r($_POST);
+        echo '</pre>';
+        exit;
+
+    }
+}
+
+// Mengakhiri buffering
+ob_end_flush();
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
+<style>
+    td {
+        padding: 20px;
+        background: #eaeaea;
+        max-width: 400px;
+        margin: 50px auto;
+    }
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jenis Pembayaran</title>
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"> -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css" rel="stylesheet">
+    .list-circle {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+</style>
 
-    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script> -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
-</head>
+<!-- App Main -->
+<main class="app-main">
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h3 class="mb-0">Pengeluaran Dana Sekolah</h3>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-end">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            expnd
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- App Content -->
+    <div class="app-content">
+        <div class="container-fluid">
 
-<body>
-    <!--begin::App Main-->
-    <main class="app-main">
-        <!--begin::App Content Header-->
-        <div class="app-content-header">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-sm-6">
-                        <h3 class="mb-0">Pembayaran Siswa</h3>
-                    </div>
-                    <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-end">
-                            <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">
-                                student paid fee
-                            </li>
-                        </ol>
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Grade Level </h3>
+                    <button type="button" class="btn btn-success ms-auto" data-bs-toggle="modal"
+                        data-bs-target="#createModal">
+                        <i class="bi bi-plus-lg pe-1"></i> Tambah Data
+                    </button>
+
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- <h3 class="card-title text-danger">Edit Detail sedang maintenance</h3> -->
+                        <div class="col-md-12">
+                            <?php if (!empty($combinedResults)): ?>
+                                <table id="datatable" class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Sumber Dana</th>
+                                            <th>Nama Pengeluaran</th>
+                                            <th>Jumlah</th>
+                                            <th>Tanggal</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($combinedResults as $row): ?>
+                                            <tr>
+                                                <td><?= $row['pengeluaran_id'] ?? '-'; ?></td>
+                                                <td><?= $row['sumber_dana'] ?? '-'; ?></td>
+                                                <td>
+                                                    <ul class="list-circle m-0">
+                                                        <?php foreach ($row['items'] as $item): ?>
+                                                            <li><?= $item['nama_pengeluaran']; ?></li>
+                                                        <?php endforeach; ?>
+                                                    </ul>
+                                                </td>
+                                                <td>
+                                                    <div class="text-start">Rp.
+                                                        <?= number_format($row['total_jumlah'], 2) ?? '-'; ?>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="text-end">
+                                                        <?= date('d F Y', strtotime($row['tanggal_pengeluaran'])) ?? '-'; ?>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <button>aa</button>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            <?php else: ?>
+                                <p>No data available.</p>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!--end::App Content Header-->
 
-        <!--begin::App Content-->
-        <div class="app-content">
-            <div class="container-fluid">
-
-                <!-- Layouts Table -->
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="card-title">Grade Level </h3>
-                        <button type="button" class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal"
-                            data-bs-target="#addDataModal">
-                            <i class="bi bi-plus-lg pe-1"></i> Tambah Data
-                        </button>
+        <!-- Modal Create -->
+        <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createModalLabel">Tambah Pengeluaran</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-
-                    <div class="card-body">
-                        <!-- DataTables -->
-                        <table id="content" class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Nama</th>
-                                    <th>Kelas</th>
-                                    <th>Tanggal</th>
-                                    <th>Jenis Pembayaran</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>Nightcore</td>
-                                    <td>XII Bisnis</td>
-                                    <td>23 Sep 2024</td>
-                                    <td>
-                                        <ul>
-                                            <li>Daftar Ulang</li>
-                                            <li>Buku</li>
-                                            <li>Seragam</li>
-                                        </ul>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-success">Detail</button>
-                                        <button class="btn btn-warning">Edit</button>
-                                        <button class="btn btn-danger">Delete</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Add Data Modal -->
-                <div class="modal fade" id="addDataModal" tabindex="-1" aria-labelledby="addDataLabel"
-                    aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="addDataLabel">Tambah Data Siswa</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form id="addDataForm" method="POST">
-                                    <div class="mb-3 row">
-                                        <label for="student_name" class="form-label col-sm-3">Nama Siswa</label>
-                                        <div class="col-sm-9">
-                                            <select id="student_name" class="form-control select2" name="student_id"
-                                                style="width:100%">
-                                                <option value="">Pilih Nama Siswa</option>
-                                                <?php foreach ($students as $student): ?>
-                                                    <option value="<?= $student['id']; ?>"
-                                                        data-nis="<?= $student['nis']; ?>"
-                                                        data-kelas-id=" <?= $student['kelas_id']; ?>">
-                                                        <?= $student['nama_lengkap']; ?>
-                                                    </option>
-                                                <?php endforeach; ?>
-                                            </select>
+                    <div class="modal-body">
+                        <form id="createForm" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="action" value="create">
+                            <div class="row">
+                                <!-- Left Card for input -->
+                                <div class="col-md-7">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="form-group col-4 mb-3">
+                                                <label for="tanggal_pengeluaran" class="form-label">Tanggal</label>
+                                                <input type="date" class="form-control" id="tanggal_pengeluaran"
+                                                    name="tanggal_pengeluaran" required>
+                                            </div>
+                                            <div class="form-group col-8 mb-3">
+                                                <label for="sumber_dana" class="form-label">Sumber Dana</label>
+                                                <input type="text" class="form-control" id="sumber_dana"
+                                                    name="sumber_dana" placeholder="Contoh: Dana BOS">
+                                                </select>
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label for="pihak_terlibat" class="form-label">Pihak Terlibat</label>
+                                                <input type="text" class="form-control" id="pihak_terlibat"
+                                                    name="pihak_terlibat" placeholder="Contoh: Bagian Keuangan"
+                                                    required>
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label for="ket_pengeluaran" class="form-label">Keterangan
+                                                    (Opsional)</label>
+                                                <input type="text" class="form-control" id="ket_pengeluaran"
+                                                    name="ket_pengeluaran" placeholder="">
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="mb-3 row">
-                                        <label for="nis_siswa" class="col-sm-3 col-form-label">NIS Siswa</label>
-                                        <div class="col-sm-9">
-                                            <input type="text" class="form-control" id="nis_siswa" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3 row">
-                                        <label for="noInvoice" class="col-sm-3 col-form-label">No. Invoice</label>
-                                        <div class="col-sm-9">
-                                            <input type="text" class="form-control" id="noInvoice"
-                                                placeholder="Digenerate otomatis oleh sistem" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3 row">
-                                        <label for="tanggalBayar" class="col-sm-3 col-form-label">Tanggal Bayar</label>
-                                        <div class="col-sm-9">
-                                            <input type="date" class="form-control" id="tanggalBayar"
-                                                name="tanggal_bayar">
-                                        </div>
-                                    </div>
-                                    <div class="mb-3 row">
-                                        <label for="pembayaran" class="col-sm-3 col-form-label">Pembayaran</label>
-                                        <div class="col-sm-9">
-                                            <button id="modalspilihtagihan" type="button" class="btn btn-primary"
-                                                data-bs-toggle="modal" data-bs-target="#jenisPembayaranModal">
-                                                Pilih Jenis Pembayaran
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- ... other fields ... -->
-                                    <hr>
-                                    <!-- Tabel List Item Pengeluaran -->
-                                    <div class="form-group">
-                                        <table class="table table-striped table-bordered"
-                                            id="tabel-list-item-pengeluaran">
-                                            <thead>
-                                                <tr>
-                                                    <th>No</th>
-                                                    <th>Nama Pembayaran</th>
-                                                    <th>Tagihan</th>
-                                                    <th>Jumlah Bayar</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <!-- Row akan ditambahkan secara dinamis oleh JavaScript -->
-                                            </tbody>
-                                            <tfoot>
-                                                <tr id="row-total-bayar">
-                                                    <td></td>
-                                                    <td colspan="2">
-                                                        <div class="d-flex justify-content-between">
-                                                            Total
-                                                            <select name="jenis_bayar" class="form-select"
-                                                                style="width:auto">
-                                                                <option value="1">Tunai</option>
-                                                                <option value="2">Transfer</option>
-                                                            </select>
-                                                        </div>
-                                                    </td>
-                                                    <td class="text-end fw-bold" style="padding-right:17px"
-                                                        id="total-bayar">
-                                                        0
-                                                    </td>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
-
-                                </form>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                                <button type="submit" form="addDataForm" class="btn btn-primary">Simpan</button>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Add Item Modal (Jenis Pembayaran) -->
-                <div class="modal fade" id="jenisPembayaranModal" tabindex="-1" aria-labelledby="jenisPembayaranLabel"
-                    aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="jenisPembayaranLabel">Pilih Jenis Pembayaran</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="selectedPembayaran" class="d-flex mb-3">
-                                    <!-- Selected items will be added here dynamically -->
                                 </div>
-                                <!-- Tabel Jenis Pembayaran -->
-                                <table id="jenisPembayaranTable" class="table table-bordered table-striped">
+
+                                <!-- Right Card for image -->
+                                <div class="col-md-5" style="max-height: 243px; overflow-y: auto;">
+                                    <div class="form-group mb-3">
+                                        <label for="bukti_pengeluaran" class="form-label">Unggah Bukti Pengeluaran
+                                            (Opsional)</label>
+                                        <input type="file" class="form-control" id="bukti_pengeluaran"
+                                            name="bukti_pengeluaran[]" accept=".jpg,.jpeg,.png" multiple>
+                                    </div>
+                                    <div class="card">
+                                        <div id="image-preview-container" class="d-flex flex-wrap gap-2 p-2"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="form-group">
+                                <table class="table table-striped table-bordered" id="tabel-list-item-pengeluaran">
                                     <thead>
                                         <tr>
                                             <th>No</th>
-                                            <th>Jenis Pembayaran</th>
-                                            <th>Nilai Tagihan</th>
-                                            <th>Dibayar</th>
-                                            <th>Kurang</th>
-                                            <th>Pilih</th>
+                                            <th>Nama Pengeluaran</th>
+                                            <th>Keterangan</th>
+                                            <th style="width:130px">Jumlah</th>
+                                            <th style="width:20px"></th>
                                         </tr>
                                     </thead>
-                                    <tbody></tbody>
+                                    <tbody>
+                                        <tr class="row-item-bayar">
+                                            <td>1</td>
+                                            <td>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input type="checkbox" class="form-check-input toggle-select"
+                                                        id="useselectkategori" />
+                                                    <label class="form-check-label" for="useselectkategori">Use
+                                                        Select Kategori</label>
+                                                </div>
+                                                <input type="text" class="form-control nama-pengeluaran-input"
+                                                    name="nama_pengeluaran[]" placeholder="Nama Pengeluaran" required>
+                                                <select class="form-select detail-kategori-select" name="kategori_id[]"
+                                                    style="display: none;" disabled>
+                                                    <option selected disabled value="">Pilih pengeluaran</option>
+                                                    <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
+                                                        <option value="<?php echo $dkp['id']; ?>">
+                                                            <?php echo $dkp['judul']; ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </td>
+
+                                            <td>
+                                                <textarea class="form-control" name="keterangan[]"
+                                                    placeholder="Keterangan"></textarea>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control jumlah" name="jumlah_barang[]"
+                                                    placeholder="Jumlah" required>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-outline-success add-row">
+                                                    <i class="bi bi-plus-lg"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr id="row-total-bayar">
+                                            <td></td>
+                                            <td colspan="2">
+                                                <div class="d-flex justify-content-between">
+                                                    Total
+                                                    <select name="jenis_bayar" class="form-select" style="width:auto">
+                                                        <option value="1">Tunai</option>
+                                                        <option value="2">Transfer</option>
+                                                    </select>
+                                                </div>
+                                            </td>
+                                            <td class="text-end fw-bold" id="total-item-nilai-bayar">0</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
+
                     </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        <button type="submit" form="createForm" class="btn btn-primary">Simpan</button>
+                    </div>
+                    </form>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 
-    <script>
-        $(document).ready(function () {
-            // Initialize Select2 with dropdownParent option
-            $('#student_name').select2({
-                placeholder: 'Pilih Nama Siswa',
-                dropdownParent: $('#addDataModal')
-            });
+    <!-- App Content -->
+    </div>
+</main>
+<!-- App Main -->
 
-            // Validasi tombol berdasarkan pemilihan dropdown siswa
-            $('#student_name').on('change', function () {
-                var selectedValue = $(this).val();
-                if (selectedValue) {
-                    $('#modalspilihtagihan').prop('disabled', false);
-                } else {
-                    $('#modalspilihtagihan').prop('disabled',
-                        true);
-                }
+<!-- Inisialisasi DataTables -->
+<script>
+    $(document).ready(function () {
+        $('#datatable').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true
+        });
+    });
 
-                // Ambil nis siswa berdasarkan pilihan di dropdown
-                var nis = $('#student_name option:selected').data('nis');
-                $('#nis_siswa').val(nis);
-            }).trigger('change');
+    document.addEventListener('DOMContentLoaded', () => {
+        const tableBody = document.querySelector('#tabel-list-item-pengeluaran tbody');
+        const totalAmountDisplay = document.getElementById('total-item-nilai-bayar');
+        const previewContainer = document.getElementById('image-preview-container');
+        const fileInput = document.getElementById('bukti_pengeluaran');
+        let selectedFiles = [];
 
-            // Initialize DataTable
-            $('#jenisPembayaranTable').DataTable();
+        // Event listener untuk preview gambar
+        fileInput.addEventListener('change', previewSelectedImages);
 
-            // Fetch and populate data in the second modal
-            $('#student_name').on('change', function () {
-                const id = $(this).val();
+        // Handle preview gambar
+        function previewSelectedImages(event) {
+            clearImagePreviews();
+            selectedFiles = Array.from(event.target.files);
 
-                if (id) {
-                    $.ajax({
-                        url: 'test5',
-                        type: 'POST',
-                        data: {
-                            id: id
-                        },
-                        dataType: 'json',
-                        success: function (response) {
-                            const table = $('#jenisPembayaranTable').DataTable();
-                            table.clear();
-
-                            let index = 1;
-                            response.tarif_spp.forEach(function (item) {
-                                table.row.add([
-                                    index++,
-                                    item.nama_tarif,
-                                    item.nominal,
-                                    '0',
-                                    item.nominal,
-                                    `<button class="btn btn-success btn-sm pilihBtn" data-id="${item.item_id}" data-type="${item.type}">+ Pilih</button>`
-                                ]).draw();
-                            });
-
-                            response.pembayaran_lainnya.forEach(function (item) {
-                                table.row.add([
-                                    index++,
-                                    item.nama_pembayaran,
-                                    item.nominal,
-                                    '0',
-                                    item.nominal,
-                                    `<button class="btn btn-success btn-sm pilihBtn" data-id="${item.item_id}" data-type="${item.type}">+ Pilih</button>`
-                                ]).draw();
-                            });
-
-                        }
-                    });
+            selectedFiles.forEach((file, index) => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => createImagePreview(e.target.result, index);
+                    reader.readAsDataURL(file);
                 }
             });
+        }
 
-            // Show the first modal when the second modal is closed
-            $('#jenisPembayaranModal').on('hidden.bs.modal', function () {
-                $('#addDataModal').modal('show');
-            });
+        // Hapus preview gambar sebelumnya
+        function clearImagePreviews() {
+            previewContainer.innerHTML = '';
+        }
 
-            // Ensure the second modal is opened without closing the first modal
-            $('#jenisPembayaranModal').on('show.bs.modal', function () {
-                $('#addDataModal').modal('hide');
-            });
+        // Membuat elemen preview gambar
+        function createImagePreview(src, index) {
+            const imageContainer = document.createElement('div');
+            imageContainer.classList.add('position-relative', 'd-inline-block');
 
+            const img = document.createElement('img');
+            img.src = src;
+            img.classList.add('img-thumbnail');
+            img.style = 'width: 100px; height: 100px; object-fit: cover;';
 
-            // Handle "Pilih" button click in the jenisPembayaranTable
-            $('#jenisPembayaranTable').on('click', '.pilihBtn', function () {
-                var row = $(this).closest('tr');
-                var jenisPembayaran = row.find('td:nth-child(2)').text();
-                var tagihan = row.find('td:nth-child(3)').text();
-                var itemId = $(this).data('id'); // Ambil ID dari item
-                var type = $(this).data('type');
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = '&times;';
+            deleteBtn.classList.add('btn', 'btn-sm', 'btn-danger', 'position-absolute', 'top-0', 'end-0');
+            deleteBtn.style.zIndex = '1';
+            deleteBtn.addEventListener('click', () => removeImagePreview(index));
 
-                // Check if already selected to prevent duplicates
-                if ($('#selectedPembayaran').find(`[data-jenis="${jenisPembayaran}"]`).length === 0) {
-                    $('#selectedPembayaran').append(`
-                        <button class="btn btn-outline-success me-2" data-jenis="${jenisPembayaran}">
-                            ${jenisPembayaran} (${type}) <span class="removeItem">&times;</span>
-                        </button>
-                    `);
+            imageContainer.append(img, deleteBtn);
+            previewContainer.appendChild(imageContainer);
+        }
 
-                    // Append to row-item-bayar in the main table
-                    $('#tabel-list-item-pengeluaran tbody').append(`
-                        <tr class="row-item-bayar">
-                            <td>${$('#tabel-list-item-pengeluaran tbody tr').length + 1}</td>
-                            <td>
-                                <label for="jenis" class="form-label" name="item_id">${jenisPembayaran}</label>
-                                <input type="hidden" name="item_type[]" value="${type}">
-                                <input type="hidden" name="item_id[]" value="${itemId}">
-                            </td>
-                            <td><label for="tagihan" class="form-label">${tagihan}</label></td>
-                            <td><input type="number" class="form-control jumlah-bayar" name="jumlah_bayar[]" required></td>
-                        </tr>
-                    `);
-
-                    // Recalculate total bayar
-                    calculateTotal();
-                } else {
-                    alert('Item ini sudah dipilih.');
+        // Menghapus gambar dari preview dan memperbarui input file
+        function removeImagePreview(index) {
+            selectedFiles.splice(index, 1);
+            const dataTransfer = new DataTransfer();
+            selectedFiles.forEach(file => dataTransfer.items.add(file));
+            fileInput.files = dataTransfer.files;
+            previewSelectedImages({
+                target: {
+                    files: fileInput.files
                 }
             });
+        }
 
-            // Remove selected item on click
-            $('#selectedPembayaran').on('click', '.removeItem', function () {
-                var jenisPembayaran = $(this).closest('button').data('jenis');
-                $(this).closest('button').remove();
+        // Tambah baris baru ke tabel
+        document.querySelector('.add-row').addEventListener('click', () => {
+            addNewTableRow();
+            updateTotalAmount();
+        });
 
-                // Remove corresponding row in the main table
-                $('#tabel-list-item-pengeluaran tbody .row-item-bayar').filter(function () {
-                    return $(this).find('td:nth-child(2) label').text() === jenisPembayaran;
-                }).remove();
+        // Membuat baris baru
+        function addNewTableRow() {
+            const newRow = document.createElement('tr');
+            newRow.classList.add('row-item-bayar');
+            newRow.innerHTML = `
+            <td></td>
+            <td>
+                <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input toggle-select" />
+                    <label class="form-check-label">Use Select Kategori</label>
+                </div>
+                <input type="text" class="form-control nama-pengeluaran-input" name="nama_pengeluaran[]" placeholder="Nama Pengeluaran" required>
+                <select class="form-select detail-kategori-select" name="kategori_id[]" style="display: none;">
+                    <option selected disabled value="">Pilih pengeluaran</option>
+                    <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
+                                                    <option value="<?php echo $dkp['id']; ?>"><?php echo $dkp['judul']; ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+            <td><textarea class="form-control" name="keterangan[]" placeholder="Keterangan"></textarea></td>
+            <td><input type="number" class="form-control jumlah" name="jumlah_barang[]" placeholder="Jumlah" required></td>
+            <td><button type="button" class="btn btn-outline-danger remove-row"><i class="bi bi-dash-lg"></i></button></td>
+        `;
+            tableBody.appendChild(newRow);
+            updateRowNumbers();
+        }
 
-                // Reorder row numbers
-                $('#tabel-list-item-pengeluaran tbody .row-item-bayar').each(function (index) {
-                    $(this).find('td:first-child').text(index + 1);
-                });
+        // Event delegation untuk aksi pada tabel
+        // tableBody.addEventListener('click', (e) => {
+        //     if (e.target.closest('.remove-row')) {
+        //         e.target.closest('.row-item-bayar').remove();
+        //         updateRowNumbers();
+        //         updateTotalAmount();
+        //     } else if (e.target.classList.contains('toggle-select')) {
+        //         toggleSelectInput(e.target);
+        //     }
+        // });
 
-                // Recalculate total bayar
-                calculateTotal();
-            });
-
-            // Event listener to calculate total bayar
-            $(document).on('input', '.jumlah-bayar', function () {
-                calculateTotal();
-            });
-
-            // Function to calculate total bayar
-            function calculateTotal() {
-                var totalBayar = 0;
-                $('.jumlah-bayar').each(function () {
-                    var value = parseFloat($(this).val()) || 0;
-                    totalBayar += value;
-                });
-                $('#total-bayar').text(totalBayar.toFixed(2)); // Format to 2 decimal places
+        tableBody.addEventListener('input', (e) => {
+            if (e.target.classList.contains('jumlah')) {
+                updateTotalAmount();
             }
         });
-    </script>
-</body>
 
-</html>
+        // Update total jumlah bayar
+        function updateTotalAmount() {
+            const total = Array.from(document.querySelectorAll('.jumlah'))
+                .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
+            totalAmountDisplay.textContent = total.toLocaleString();
+        }
+
+
+        function toggleSelectDisplay(isChecked, row) {
+            const textInput = row.querySelector('.nama-pengeluaran-input');
+            const selectInput = row.querySelector('.detail-kategori-select');
+
+            if (isChecked) {
+                textInput.setAttribute('disabled', 'disabled');
+                textInput.removeAttribute('required');
+                textInput.style.display = 'none';
+
+                selectInput.removeAttribute('disabled');
+                selectInput.setAttribute('required', 'required');
+                selectInput.style.display = 'block';
+            } else {
+                selectInput.setAttribute('disabled', 'disabled');
+                selectInput.removeAttribute('required');
+                selectInput.style.display = 'none';
+
+                textInput.removeAttribute('disabled');
+                textInput.setAttribute('required', 'required');
+                textInput.style.display = 'block';
+            }
+        }
+
+        tableBody.addEventListener('click', function (e) {
+            if (e.target.classList.contains('toggle-select')) {
+                const row = e.target.closest('tr');
+                toggleSelectDisplay(e.target.checked, row);
+            } else if (e.target.closest('.remove-row')) {
+                e.target.closest('tr').remove();
+                updateRowNumbers();
+            }
+        });
+
+        function updateRowNumbers() {
+            document.querySelectorAll('.row-item-bayar').forEach((row, index) => {
+                row.querySelector('td:first-child').textContent = index + 1;
+            });
+        }
+
+        // Tambahkan event listener pada tombol tambah baris
+        document.querySelector('.add-row').addEventListener('click', addNewTableRow);
+    });
+</script>
+
+<!-- DataTables CSS/JS Dependencies -->
+<link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+
+
+<!-- 
+optimalkan kembali code dengan kriteria berikut:
+- pada "Nama Pengeluaran" saya ingin menggunakan kondisi jika "Use Select Kategori" isChecked maka dapat menggunakan
+select dan ini memanggil data dari tabel detail_kategori_pengeluaran
+- pada "upload bukti pengeluaran" dapat masuk kedalam tabel "bukti_pengeluaran_dana" dan saya ingin agar nama file
+    diubah menjadi format datetime dan unicode contoh: "202411030101-kcAwH8.png"
+        $buktiTable = $this->table('bukti_pengeluaran_dana');
+        $buktiTable->addColumn('pengeluaran_id', 'integer', ['null' => false])
+        ->addColumn('file_path', 'string', ['null' => false])
+        ->addTimestamps()
+        ->create(); 
+- 
+-->

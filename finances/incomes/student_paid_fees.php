@@ -56,9 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 // Masukkan data ke tabel detail_riwayat_transaksi_siswa_pembayaranlain
-                if ($type === 'pembayaran_lain') {
+                if ($type === 'pembayaran_lainnya') {
                     $stmt = $db->prepare("INSERT INTO detail_riwayat_transaksi_siswa_pembayaranlain 
-                        (riwayat_transaksi_id, siswa_pembayaran_lainnya_id, jumlah_bayar) 
+                        (riwayat_transaksi_id, pembayaran_lainnya_id, jumlah_bayar) 
                         VALUES (:riwayat_transaksi_id, :pembayaran_lain_id, :jumlah_bayar)");
                     $stmt->execute([
                         ':riwayat_transaksi_id' => $riwayat_transaksi_id,
@@ -88,6 +88,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $stmt = $db->query("SELECT id, nis, nama_lengkap, kelas_id FROM siswa WHERE status = 'Aktif'");
 $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Query to fetch data
+$query = "
+    SELECT 
+        rts.id AS riwayat_id,
+        s.nis,
+        s.nama_lengkap,
+        k.nama_kelas,
+        rts.tanggal_bayar,
+        rts.jenis_bayar,
+        rts.total_bayar,
+        ts.nama_tarif AS tarif_spp,
+        spl.nama_pembayaran AS pembayaran_lainnya
+    FROM riwayat_transaksi_siswa rts
+    LEFT JOIN siswa s ON rts.siswa_id = s.id
+    LEFT JOIN kelas k ON s.kelas_id = k.id
+    LEFT JOIN detail_riwayat_transaksi_siswa_tarifspp drtst ON rts.id = drtst.riwayat_transaksi_id
+    LEFT JOIN tarif_spp ts ON drtst.tarif_spp_id = ts.id
+    LEFT JOIN detail_riwayat_transaksi_siswa_pembayaranlain drtspl ON rts.id = drtspl.riwayat_transaksi_id
+    LEFT JOIN siswa_pembayaran_lainnya spl ON drtspl.pembayaran_lainnya_id = spl.id
+    ORDER BY rts.tanggal_bayar DESC
+";
+$stmt = $db->prepare($query);
+$stmt->execute();
+$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Combine results based on `riwayat_id`
+$combinedResults = [];
+foreach ($results as $row) {
+    $riwayatId = $row['riwayat_id'];
+    if (!isset($combinedResults[$riwayatId])) {
+        $combinedResults[$riwayatId] = [
+            'riwayat_id' => $row['riwayat_id'],
+            'nis' => $row['nis'],
+            'nama_lengkap' => $row['nama_lengkap'],
+            'nama_kelas' => $row['nama_kelas'],
+            'tanggal_bayar' => $row['tanggal_bayar'],
+            'jenis_bayar' => $row['jenis_bayar'],
+            'total_bayar' => $row['total_bayar'],
+            'items' => []
+        ];
+    }
+    // Append jenis pembayaran items
+    if (!empty($row['tarif_spp'])) {
+        $combinedResults[$riwayatId]['items'][] = [
+            'jenis_bayar' => 'TS: ' . $row['tarif_spp']
+        ];
+    }
+    if (!empty($row['pembayaran_lainnya'])) {
+        $combinedResults[$riwayatId]['items'][] = [
+            'jenis_bayar' => 'PL: ' . $row['pembayaran_lainnya']
+        ];
+    }
+
+}
+// Transform combined results into a numeric array
+$combinedResults = array_values($combinedResults);
+
+
 // Mengakhiri output buffering
 ob_end_flush();
 ?>
@@ -99,14 +156,13 @@ ob_end_flush();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jenis Pembayaran</title>
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"> -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css" rel="stylesheet">
-
-    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script> -->
+    <link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+
+    <!-- DataTables CSS/JS Dependencies -->
+    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
 </head>
 
 <body>
@@ -148,37 +204,54 @@ ob_end_flush();
 
                     <div class="card-body">
                         <!-- DataTables -->
-                        <table id="content" class="table table-bordered table-striped">
+                        <table id="DataPembayaranSiswa" class="table table-bordered table-striped">
                             <thead>
-                                <tr>
+                                <tr class="text-center">
                                     <th>No</th>
+                                    <th>Tanggal</th>
                                     <th>Nama</th>
                                     <th>Kelas</th>
-                                    <th>Tanggal</th>
                                     <th>Jenis Pembayaran</th>
+                                    <th>Total</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>Nightcore</td>
-                                    <td>XII Bisnis</td>
-                                    <td>23 Sep 2024</td>
-                                    <td>
-                                        <ul>
-                                            <li>Daftar Ulang</li>
-                                            <li>Buku</li>
-                                            <li>Seragam</li>
-                                        </ul>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-success">Detail</button>
-                                        <button class="btn btn-warning">Edit</button>
-                                        <button class="btn btn-danger">Delete</button>
-                                    </td>
-                                </tr>
-                            </tbody>
+                            <?php if (!empty($combinedResults)): ?>
+                                <tbody>
+                                    <?php $no = 1; ?>
+                                    <?php foreach ($combinedResults as $row): ?>
+                                        <tr>
+                                            <td class="text-center"><?= $no++; ?></td>
+                                            <td>
+                                                <div>
+                                                    <?= date('d M Y', strtotime($row['tanggal_bayar'])) ?? '-'; ?>
+                                                </div>
+                                            </td>
+                                            <td><?= $row['nama_lengkap'] ?? '-'; ?></td>
+                                            <td><?= $row['nama_kelas'] ?? '-'; ?></td>
+                                            </td>
+                                            <td>
+                                                <ul class="list-circle m-0">
+                                                    <?php foreach ($row['items'] as $item): ?>
+                                                        <li><?= $item['jenis_bayar'] ?? '-'; ?></li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            </td>
+                                            <td>
+                                                <div class="text-start">Rp.
+                                                    <?= number_format($row['total_bayar'], 2) ?? '-'; ?>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button>cek</button>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            <?php else: ?>
+                                <p>No data available.</p>
+                            <?php endif; ?>
+
                         </table>
                     </div>
                 </div>
@@ -332,6 +405,8 @@ ob_end_flush();
 
     <script>
         $(document).ready(function () {
+            // $('#DataPembayaranSiswa').DataTable();
+
             // Initialize Select2 with dropdownParent option
             $('#student_name').select2({
                 placeholder: 'Pilih Nama Siswa',
@@ -362,7 +437,7 @@ ob_end_flush();
 
                 if (id) {
                     $.ajax({
-                        url: 'test5',
+                        url: 'student_paid_fees_child',
                         type: 'POST',
                         data: {
                             id: id
@@ -378,8 +453,8 @@ ob_end_flush();
                                     index++,
                                     item.nama_tarif,
                                     item.nominal,
-                                    '0',
-                                    item.nominal,
+                                    item.total_bayar,
+                                    item.kurang_bayar,
                                     `<button class="btn btn-success btn-sm pilihBtn" data-id="${item.item_id}" data-type="${item.type}">+ Pilih</button>`
                                 ]).draw();
                             });
@@ -483,6 +558,7 @@ ob_end_flush();
             }
         });
     </script>
+
 </body>
 
 </html>

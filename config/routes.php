@@ -4,9 +4,8 @@
 $routes = [
     '/dashboard' => '/dashboards/index.php',
     '/test' => '/testing/index.php',
-    '/test2' => '/testing/index2.php',
+    '/test2' => '/testing/index3.php',
     '/test4' => '/testing/test4.php',
-    '/test5' => '/testing/test5.php',
     // '/login' => '/dashboard/login.php',
 
     '/guru-staff' => '/teachers_employees/index.php',
@@ -34,10 +33,12 @@ $routes = [
     '/pendapatan/jenis-pemasukan' => '/finances/incomes/type_income.php',
     // child
     '/child-update-tarif' => '/finances/incomes/child_tarif_spp_kelas_realtime.php',
+    '/pendapatan/student_paid_fees_child' => '/finances/incomes/student_paid_fees_child.php',
 
     // pengeluaran
     '/pengeluaran/kategori-pengeluaran' => '/finances/outlays/expens_category.php',
     '/pengeluaran/detail-pengeluaran' => '/finances/outlays/expends.php',
+    // child
     '/child-expens-category' => '/finances/outlays/child_expens_category.php',
 
 ];

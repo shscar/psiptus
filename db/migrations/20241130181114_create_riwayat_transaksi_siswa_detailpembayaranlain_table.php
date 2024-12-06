@@ -21,7 +21,7 @@ final class CreateRiwayatTransaksiSiswaDetailpembayaranlainTable extends Abstrac
     {
         $table = $this->table('detail_riwayat_transaksi_siswa_pembayaranlain');
         $table->addColumn('riwayat_transaksi_id', 'integer', ['null' => false])
-            ->addColumn('siswa_pembayaran_lainnya_id', 'integer', ['null' => false])
+            ->addColumn('pembayaran_lainnya_id', 'integer', ['null' => false])
             ->addColumn('jumlah_bayar', 'decimal', ['precision' => 15, 'scale' => 2, 'null' => false])
             ->addTimestamps()
             ->create();
