@@ -38,14 +38,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Dapatkan ID dari transaksi yang baru dimasukkan
         $riwayat_transaksi_id = $db->lastInsertId();
 
-        // Masukkan data ke tabel detail_riwayat_transaksi_siswa_tarifspp
+        // Masukkan data ke tabel riwayat_transaksi_siswa_detail_tarifspp
         if (isset($_POST['item_type']) && is_array($_POST['item_type'])) {
             foreach ($_POST['item_type'] as $key => $type) {
                 $item_id = $_POST['item_id'][$key];
                 $jumlah_bayar = floatval($_POST['jumlah_bayar'][$key]);
 
                 if ($type === 'tarif_spp') {
-                    $stmt = $db->prepare("INSERT INTO detail_riwayat_transaksi_siswa_tarifspp 
+                    $stmt = $db->prepare("INSERT INTO riwayat_transaksi_siswa_detail_tarifspp 
                         (riwayat_transaksi_id, tarif_spp_id, jumlah_bayar) 
                         VALUES (:riwayat_transaksi_id, :tarif_spp_id, :jumlah_bayar)");
                     $stmt->execute([
@@ -55,9 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ]);
                 }
 
-                // Masukkan data ke tabel detail_riwayat_transaksi_siswa_pembayaranlain
+                // Masukkan data ke tabel riwayat_transaksi_siswa_detail_pembayaranlain
                 if ($type === 'pembayaran_lainnya') {
-                    $stmt = $db->prepare("INSERT INTO detail_riwayat_transaksi_siswa_pembayaranlain 
+                    $stmt = $db->prepare("INSERT INTO riwayat_transaksi_siswa_detail_pembayaranlain 
                         (riwayat_transaksi_id, pembayaran_lainnya_id, jumlah_bayar) 
                         VALUES (:riwayat_transaksi_id, :pembayaran_lain_id, :jumlah_bayar)");
                     $stmt->execute([
@@ -103,9 +103,9 @@ $query = "
     FROM riwayat_transaksi_siswa rts
     LEFT JOIN siswa s ON rts.siswa_id = s.id
     LEFT JOIN kelas k ON s.kelas_id = k.id
-    LEFT JOIN detail_riwayat_transaksi_siswa_tarifspp drtst ON rts.id = drtst.riwayat_transaksi_id
+    LEFT JOIN riwayat_transaksi_siswa_detail_tarifspp drtst ON rts.id = drtst.riwayat_transaksi_id
     LEFT JOIN tarif_spp ts ON drtst.tarif_spp_id = ts.id
-    LEFT JOIN detail_riwayat_transaksi_siswa_pembayaranlain drtspl ON rts.id = drtspl.riwayat_transaksi_id
+    LEFT JOIN riwayat_transaksi_siswa_detail_pembayaranlain drtspl ON rts.id = drtspl.riwayat_transaksi_id
     LEFT JOIN siswa_pembayaran_lainnya spl ON drtspl.pembayaran_lainnya_id = spl.id
     ORDER BY rts.tanggal_bayar DESC
 ";
@@ -325,6 +325,7 @@ ob_end_flush();
                                                     <th>No</th>
                                                     <th>Nama Pembayaran</th>
                                                     <th>Tagihan</th>
+                                                    <th>Sudah dibayar</th>
                                                     <th>Jumlah Bayar</th>
                                                 </tr>
                                             </thead>
@@ -344,6 +345,7 @@ ob_end_flush();
                                                             </select>
                                                         </div>
                                                     </td>
+                                                    <td></td>
                                                     <td class="text-end fw-bold" style="padding-right:17px"
                                                         id="total-bayar">
                                                         0
@@ -452,9 +454,9 @@ ob_end_flush();
                                 table.row.add([
                                     index++,
                                     item.nama_tarif,
-                                    item.nominal,
-                                    item.total_bayar,
-                                    item.kurang_bayar,
+                                    formatCurrency(item.nominal),
+                                    formatCurrency(item.total_dibayar),
+                                    formatCurrency(item.kurang_bayar),
                                     `<button class="btn btn-success btn-sm pilihBtn" data-id="${item.item_id}" data-type="${item.type}">+ Pilih</button>`
                                 ]).draw();
                             });
@@ -463,13 +465,23 @@ ob_end_flush();
                                 table.row.add([
                                     index++,
                                     item.nama_pembayaran,
-                                    item.nominal,
-                                    '0',
-                                    item.nominal,
+                                    formatCurrency(item.nominal),
+                                    formatCurrency(item.total_dibayar),
+                                    formatCurrency(item.kurang_bayar),
                                     `<button class="btn btn-success btn-sm pilihBtn" data-id="${item.item_id}" data-type="${item.type}">+ Pilih</button>`
                                 ]).draw();
                             });
 
+                            // // Fungsi untuk memformat mata uang
+                            // function formatCurrency(value) {
+                            //     return Number(value).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).replace('IDR', '').trim();
+                            // }
+                            function formatCurrency(value) {
+                                if (value === undefined || value === null) {
+                                    return '-';
+                                }
+                                return Number(value).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                            }
                         }
                     });
                 }
@@ -491,7 +503,8 @@ ob_end_flush();
                 var row = $(this).closest('tr');
                 var jenisPembayaran = row.find('td:nth-child(2)').text();
                 var tagihan = row.find('td:nth-child(3)').text();
-                var itemId = $(this).data('id'); // Ambil ID dari item
+                var total_dibayar = row.find('td:nth-child(4)').text();
+                var itemId = $(this).data('id');
                 var type = $(this).data('type');
 
                 // Check if already selected to prevent duplicates
@@ -512,11 +525,11 @@ ob_end_flush();
                                 <input type="hidden" name="item_id[]" value="${itemId}">
                             </td>
                             <td><label for="tagihan" class="form-label">${tagihan}</label></td>
+                            <td><label for="jumlah" class="form-label">${total_dibayar}</label></td>
                             <td><input type="number" class="form-control jumlah-bayar" name="jumlah_bayar[]" required></td>
                         </tr>
                     `);
 
-                    // Recalculate total bayar
                     calculateTotal();
                 } else {
                     alert('Item ini sudah dipilih.');
@@ -527,18 +540,13 @@ ob_end_flush();
             $('#selectedPembayaran').on('click', '.removeItem', function () {
                 var jenisPembayaran = $(this).closest('button').data('jenis');
                 $(this).closest('button').remove();
-
-                // Remove corresponding row in the main table
                 $('#tabel-list-item-pengeluaran tbody .row-item-bayar').filter(function () {
                     return $(this).find('td:nth-child(2) label').text() === jenisPembayaran;
                 }).remove();
-
-                // Reorder row numbers
                 $('#tabel-list-item-pengeluaran tbody .row-item-bayar').each(function (index) {
                     $(this).find('td:first-child').text(index + 1);
                 });
 
-                // Recalculate total bayar
                 calculateTotal();
             });
 
@@ -554,7 +562,7 @@ ob_end_flush();
                     var value = parseFloat($(this).val()) || 0;
                     totalBayar += value;
                 });
-                $('#total-bayar').text(totalBayar.toFixed(2)); // Format to 2 decimal places
+                $('#total-bayar').text(totalBayar.toFixed(2));
             }
         });
     </script>

@@ -560,7 +560,6 @@ ob_end_flush();
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="editkelasModalLabel">Edit Kelas</h5>
-                            <span class="text-danger">Maintenance</span>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -568,12 +567,12 @@ ob_end_flush();
                                 <input type="hidden" name="action" value="addkelas">
                                 <input type="hidden" id="editkelas-id" name="id">
 
-                                <div class="card card-outline card-secondary">
+                                <div class="card card-outline card-info">
                                     <div class="card-body">
                                         <div class="form-group">
                                             <select class="form-select" id="itemSelect" name="kelas_id[]"
                                                 style="width: 87%;"></select>
-                                            <button type="submit" class="btn btn-dark" id="addItemButton">Add</button>
+                                            <button type="submit" class="btn btn-success" id="addItemButton">Add</button>
                                         </div>
                                     </div>
                                 </div>
@@ -774,20 +773,13 @@ ob_end_flush();
             });
         }
 
-        // Helper function to create list items
-        // function createListItem(itemText, tarifSppKelasId) {
-        //     return `<div class="d-flex justify-content-between align-items-center p-2 border mb-2 rounded bg-light">
-        //         <span>${itemText}</span>
-        //         <button class="btn btn-dark btn-sm delete-button" data-id="${tarifSppKelasId}">Delete</button>
-        //     </div>`;
-        // }
         function createListItem(itemText, tarifSppKelasId) {
             const div = document.createElement('div');
             div.classList.add('d-flex', 'justify-content-between', 'align-items-center', 'p-2', 'border', 'mb-2',
                 'rounded', 'bg-light');
             div.innerHTML = `
                 <span>${itemText}</span>
-                <button type="button" class="btn btn-dark btn-sm delete-button" data-id="${tarifSppKelasId}" data-kelas="${itemText}">
+                <button type="button" class="btn btn-danger btn-sm delete-button" data-id="${tarifSppKelasId}" data-kelas="${itemText}">
                     Delete
                 </button>
             `;
@@ -825,16 +817,6 @@ ob_end_flush();
             return div;
         }
 
-
-        // Update the hidden input with the current list of items
-        // function updateItemsData() {
-        //     const items = [];
-        //     $('#itemList .d-flex').each(function () {
-        //         const itemText = $(this).find('span').text();
-        //         items.push(itemText);
-        //     });
-        //     updatedItemsDataInput.value = JSON.stringify(items); // Store updated items in JSON format
-        // }
     });
 </script>
 

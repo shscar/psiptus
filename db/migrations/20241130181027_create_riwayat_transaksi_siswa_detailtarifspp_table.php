@@ -19,7 +19,7 @@ final class CreateRiwayatTransaksiSiswaDetailtarifsppTable extends AbstractMigra
      */
     public function change(): void
     {
-        $table = $this->table('detail_riwayat_transaksi_siswa_tarifspp');
+        $table = $this->table('riwayat_transaksi_siswa_detail_tarifspp');
         $table->addColumn('riwayat_transaksi_id', 'integer', ['null' => false])
             ->addColumn('tarif_spp_id', 'integer', ['null' => false])
             ->addColumn('jumlah_bayar', 'decimal', ['precision' => 15, 'scale' => 2, 'null' => false])

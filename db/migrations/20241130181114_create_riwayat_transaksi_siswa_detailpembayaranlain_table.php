@@ -19,7 +19,7 @@ final class CreateRiwayatTransaksiSiswaDetailpembayaranlainTable extends Abstrac
      */
     public function change(): void
     {
-        $table = $this->table('detail_riwayat_transaksi_siswa_pembayaranlain');
+        $table = $this->table('riwayat_transaksi_siswa_detail_pembayaranlain');
         $table->addColumn('riwayat_transaksi_id', 'integer', ['null' => false])
             ->addColumn('pembayaran_lainnya_id', 'integer', ['null' => false])
             ->addColumn('jumlah_bayar', 'decimal', ['precision' => 15, 'scale' => 2, 'null' => false])
