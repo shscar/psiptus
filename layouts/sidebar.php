@@ -205,7 +205,7 @@ foreach ($dropdownRoutes as $key => $routes) {
                             <a href="/pengeluaran/detail-pengeluaran"
                                 class="nav-link ms-3 <?php echo isActive('/pengeluaran/detail-pengeluaran', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
-                                <p>Detail Pengeluaran</p>
+                                <p>Kebutuhan Pengeluaran</p>
                             </a>
                         </li>
                         <!-- <li class="nav-item">

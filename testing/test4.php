@@ -95,22 +95,6 @@ $stmt = $db->prepare("SELECT * FROM detail_kategori_pengeluaran ORDER BY id DESC
 $stmt->execute();
 $detail_kategori_pengeluaran = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fungsi untuk menangani unggah file dan mengubah nama file
-function handleFileUpload($file)
-{
-    $uploadDir = 'assets/images/dana_pengeluaran/';
-    $timestamp = date('YmdHis');
-    $uniqueCode = substr(bin2hex(random_bytes(3)), 0, 6); // Kode unik dengan panjang 6 karakter
-    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-    $newFileName = "{$timestamp}-{$uniqueCode}.{$extension}";
-    $filePath = $uploadDir . $newFileName;
-
-    // Pindahkan file ke folder tujuan
-    if (move_uploaded_file($file['tmp_name'], $filePath)) {
-        return $filePath; // Kembalikan path lengkap untuk disimpan di database
-    }
-    return null; // Gagal upload
-}
 
 // Handle Form Submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -118,96 +102,118 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Create Record
     if ($action == 'create') {
-    //     try {
-    //         // Mulai transaksi
-    //         $db->beginTransaction();
+        try {
+            // Mulai transaksi
+            $db->beginTransaction();
 
-    //         // Data utama untuk tabel pengeluaran_dana
-    //         $tanggal_pengeluaran = $_POST['tanggal_pengeluaran'];
-    //         $sumber_dana = $_POST['sumber_dana'];
-    //         $pihak_terlibat = $_POST['pihak_terlibat'] ?? null;
-    //         $ket_pengeluaran = $_POST['ket_pengeluaran'] ?? null;
-    //         $jenis_bayar = $_POST['jenis_bayar'];
+            // Data utama untuk tabel pengeluaran_dana
+            $tanggal_pengeluaran = $_POST['tanggal_pengeluaran'] ?? null;
+            $sumber_dana = $_POST['sumber_dana'] ?? null;
+            $pihak_terlibat = $_POST['pihak_terlibat'] ?? null;
+            $ket_pengeluaran = $_POST['ket_pengeluaran'] ?? null;
+            $jenis_bayar = $_POST['jenis_bayar'] ?? null;
 
-    //         // Hitung total jumlah dari item
-    //         $total = 0;
-    //         foreach ($_POST['jumlah'] as $jumlah) {
-    //             $total += (float) $jumlah;
-    //         }
+            // Validasi input
+            if (empty($tanggal_pengeluaran) || empty($sumber_dana) || empty($jenis_bayar)) {
+                throw new Exception("Data utama tidak lengkap.");
+            }
 
-    //         // Insert ke tabel pengeluaran_dana
-    //         $stmt = $db->prepare("INSERT INTO pengeluaran_dana (tanggal_pengeluaran, sumber_dana, pihak_terlibat, ket_pengeluaran, jenis_bayar, total, created_at, updated_at) VALUES (:tanggal_pengeluaran, :sumber_dana, :pihak_terlibat, :ket_pengeluaran, :jenis_bayar, :total, NOW(), NOW())");
-    //         $stmt->execute([
-    //             ':tanggal_pengeluaran' => $tanggal_pengeluaran,
-    //             ':sumber_dana' => $sumber_dana,
-    //             ':pihak_terlibat' => $pihak_terlibat,
-    //             ':ket_pengeluaran' => $ket_pengeluaran,
-    //             ':jenis_bayar' => $jenis_bayar,
-    //             ':total' => $total
-    //         ]);
+            // Hitung total jumlah dari item
+            $total = 0;
+            foreach ($_POST['jumlah'] as $jumlah) {
+                $total += (float) $jumlah;
+            }
 
-    //         $pengeluaran_dana_id = $db->lastInsertId();
+            // Insert ke tabel pengeluaran_dana
+            $stmt = $db->prepare("
+            INSERT INTO pengeluaran_dana (tanggal_pengeluaran, sumber_dana, pihak_terlibat, ket_pengeluaran, jenis_bayar, total, created_at, updated_at) 
+            VALUES (:tanggal_pengeluaran, :sumber_dana, :pihak_terlibat, :ket_pengeluaran, :jenis_bayar, :total, NOW(), NOW())
+        ");
+            $stmt->execute([
+                ':tanggal_pengeluaran' => $tanggal_pengeluaran,
+                ':sumber_dana' => $sumber_dana,
+                ':pihak_terlibat' => $pihak_terlibat,
+                ':ket_pengeluaran' => $ket_pengeluaran,
+                ':jenis_bayar' => $jenis_bayar,
+                ':total' => $total
+            ]);
 
-    //         // Insert ke tabel pengeluaran_dana_item
-    //         foreach ($_POST['nama_pengeluaran'] as $index => $nama_pengeluaran) {
-    //             $use_kategori = isset($_POST['use_kategori'][$index]) && $_POST['use_kategori'][$index] === '1' ? 1 : 0;
-    //             $item = (int) $_POST['item'][$index];
-    //             $satuan = $_POST['satuan'][$index];
-    //             $harga = (float) $_POST['harga'][$index];
-    //             $nominal = (float) $_POST['nominal'][$index];
-    //             $komite = (float) $_POST['komite'][$index];
-    //             $bosda = (float) $_POST['bosda'][$index];
-    //             $jumlah = (float) $_POST['jumlah'][$index];
+            $pengeluaran_dana_id = $db->lastInsertId();
 
-    //             $stmt = $db->prepare("INSERT INTO pengeluaran_dana_item (pengeluaran_dana_id, use_kategori, nama_pengeluaran, item, satuan, harga, nominal, komite, bosda, jumlah, created_at, updated_at) VALUES (:pengeluaran_dana_id, :use_kategori, :nama_pengeluaran, :item, :satuan, :harga, :nominal, :komite, :bosda, :jumlah, NOW(), NOW())");
-    //             $stmt->execute([
-    //                 ':pengeluaran_dana_id' => $pengeluaran_dana_id,
-    //                 ':use_kategori' => $use_kategori,
-    //                 ':nama_pengeluaran' => $nama_pengeluaran,
-    //                 ':item' => $item,
-    //                 ':satuan' => $satuan,
-    //                 ':harga' => $harga,
-    //                 ':nominal' => $nominal,
-    //                 ':komite' => $komite,
-    //                 ':bosda' => $bosda,
-    //                 ':jumlah' => $jumlah
-    //             ]);
-    //         }
+            // Insert ke tabel pengeluaran_dana_item
+            foreach ($_POST['nama_pengeluaran'] as $index => $nama_pengeluaran) {
+                $use_kategori = isset($_POST['use_kategori'][$index]) && $_POST['use_kategori'][$index] === 'on' ? 1 : 0;
 
-    //         // Handle upload file untuk tabel pengeluaran_dana_bukti
-    //         if (!empty($_FILES['bukti_pengeluaran']['name'][0])) {
-    //             $uploadDir = 'assets/images/dana_pengeluaran/';
+                $item = (int) ($_POST['item'][$index] ?? 0);
+                $satuan = $_POST['satuan'][$index] ?? null;
+                $harga = (float) ($_POST['harga'][$index] ?? 0);
+                $nominal = (float) ($_POST['nominal'][$index] ?? 0);
+                $komite = (float) ($_POST['komite'][$index] ?? 0);
+                $bosda = (float) ($_POST['bosda'][$index] ?? 0);
+                $jumlah = (float) ($_POST['jumlah'][$index] ?? 0);
 
-    //             foreach ($_FILES['bukti_pengeluaran']['tmp_name'] as $index => $tmpName) {
-    //                 $fileName = date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . pathinfo($_FILES['bukti_pengeluaran']['name'][$index], PATHINFO_EXTENSION);
-    //                 $filePath = $uploadDir . $fileName;
+                if (empty($nama_pengeluaran)) {
+                    throw new Exception("Nama pengeluaran tidak boleh kosong pada baris $index.");
+                }
 
-    //                 if (move_uploaded_file($tmpName, $filePath)) {
-    //                     $stmt = $db->prepare("INSERT INTO pengeluaran_dana_bukti (pengeluaran_id, file_path, created_at, updated_at) VALUES (:pengeluaran_id, :file_path, NOW(), NOW())");
-    //                     $stmt->execute([
-    //                         ':pengeluaran_id' => $pengeluaran_dana_id,
-    //                         ':file_path' => $filePath
-    //                     ]);
-    //                 }
-    //             }
-    //         }
+                $stmt = $db->prepare("
+                INSERT INTO pengeluaran_dana_item (pengeluaran_dana_id, use_kategori, nama_pengeluaran, item, satuan, harga, nominal, komite, bosda, jumlah, created_at, updated_at) 
+                VALUES (:pengeluaran_dana_id, :use_kategori, :nama_pengeluaran, :item, :satuan, :harga, :nominal, :komite, :bosda, :jumlah, NOW(), NOW())
+            ");
+                $stmt->execute([
+                    ':pengeluaran_dana_id' => $pengeluaran_dana_id,
+                    ':use_kategori' => $use_kategori,
+                    ':nama_pengeluaran' => $nama_pengeluaran,
+                    ':item' => $item,
+                    ':satuan' => $satuan,
+                    ':harga' => $harga,
+                    ':nominal' => $nominal,
+                    ':komite' => $komite,
+                    ':bosda' => $bosda,
+                    ':jumlah' => $jumlah
+                ]);
+            }
 
-    //         // Commit transaksi
-    //         $db->commit();
+            // Handle upload file untuk tabel pengeluaran_dana_bukti
+            if (!empty($_FILES['bukti_pengeluaran']['name'][0])) {
+                $uploadDir = 'assets/images/dana_pengeluaran/';
 
-    //         echo json_encode(['status' => 'success', 'message' => 'Data berhasil disimpan']);
-    //     } catch (Exception $e) {
-    //         // Rollback transaksi jika terjadi kesalahan
-    //         $db->rollBack();
-    //         echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-    //     }
+                foreach ($_FILES['bukti_pengeluaran']['tmp_name'] as $index => $tmpName) {
+                    $fileName = date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . pathinfo($_FILES['bukti_pengeluaran']['name'][$index], PATHINFO_EXTENSION);
+                    $filePath = $uploadDir . $fileName;
 
+                    if (move_uploaded_file($tmpName, $filePath)) {
+                        $stmt = $db->prepare("
+                        INSERT INTO pengeluaran_dana_bukti (pengeluaran_id, file_path, created_at, updated_at) 
+                        VALUES (:pengeluaran_id, :file_path, NOW(), NOW())
+                    ");
+                        $stmt->execute([
+                            ':pengeluaran_id' => $pengeluaran_dana_id,
+                            ':file_path' => $fileName
+                        ]);
+                    }
+                }
+            }
 
-        echo '<pre>';
-        print_r($_POST);
-        echo '</pre>';
-
+            // Commit transaksi
+            $db->commit();
+            // Redirect or show success message
+            echo "<script>
+                alert('Data pengeluaran berhasil ditambah.');
+                window.location.href = '/pengeluaran/detail-pengeluaran';
+            </script>";
+        } catch (Exception $e) {
+            // Rollback transaksi jika terjadi kesalahan
+            $db->rollBack();
+            // Redirect or show message
+            echo "<script>
+                alert(" . json_encode(['status' => 'error', 'message' => $e->getMessage()]) . ");
+                window.location.href = '/pengeluaran/detail-pengeluaran';
+            </script>";
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
     }
+
 
 }
 
@@ -238,7 +244,7 @@ ob_end_flush();
             <div class="row">
                 <div class="col-sm-6">
                     <h3 class="mb-0">
-                        Pengeluaran Dana Sekolah
+                        Kebutuhan Pengeluaran Dana Sekolah
                     </h3>
                     <span class="text-danger">Maintance</span>
                 </div>
@@ -596,7 +602,11 @@ ob_end_flush();
             files.forEach(file => dataTransfer.items.add(file));
             fileInput.files = dataTransfer.files;
 
-            handleImagePreview({ target: { files: fileInput.files } });
+            handleImagePreview({
+                target: {
+                    files: fileInput.files
+                }
+            });
         }
 
         // Add new row to the table
@@ -606,39 +616,35 @@ ob_end_flush();
         });
 
         function addNewRow() {
-            const rowCount = tableBody.rows.length + 1;
+            const rowCount = tableBody.rows.length;
             const newRow = document.createElement('tr');
             newRow.className = 'row-item-bayar';
 
             newRow.innerHTML = `
-                <td>${rowCount}</td>
+                <td>${rowCount + 1}</td>
                 <td>
                     <div class="form-group form-kategori">
                         <!-- Switch Checkbox -->
                         <div class="form-check form-switch mb-2">
-                            <input type="checkbox" class="form-check-input toggle-select"
-                                id="useselectkategori${rowCount}" name="use_kategori[]">
-                            <label class="form-check-label" for="useselectkategori${rowCount}">Use
-                                Kategori</label>
+                            <input type="checkbox" class="form-check-input toggle-select" id="useselectkategori${rowCount}" name="use_kategori[${rowCount}]">
+                            <label class="form-check-label" for="useselectkategori${rowCount}">Use Kategori</label>
                         </div>
 
                         <!-- Input Text -->
                         <div class="input-container">
                             <input type="text" class="form-control nama-pengeluaran-input"
-                                name="nama_pengeluaran[]" placeholder="Nama Pengeluaran"
-                                required>
+                                name="nama_pengeluaran[]" placeholder="Nama Pengeluaran" required>
                         </div>
 
                         <!-- Select Dropdown -->
                         <div class="select-container" style="display: none;">
-                            <select class="form-select detail-kategori-select"
-                                name="nama_pengeluaran[]">
+                            <select class="form-select detail-kategori-select" name="nama_pengeluaran[]">
                                 <option selected disabled value="">Pilih pengeluaran
                                 </option>
                                 <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
-                                    <option value="<?php echo $dkp['id']; ?>">
-                                        <?php echo $dkp['judul']; ?>
-                                    </option>
+                                        <option value="<?php echo $dkp['id']; ?>">
+                                            <?php echo $dkp['judul']; ?>
+                                        </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -679,7 +685,7 @@ ob_end_flush();
                 e.target.closest('.row-item-bayar').remove();
                 updateRowNumbers();
                 updateTotal();
-            } 
+            }
             // else if (e.target.classList.contains('toggle-select')) {
             //     const row = e.target.closest('.row-item-bayar');
             //     toggleInputDisplay(e.target.checked, row);
@@ -724,58 +730,57 @@ ob_end_flush();
             totalAmountDisplay.textContent = total.toLocaleString('id-ID');
         }
 
-
-
-        const checkbox = document.getElementById('useselectkategori');
-        if (checkbox) {
-            const formGroup = checkbox.closest('.form-kategori');
-            const textInput = formGroup.querySelector('.nama-pengeluaran-input');
+        // Fungsi untuk mengatur tampilan elemen berdasarkan status checkbox
+        function toggleInputDisplay(isChecked, formGroup) {
             const textInputContainer = formGroup.querySelector('.input-container');
-            const selectInput = formGroup.querySelector('.detail-kategori-select');
             const selectInputContainer = formGroup.querySelector('.select-container');
+            const textInput = formGroup.querySelector('.nama-pengeluaran-input');
+            const selectInput = formGroup.querySelector('.detail-kategori-select');
 
-            // Fungsi untuk mengatur tampilan dan status elemen
-            function toggleInputDisplay(isChecked) {
-                if (isChecked) {
-                    // Menampilkan select dropdown dan menyembunyikan input teks
-                    textInputContainer.style.display = 'none';
-                    selectInputContainer.style.display = 'block';
-
-                    // Nonaktifkan input teks dan aktifkan dropdown
-                    textInput.disabled = true;
-                    selectInput.disabled = false;
-
-                    // Validasi
-                    textInput.required = false;
-                    selectInput.required = true;
-                } else {
-                    // Menampilkan input teks dan menyembunyikan select dropdown
-                    textInputContainer.style.display = 'block';
-                    selectInputContainer.style.display = 'none';
-
-                    // Nonaktifkan dropdown dan aktifkan input teks
-                    selectInput.disabled = true;
-                    textInput.disabled = false;
-
-                    // Validasi
-                    selectInput.required = false;
-                    textInput.required = true;
-                }
+            if (isChecked) {
+                textInputContainer.style.display = 'none';
+                selectInputContainer.style.display = 'block';
+                textInput.disabled = true;
+                selectInput.disabled = false;
+                textInput.required = false;
+                selectInput.required = true;
+            } else {
+                textInputContainer.style.display = 'block';
+                selectInputContainer.style.display = 'none';
+                textInput.disabled = false;
+                selectInput.disabled = true;
+                textInput.required = true;
+                selectInput.required = false;
             }
-
-            // Event listener untuk checkbox
-            checkbox.addEventListener('change', function () {
-                toggleInputDisplay(checkbox.checked);
-            });
-
-            // Kondisi awal
-            toggleInputDisplay(checkbox.checked);
         }
 
+        // Event listener global untuk menangani semua checkbox dinamis
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('toggle-select')) {
+                const formGroup = e.target.closest('.form-kategori');
+                toggleInputDisplay(e.target.checked, formGroup);
+
+                // Update nilai use_kategori agar sesuai dengan row
+                const index = Array.from(document.querySelectorAll('.toggle-select')).indexOf(e.target);
+                e.target.name = `use_kategori[${index}]`;
+            }
+        });
+
+        // Fungsi untuk menginisialisasi semua checkbox yang ada di awal
+        function initializeCheckboxes() {
+            document.querySelectorAll('.toggle-select').forEach((checkbox, index) => {
+                const formGroup = checkbox.closest('.form-kategori');
+                toggleInputDisplay(checkbox.checked, formGroup);
+
+                // Set name attribute agar sesuai dengan indeks
+                checkbox.name = `use_kategori[${index}]`;
+            });
+        }
+
+        // Panggil fungsi untuk menginisialisasi saat halaman dimuat
+        initializeCheckboxes();
 
     });
-
-
 
     // untuk mengaktifkan form nominal dan jumlah
     document.querySelector('form').addEventListener('submit', (e) => {
@@ -791,7 +796,6 @@ ob_end_flush();
             input.disabled = false;
         });
     });
-
 </script>
 
 <!-- DataTables CSS/JS Dependencies -->
