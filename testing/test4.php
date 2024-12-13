@@ -4,53 +4,80 @@ ob_start();
 include __DIR__ . '/../layouts/master.php';
 $db = Database::getInstance()->getConnection();
 
-// Query untuk mengambil data pengeluaran dan item pengeluaran
-$stmt = $db->prepare("
-    SELECT 
-        pd.id AS pengeluaran_id,
-        pd.tanggal_pengeluaran,
-        bpd.file_path AS bukti_pengeluaran,
-        pd.pihak_terlibat,
-        pd.sumber_dana,
-        pd.jenis_bayar,
-        pd.total_jumlah,
-        ipd.nama_pengeluaran,
-        ipd.keterangan AS item_keterangan,
-        ipd.jumlah_barang,
-        ipd.nilai_bayar
-    FROM pengeluaran_dana pd
-    LEFT JOIN item_pengeluaran_dana ipd ON pd.id = ipd.pengeluaran_id
-    LEFT JOIN bukti_pengeluaran_dana bpd ON pd.bukti_pengeluaran_id = bpd.id
-    ORDER BY pd.tanggal_pengeluaran DESC
-");
+// Query untuk mengambil data dari relasi tabel
+$stmt = $db->prepare("SELECT 
+    pd.id AS pengeluaran_id,
+    pd.tanggal_pengeluaran,
+    pd.sumber_dana,
+    pd.pihak_terlibat,
+    pd.ket_pengeluaran,
+    pd.jenis_bayar,
+    pd.total,
+    pdi.id AS item_id,
+    pdi.use_kategori,
+    pdi.nama_pengeluaran,
+    pdi.item,
+    pdi.satuan,
+    pdi.harga,
+    pdi.nominal,
+    pdi.komite,
+    pdi.bosda,
+    pdi.jumlah,
+    pdb.id AS bukti_id,
+    pdb.file_path,
+    dkp.judul AS kategori_judul
+FROM pengeluaran_dana pd
+LEFT JOIN pengeluaran_dana_item pdi ON pd.id = pdi.pengeluaran_dana_id
+LEFT JOIN pengeluaran_dana_bukti pdb ON pd.id = pdb.pengeluaran_id
+LEFT JOIN detail_kategori_pengeluaran dkp ON pdi.nama_pengeluaran = dkp.id AND pdi.use_kategori = true
+ORDER BY pd.tanggal_pengeluaran DESC");
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Gabungkan data ke dalam array terstruktur
+// Mengelompokkan data berdasarkan `pengeluaran_id`
 $combinedResults = [];
 foreach ($results as $row) {
     $pengeluaranId = $row['pengeluaran_id'];
-    // Cek apakah pengeluaran_id sudah ada di array $combinedResults
+
+    // Jika pengeluaran_id belum ada, tambahkan ke dalam hasil
     if (!isset($combinedResults[$pengeluaranId])) {
-        // Jika belum ada, buat entry baru di array
         $combinedResults[$pengeluaranId] = [
             'pengeluaran_id' => $row['pengeluaran_id'],
             'tanggal_pengeluaran' => $row['tanggal_pengeluaran'],
-            'bukti_pengeluaran' => $row['bukti_pengeluaran'],
-            'pihak_terlibat' => $row['pihak_terlibat'],
             'sumber_dana' => $row['sumber_dana'],
+            'pihak_terlibat' => $row['pihak_terlibat'],
+            'ket_pengeluaran' => $row['ket_pengeluaran'],
             'jenis_bayar' => $row['jenis_bayar'],
-            'total_jumlah' => $row['total_jumlah'],
-            'items' => [] // Array kosong untuk item pengeluaran
+            'total' => $row['total'],
+            'items' => [],
+            'bukti_files' => []
         ];
     }
-    // Jika ada data item pengeluaran, tambahkan ke dalam array items
-    if (!empty($row['nama_pengeluaran'])) {
+
+    // Tambahkan item pengeluaran jika ada
+    if ($row['item_id']) {
+        $namaPengeluaran = $row['use_kategori'] && is_numeric($row['nama_pengeluaran'])
+            ? $row['kategori_judul']
+            : $row['nama_pengeluaran'];
+
         $combinedResults[$pengeluaranId]['items'][] = [
-            'nama_pengeluaran' => $row['nama_pengeluaran'],
-            'item_keterangan' => $row['item_keterangan'],
-            'jumlah_barang' => $row['jumlah_barang'],
-            'nilai_bayar' => $row['nilai_bayar']
+            'id' => $row['item_id'],
+            'nama_pengeluaran' => $namaPengeluaran,
+            'item' => $row['item'],
+            'satuan' => $row['satuan'],
+            'harga' => $row['harga'],
+            'nominal' => $row['nominal'],
+            'komite' => $row['komite'],
+            'bosda' => $row['bosda'],
+            'jumlah' => $row['jumlah']
+        ];
+    }
+
+    // Tambahkan bukti pengeluaran jika ada
+    if ($row['bukti_id']) {
+        $combinedResults[$pengeluaranId]['bukti_files'][] = [
+            'id' => $row['bukti_id'],
+            'file_path' => $row['file_path']
         ];
     }
 }
@@ -91,12 +118,97 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Create Record
     if ($action == 'create') {
+    //     try {
+    //         // Mulai transaksi
+    //         $db->beginTransaction();
+
+    //         // Data utama untuk tabel pengeluaran_dana
+    //         $tanggal_pengeluaran = $_POST['tanggal_pengeluaran'];
+    //         $sumber_dana = $_POST['sumber_dana'];
+    //         $pihak_terlibat = $_POST['pihak_terlibat'] ?? null;
+    //         $ket_pengeluaran = $_POST['ket_pengeluaran'] ?? null;
+    //         $jenis_bayar = $_POST['jenis_bayar'];
+
+    //         // Hitung total jumlah dari item
+    //         $total = 0;
+    //         foreach ($_POST['jumlah'] as $jumlah) {
+    //             $total += (float) $jumlah;
+    //         }
+
+    //         // Insert ke tabel pengeluaran_dana
+    //         $stmt = $db->prepare("INSERT INTO pengeluaran_dana (tanggal_pengeluaran, sumber_dana, pihak_terlibat, ket_pengeluaran, jenis_bayar, total, created_at, updated_at) VALUES (:tanggal_pengeluaran, :sumber_dana, :pihak_terlibat, :ket_pengeluaran, :jenis_bayar, :total, NOW(), NOW())");
+    //         $stmt->execute([
+    //             ':tanggal_pengeluaran' => $tanggal_pengeluaran,
+    //             ':sumber_dana' => $sumber_dana,
+    //             ':pihak_terlibat' => $pihak_terlibat,
+    //             ':ket_pengeluaran' => $ket_pengeluaran,
+    //             ':jenis_bayar' => $jenis_bayar,
+    //             ':total' => $total
+    //         ]);
+
+    //         $pengeluaran_dana_id = $db->lastInsertId();
+
+    //         // Insert ke tabel pengeluaran_dana_item
+    //         foreach ($_POST['nama_pengeluaran'] as $index => $nama_pengeluaran) {
+    //             $use_kategori = isset($_POST['use_kategori'][$index]) && $_POST['use_kategori'][$index] === '1' ? 1 : 0;
+    //             $item = (int) $_POST['item'][$index];
+    //             $satuan = $_POST['satuan'][$index];
+    //             $harga = (float) $_POST['harga'][$index];
+    //             $nominal = (float) $_POST['nominal'][$index];
+    //             $komite = (float) $_POST['komite'][$index];
+    //             $bosda = (float) $_POST['bosda'][$index];
+    //             $jumlah = (float) $_POST['jumlah'][$index];
+
+    //             $stmt = $db->prepare("INSERT INTO pengeluaran_dana_item (pengeluaran_dana_id, use_kategori, nama_pengeluaran, item, satuan, harga, nominal, komite, bosda, jumlah, created_at, updated_at) VALUES (:pengeluaran_dana_id, :use_kategori, :nama_pengeluaran, :item, :satuan, :harga, :nominal, :komite, :bosda, :jumlah, NOW(), NOW())");
+    //             $stmt->execute([
+    //                 ':pengeluaran_dana_id' => $pengeluaran_dana_id,
+    //                 ':use_kategori' => $use_kategori,
+    //                 ':nama_pengeluaran' => $nama_pengeluaran,
+    //                 ':item' => $item,
+    //                 ':satuan' => $satuan,
+    //                 ':harga' => $harga,
+    //                 ':nominal' => $nominal,
+    //                 ':komite' => $komite,
+    //                 ':bosda' => $bosda,
+    //                 ':jumlah' => $jumlah
+    //             ]);
+    //         }
+
+    //         // Handle upload file untuk tabel pengeluaran_dana_bukti
+    //         if (!empty($_FILES['bukti_pengeluaran']['name'][0])) {
+    //             $uploadDir = 'assets/images/dana_pengeluaran/';
+
+    //             foreach ($_FILES['bukti_pengeluaran']['tmp_name'] as $index => $tmpName) {
+    //                 $fileName = date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . pathinfo($_FILES['bukti_pengeluaran']['name'][$index], PATHINFO_EXTENSION);
+    //                 $filePath = $uploadDir . $fileName;
+
+    //                 if (move_uploaded_file($tmpName, $filePath)) {
+    //                     $stmt = $db->prepare("INSERT INTO pengeluaran_dana_bukti (pengeluaran_id, file_path, created_at, updated_at) VALUES (:pengeluaran_id, :file_path, NOW(), NOW())");
+    //                     $stmt->execute([
+    //                         ':pengeluaran_id' => $pengeluaran_dana_id,
+    //                         ':file_path' => $filePath
+    //                     ]);
+    //                 }
+    //             }
+    //         }
+
+    //         // Commit transaksi
+    //         $db->commit();
+
+    //         echo json_encode(['status' => 'success', 'message' => 'Data berhasil disimpan']);
+    //     } catch (Exception $e) {
+    //         // Rollback transaksi jika terjadi kesalahan
+    //         $db->rollBack();
+    //         echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    //     }
+
+
         echo '<pre>';
         print_r($_POST);
         echo '</pre>';
-        exit;
 
     }
+
 }
 
 // Mengakhiri buffering
@@ -125,7 +237,10 @@ ob_end_flush();
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-6">
-                    <h3 class="mb-0">Pengeluaran Dana Sekolah</h3>
+                    <h3 class="mb-0">
+                        Pengeluaran Dana Sekolah
+                    </h3>
+                    <span class="text-danger">Maintance</span>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
@@ -160,10 +275,11 @@ ob_end_flush();
                                     <thead>
                                         <tr>
                                             <th>ID</th>
-                                            <th>Sumber Dana</th>
-                                            <th>Nama Pengeluaran</th>
-                                            <th>Jumlah</th>
                                             <th>Tanggal</th>
+                                            <th>Keterangan</th>
+                                            <th>Pihak Terlibat</th>
+                                            <th>Item Pengeluaran</th>
+                                            <th>Total</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
@@ -171,7 +287,13 @@ ob_end_flush();
                                         <?php foreach ($combinedResults as $row): ?>
                                             <tr>
                                                 <td><?= $row['pengeluaran_id'] ?? '-'; ?></td>
-                                                <td><?= $row['sumber_dana'] ?? '-'; ?></td>
+                                                <td>
+                                                    <div class="text-end">
+                                                        <?= date('d M Y', strtotime($row['tanggal_pengeluaran'])) ?? '-'; ?>
+                                                    </div>
+                                                </td>
+                                                <td><?= $row['ket_pengeluaran'] ?? '-'; ?></td>
+                                                <td><?= $row['pihak_terlibat'] ?? '-'; ?></td>
                                                 <td>
                                                     <ul class="list-circle m-0">
                                                         <?php foreach ($row['items'] as $item): ?>
@@ -181,16 +303,37 @@ ob_end_flush();
                                                 </td>
                                                 <td>
                                                     <div class="text-start">Rp.
-                                                        <?= number_format($row['total_jumlah'], 2) ?? '-'; ?>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="text-end">
-                                                        <?= date('d F Y', strtotime($row['tanggal_pengeluaran'])) ?? '-'; ?>
+                                                        <?= number_format($row['total'], 2) ?? '-'; ?>
                                                     </div>
                                                 </td>
                                                 <td class="text-center">
-                                                    <button>aa</button>
+                                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                                        data-bs-target="#SModal" data-bs-id="<?= $row['pengeluaran_id']; ?>"
+                                                        data-bs-tanggal_pengeluaran="<?= $row['tanggal_pengeluaran']; ?>"
+                                                        data-bs-pihak_terlibat="<?= $row['pihak_terlibat']; ?>"
+                                                        data-bs-sumber_dana="<?= $row['sumber_dana']; ?>"
+                                                        data-bs-total="<?= $row['total']; ?>"
+                                                        data-items='<?= json_encode($row['items']); ?>'>
+                                                        <i class="bi bi-search"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                                                        data-bs-target="#editModal" data-bs-id="<?= $row['pengeluaran_id']; ?>"
+                                                        data-bs-tanggal_pengeluaran="<?= $row['tanggal_pengeluaran']; ?>"
+                                                        data-bs-pihak_terlibat="<?= $row['pihak_terlibat']; ?>"
+                                                        data-bs-sumber_dana="<?= $row['sumber_dana']; ?>"
+                                                        data-bs-total="<?= $row['total']; ?>"
+                                                        data-items='<?= json_encode($row['items']); ?>'>
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal"
+                                                        data-bs-target="#deleteModal"
+                                                        data-bs-id="<?= $row['pengeluaran_id']; ?>"
+                                                        data-nama_pengeluaran="<?= $row['items'][0]['nama_pengeluaran'] ?? 'Tidak Ada'; ?>"
+                                                        data-items='<?= json_encode($row['items']); ?>'>
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                    </button>
+
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -210,7 +353,7 @@ ob_end_flush();
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="createModalLabel">Tambah Pengeluaran</h5>
+                        <h5 class="modal-title" id="createModalLabel">Tambah Pengeluaran Dana</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -239,10 +382,9 @@ ob_end_flush();
                                                     required>
                                             </div>
                                             <div class="form-group mb-3">
-                                                <label for="ket_pengeluaran" class="form-label">Keterangan
-                                                    (Opsional)</label>
+                                                <label for="ket_pengeluaran" class="form-label">Keterangan</label>
                                                 <input type="text" class="form-control" id="ket_pengeluaran"
-                                                    name="ket_pengeluaran" placeholder="">
+                                                    name="ket_pengeluaran" placeholder="" required>
                                             </div>
                                         </div>
                                     </div>
@@ -267,8 +409,14 @@ ob_end_flush();
                                     <thead>
                                         <tr>
                                             <th>No</th>
-                                            <th>Nama Pengeluaran</th>
-                                            <th>Keterangan</th>
+                                            <th>Pengeluaran</th>
+                                            <th>Item</th>
+                                            <th>Satuan</th>
+                                            <th>Harga</th>
+                                            <th>Nominal</th>
+                                            <th>Komite</th>
+                                            <th>Bosda</th>
+                                            <!-- <th>Keterangan</th> -->
                                             <th style="width:130px">Jumlah</th>
                                             <th style="width:20px"></th>
                                         </tr>
@@ -277,32 +425,77 @@ ob_end_flush();
                                         <tr class="row-item-bayar">
                                             <td>1</td>
                                             <td>
-                                                <div class="form-check form-switch mb-2">
-                                                    <input type="checkbox" class="form-check-input toggle-select"
-                                                        id="useselectkategori" />
-                                                    <label class="form-check-label" for="useselectkategori">Use
-                                                        Select Kategori</label>
+                                                <div class="form-group form-kategori">
+                                                    <!-- Switch Checkbox -->
+                                                    <div class="form-check form-switch mb-2">
+                                                        <input type="checkbox" class="form-check-input toggle-select"
+                                                            id="useselectkategori1" name="use_kategori[]">
+                                                        <label class="form-check-label" for="useselectkategori1">Use
+                                                            Kategori</label>
+                                                    </div>
+
+                                                    <!-- Input Text -->
+                                                    <div class="input-container">
+                                                        <input type="text" class="form-control nama-pengeluaran-input"
+                                                            name="nama_pengeluaran[]" placeholder="Nama Pengeluaran"
+                                                            required>
+                                                    </div>
+
+                                                    <!-- Select Dropdown -->
+                                                    <div class="select-container" style="display: none;">
+                                                        <select class="form-select detail-kategori-select"
+                                                            name="nama_pengeluaran[]">
+                                                            <option selected disabled value="">Pilih pengeluaran
+                                                            </option>
+                                                            <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
+                                                                <option value="<?php echo $dkp['id']; ?>">
+                                                                    <?php echo $dkp['judul']; ?>
+                                                                </option>
+                                                            <?php endforeach; ?>
+                                                        </select>
+                                                    </div>
                                                 </div>
-                                                <input type="text" class="form-control nama-pengeluaran-input"
-                                                    name="nama_pengeluaran[]" placeholder="Nama Pengeluaran" required>
-                                                <select class="form-select detail-kategori-select" name="kategori_id[]"
-                                                    style="display: none;" disabled>
-                                                    <option selected disabled value="">Pilih pengeluaran</option>
-                                                    <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
-                                                        <option value="<?php echo $dkp['id']; ?>">
-                                                            <?php echo $dkp['judul']; ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control item" name="item[]"
+                                                    placeholder="Item" min="1" required>
+                                            </td>
+                                            <td>
+                                                <select class="form-select mb-3" name="satuan[]" required>
+                                                    <option selected disabled value="">Pilih</option>
+                                                    <option value="rim">Rim</option>
+                                                    <option value="lembar">Lembar</option>
+                                                    <option value="soal">Soal</option>
+                                                    <option value="ruang">Ruang</option>
+                                                    <option value="kali">Kali</option>
+                                                    <option value="pack">Pack</option>
+                                                    <option value="dus">Dus</option>
+                                                    <option value="box">Box</option>
+                                                    <option value="buah">Buah</option>
+                                                    <option value="bendel">Bendel</option>
+                                                    <option value="siswa">Siswa</option>
+                                                    <option value="orang">orang</option>
                                                 </select>
                                             </td>
-
                                             <td>
-                                                <textarea class="form-control" name="keterangan[]"
-                                                    placeholder="Keterangan"></textarea>
+                                                <input type="number" class="form-control harga" name="harga[]"
+                                                    placeholder="harga" min="0" required>
                                             </td>
                                             <td>
-                                                <input type="number" class="form-control jumlah" name="jumlah_barang[]"
-                                                    placeholder="Jumlah" required>
+                                                <input type="number" class="form-control nominal" name="nominal[]"
+                                                    placeholder="Rp 0.00" min="0" disabled>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control komite" name="komite[]"
+                                                    placeholder="Komite" min="0" required>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control bos" name="bosda[]"
+                                                    placeholder="Bosda" min="0" required>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control jumlah" name="jumlah[]"
+                                                    placeholder="0.00" min="0" disabled>
                                             </td>
                                             <td>
                                                 <button type="button" class="btn btn-outline-success add-row">
@@ -365,17 +558,15 @@ ob_end_flush();
         const totalAmountDisplay = document.getElementById('total-item-nilai-bayar');
         const previewContainer = document.getElementById('image-preview-container');
         const fileInput = document.getElementById('bukti_pengeluaran');
-        let selectedFiles = [];
 
-        // Event listener untuk preview gambar
-        fileInput.addEventListener('change', previewSelectedImages);
+        // Image preview with delete functionality
+        fileInput.addEventListener('change', handleImagePreview);
 
-        // Handle preview gambar
-        function previewSelectedImages(event) {
-            clearImagePreviews();
-            selectedFiles = Array.from(event.target.files);
+        function handleImagePreview(event) {
+            const files = Array.from(event.target.files);
+            previewContainer.innerHTML = ''; // Clear previous previews
 
-            selectedFiles.forEach((file, index) => {
+            files.forEach((file, index) => {
                 if (file.type.startsWith('image/')) {
                     const reader = new FileReader();
                     reader.onload = (e) => createImagePreview(e.target.result, index);
@@ -384,134 +575,142 @@ ob_end_flush();
             });
         }
 
-        // Hapus preview gambar sebelumnya
-        function clearImagePreviews() {
-            previewContainer.innerHTML = '';
-        }
-
-        // Membuat elemen preview gambar
         function createImagePreview(src, index) {
-            const imageContainer = document.createElement('div');
-            imageContainer.classList.add('position-relative', 'd-inline-block');
+            const container = document.createElement('div');
+            container.className = 'position-relative d-inline-block';
 
-            const img = document.createElement('img');
-            img.src = src;
-            img.classList.add('img-thumbnail');
-            img.style = 'width: 100px; height: 100px; object-fit: cover;';
+            container.innerHTML = `
+                <img src="${src}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                <button class="btn btn-sm btn-danger position-absolute top-0 end-0" style="z-index: 1;">&times;</button>
+            `;
 
-            const deleteBtn = document.createElement('button');
-            deleteBtn.innerHTML = '&times;';
-            deleteBtn.classList.add('btn', 'btn-sm', 'btn-danger', 'position-absolute', 'top-0', 'end-0');
-            deleteBtn.style.zIndex = '1';
-            deleteBtn.addEventListener('click', () => removeImagePreview(index));
-
-            imageContainer.append(img, deleteBtn);
-            previewContainer.appendChild(imageContainer);
+            container.querySelector('button').addEventListener('click', () => removeImagePreview(index));
+            previewContainer.appendChild(container);
         }
 
-        // Menghapus gambar dari preview dan memperbarui input file
         function removeImagePreview(index) {
-            selectedFiles.splice(index, 1);
+            const files = Array.from(fileInput.files);
+            files.splice(index, 1);
+
             const dataTransfer = new DataTransfer();
-            selectedFiles.forEach(file => dataTransfer.items.add(file));
+            files.forEach(file => dataTransfer.items.add(file));
             fileInput.files = dataTransfer.files;
-            previewSelectedImages({
-                target: {
-                    files: fileInput.files
-                }
-            });
+
+            handleImagePreview({ target: { files: fileInput.files } });
         }
 
-        // Tambah baris baru ke tabel
+        // Add new row to the table
         document.querySelector('.add-row').addEventListener('click', () => {
-            addNewTableRow();
-            updateTotalAmount();
+            addNewRow();
+            updateTotal();
         });
 
-        // Membuat baris baru
-        function addNewTableRow() {
+        function addNewRow() {
+            const rowCount = tableBody.rows.length + 1;
             const newRow = document.createElement('tr');
-            newRow.classList.add('row-item-bayar');
+            newRow.className = 'row-item-bayar';
+
             newRow.innerHTML = `
-            <td></td>
-            <td>
-                <div class="form-check form-switch mb-2">
-                    <input type="checkbox" class="form-check-input toggle-select" />
-                    <label class="form-check-label">Use Select Kategori</label>
-                </div>
-                <input type="text" class="form-control nama-pengeluaran-input" name="nama_pengeluaran[]" placeholder="Nama Pengeluaran" required>
-                <select class="form-select detail-kategori-select" name="kategori_id[]" style="display: none;">
-                    <option selected disabled value="">Pilih pengeluaran</option>
-                    <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
-                                                    <option value="<?php echo $dkp['id']; ?>"><?php echo $dkp['judul']; ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </td>
-            <td><textarea class="form-control" name="keterangan[]" placeholder="Keterangan"></textarea></td>
-            <td><input type="number" class="form-control jumlah" name="jumlah_barang[]" placeholder="Jumlah" required></td>
-            <td><button type="button" class="btn btn-outline-danger remove-row"><i class="bi bi-dash-lg"></i></button></td>
-        `;
+                <td>${rowCount}</td>
+                <td>
+                    <div class="form-group form-kategori">
+                        <!-- Switch Checkbox -->
+                        <div class="form-check form-switch mb-2">
+                            <input type="checkbox" class="form-check-input toggle-select"
+                                id="useselectkategori${rowCount}" name="use_kategori[]">
+                            <label class="form-check-label" for="useselectkategori${rowCount}">Use
+                                Kategori</label>
+                        </div>
+
+                        <!-- Input Text -->
+                        <div class="input-container">
+                            <input type="text" class="form-control nama-pengeluaran-input"
+                                name="nama_pengeluaran[]" placeholder="Nama Pengeluaran"
+                                required>
+                        </div>
+
+                        <!-- Select Dropdown -->
+                        <div class="select-container" style="display: none;">
+                            <select class="form-select detail-kategori-select"
+                                name="nama_pengeluaran[]">
+                                <option selected disabled value="">Pilih pengeluaran
+                                </option>
+                                <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
+                                    <option value="<?php echo $dkp['id']; ?>">
+                                        <?php echo $dkp['judul']; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                </td>
+                <td><input type="number" class="form-control item" name="item[]" placeholder="Item" min="1" required></td>
+                <td>
+                    <select class="form-select mb-3" name="satuan[]" required>
+                        <option selected disabled value="">Pilih</option>
+                        <option value="rim">Rim</option>
+                        <option value="lembar">Lembar</option>
+                        <option value="soal">Soal</option>
+                        <option value="ruang">Ruang</option>
+                        <option value="kali">Kali</option>
+                        <option value="pack">Pack</option>
+                        <option value="dus">Dus</option>
+                        <option value="box">Box</option>
+                        <option value="buah">Buah</option>
+                        <option value="bendel">Bendel</option>
+                        <option value="siswa">Siswa</option>
+                        <option value="orang">orang</option>
+                    </select>
+                </td>
+                <td><input type="number" class="form-control harga" name="harga[]" placeholder="Harga" min="0" required></td>
+                <td><input type="number" class="form-control nominal" name="nominal[]" placeholder="Rp 0.00" min="0" disabled></td>
+                <td><input type="number" class="form-control komite" name="komite[]" placeholder="Komite" min="0" required></td>
+                <td><input type="number" class="form-control bos" name="bosda[]" placeholder="Bosda" min="0" required></td>
+                <td><input type="number" class="form-control jumlah" name="jumlah[]" placeholder="0.00" min="0" disabled></td>
+                <td><button type="button" class="btn btn-outline-danger remove-row"><i class="bi bi-dash-lg"></i></button></td>
+            `;
+
             tableBody.appendChild(newRow);
             updateRowNumbers();
         }
 
-        // Event delegation untuk aksi pada tabel
-        // tableBody.addEventListener('click', (e) => {
-        //     if (e.target.closest('.remove-row')) {
-        //         e.target.closest('.row-item-bayar').remove();
-        //         updateRowNumbers();
-        //         updateTotalAmount();
-        //     } else if (e.target.classList.contains('toggle-select')) {
-        //         toggleSelectInput(e.target);
-        //     }
-        // });
+        tableBody.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-row')) {
+                e.target.closest('.row-item-bayar').remove();
+                updateRowNumbers();
+                updateTotal();
+            } 
+            // else if (e.target.classList.contains('toggle-select')) {
+            //     const row = e.target.closest('.row-item-bayar');
+            //     toggleInputDisplay(e.target.checked, row);
+            // }
+        });
+        tableBody.addEventListener('input', function (e) {
+            if (e.target.classList.contains('jumlah')) {
+                updateTotal();
+            }
+        });
 
         tableBody.addEventListener('input', (e) => {
-            if (e.target.classList.contains('jumlah')) {
-                updateTotalAmount();
-            }
+            if (e.target.matches('.item, .harga')) calculateNominal(e.target.closest('tr'));
+            if (e.target.matches('.komite, .bos')) calculateJumlah(e.target.closest('tr'));
         });
 
-        // Update total jumlah bayar
-        function updateTotalAmount() {
-            const total = Array.from(document.querySelectorAll('.jumlah'))
-                .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
-            totalAmountDisplay.textContent = total.toLocaleString();
+        function calculateNominal(row) {
+            const item = parseFloat(row.querySelector('.item').value) || 0;
+            const harga = parseFloat(row.querySelector('.harga').value) || 0;
+            const nominal = item * harga;
+            row.querySelector('.nominal').value = nominal.toFixed(2);
+            updateTotal();
         }
 
-
-        function toggleSelectDisplay(isChecked, row) {
-            const textInput = row.querySelector('.nama-pengeluaran-input');
-            const selectInput = row.querySelector('.detail-kategori-select');
-
-            if (isChecked) {
-                textInput.setAttribute('disabled', 'disabled');
-                textInput.removeAttribute('required');
-                textInput.style.display = 'none';
-
-                selectInput.removeAttribute('disabled');
-                selectInput.setAttribute('required', 'required');
-                selectInput.style.display = 'block';
-            } else {
-                selectInput.setAttribute('disabled', 'disabled');
-                selectInput.removeAttribute('required');
-                selectInput.style.display = 'none';
-
-                textInput.removeAttribute('disabled');
-                textInput.setAttribute('required', 'required');
-                textInput.style.display = 'block';
-            }
+        function calculateJumlah(row) {
+            const komite = parseFloat(row.querySelector('.komite').value) || 0;
+            const bos = parseFloat(row.querySelector('.bos').value) || 0;
+            const jumlah = komite + bos;
+            row.querySelector('.jumlah').value = jumlah.toFixed(2);
+            updateTotal();
         }
-
-        tableBody.addEventListener('click', function (e) {
-            if (e.target.classList.contains('toggle-select')) {
-                const row = e.target.closest('tr');
-                toggleSelectDisplay(e.target.checked, row);
-            } else if (e.target.closest('.remove-row')) {
-                e.target.closest('tr').remove();
-                updateRowNumbers();
-            }
-        });
 
         function updateRowNumbers() {
             document.querySelectorAll('.row-item-bayar').forEach((row, index) => {
@@ -519,27 +718,83 @@ ob_end_flush();
             });
         }
 
-        // Tambahkan event listener pada tombol tambah baris
-        document.querySelector('.add-row').addEventListener('click', addNewTableRow);
+        function updateTotal() {
+            const total = Array.from(document.querySelectorAll('.jumlah'))
+                .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
+            totalAmountDisplay.textContent = total.toLocaleString('id-ID');
+        }
+
+
+
+        const checkbox = document.getElementById('useselectkategori');
+        if (checkbox) {
+            const formGroup = checkbox.closest('.form-kategori');
+            const textInput = formGroup.querySelector('.nama-pengeluaran-input');
+            const textInputContainer = formGroup.querySelector('.input-container');
+            const selectInput = formGroup.querySelector('.detail-kategori-select');
+            const selectInputContainer = formGroup.querySelector('.select-container');
+
+            // Fungsi untuk mengatur tampilan dan status elemen
+            function toggleInputDisplay(isChecked) {
+                if (isChecked) {
+                    // Menampilkan select dropdown dan menyembunyikan input teks
+                    textInputContainer.style.display = 'none';
+                    selectInputContainer.style.display = 'block';
+
+                    // Nonaktifkan input teks dan aktifkan dropdown
+                    textInput.disabled = true;
+                    selectInput.disabled = false;
+
+                    // Validasi
+                    textInput.required = false;
+                    selectInput.required = true;
+                } else {
+                    // Menampilkan input teks dan menyembunyikan select dropdown
+                    textInputContainer.style.display = 'block';
+                    selectInputContainer.style.display = 'none';
+
+                    // Nonaktifkan dropdown dan aktifkan input teks
+                    selectInput.disabled = true;
+                    textInput.disabled = false;
+
+                    // Validasi
+                    selectInput.required = false;
+                    textInput.required = true;
+                }
+            }
+
+            // Event listener untuk checkbox
+            checkbox.addEventListener('change', function () {
+                toggleInputDisplay(checkbox.checked);
+            });
+
+            // Kondisi awal
+            toggleInputDisplay(checkbox.checked);
+        }
+
+
     });
+
+
+
+    // untuk mengaktifkan form nominal dan jumlah
+    document.querySelector('form').addEventListener('submit', (e) => {
+        // Mengaktifkan input yang dinonaktifkan
+        const nominalInputs = document.querySelectorAll('.nominal');
+        const jumlahInputs = document.querySelectorAll('.jumlah');
+
+        nominalInputs.forEach(input => {
+            input.disabled = false;
+        });
+
+        jumlahInputs.forEach(input => {
+            input.disabled = false;
+        });
+    });
+
 </script>
 
 <!-- DataTables CSS/JS Dependencies -->
 <link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
-
-
-<!-- 
-optimalkan kembali code dengan kriteria berikut:
-- pada "Nama Pengeluaran" saya ingin menggunakan kondisi jika "Use Select Kategori" isChecked maka dapat menggunakan
-select dan ini memanggil data dari tabel detail_kategori_pengeluaran
-- pada "upload bukti pengeluaran" dapat masuk kedalam tabel "bukti_pengeluaran_dana" dan saya ingin agar nama file
-    diubah menjadi format datetime dan unicode contoh: "202411030101-kcAwH8.png"
-        $buktiTable = $this->table('bukti_pengeluaran_dana');
-        $buktiTable->addColumn('pengeluaran_id', 'integer', ['null' => false])
-        ->addColumn('file_path', 'string', ['null' => false])
-        ->addTimestamps()
-        ->create(); 
-- 
--->

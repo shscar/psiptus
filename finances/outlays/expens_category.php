@@ -215,9 +215,9 @@ try {
                     <div class="card mb-4">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h3 class="card-title">Kategori </h3>
-                            <button class="btn btn-secondary btn-sm ms-auto" id="add-menu" data-bs-toggle="modal"
+                            <button class="btn btn-warning btn-sm ms-auto" id="add-menu" data-bs-toggle="modal"
                                 data-bs-target="#addCategoryModal">
-                                <i class="bi bi-plus pe-1"></i> Tambah Kategori
+                                <i class="bi bi-plus-lg pe-1"></i>
                             </button>
                         </div>
                         <div class="card-body">
