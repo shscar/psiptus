@@ -5,82 +5,127 @@ include __DIR__ . '/../../layouts/master.php';
 $db = Database::getInstance()->getConnection();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        // Mulai transaksi
-        $db->beginTransaction();
+    $action = $_POST['action'];
 
-        // Ambil data dari form
-        $siswa_id = $_POST['student_id'];
-        $tanggal_bayar = $_POST['tanggal_bayar'];
-        $jenis_bayar = $_POST['jenis_bayar'];
-        $no_invoice = 'INV-' . time(); // Generate No. Invoice
-        $total_bayar = 0;
+    // Create Record
+    if ($action == 'create') {
+        try {
+            // Mulai transaksi
+            $db->beginTransaction();
 
-        // Hitung total bayar dari jumlah_bayar[]
-        if (isset($_POST['jumlah_bayar']) && is_array($_POST['jumlah_bayar'])) {
-            foreach ($_POST['jumlah_bayar'] as $jumlah) {
-                $total_bayar += floatval($jumlah);
-            }
-        }
+            // Ambil data dari form
+            $siswa_id = $_POST['student_id'];
+            $tanggal_bayar = $_POST['tanggal_bayar'];
+            $jenis_bayar = $_POST['jenis_bayar'];
+            $no_invoice = 'INV-' . time(); // Generate No. Invoice
+            $total_bayar = 0;
 
-        // Masukkan data ke tabel riwayat_transaksi_siswa
-        $stmt = $db->prepare("INSERT INTO riwayat_transaksi_siswa 
-            (siswa_id, no_invoice, tanggal_bayar, jenis_bayar, total_bayar) 
-            VALUES (:siswa_id, :no_invoice, :tanggal_bayar, :jenis_bayar, :total_bayar)");
-        $stmt->execute([
-            ':siswa_id' => $siswa_id,
-            ':no_invoice' => $no_invoice,
-            ':tanggal_bayar' => $tanggal_bayar,
-            ':jenis_bayar' => $jenis_bayar,
-            ':total_bayar' => $total_bayar
-        ]);
-
-        // Dapatkan ID dari transaksi yang baru dimasukkan
-        $riwayat_transaksi_id = $db->lastInsertId();
-
-        // Masukkan data ke tabel riwayat_transaksi_siswa_detail_tarifspp
-        if (isset($_POST['item_type']) && is_array($_POST['item_type'])) {
-            foreach ($_POST['item_type'] as $key => $type) {
-                $item_id = $_POST['item_id'][$key];
-                $jumlah_bayar = floatval($_POST['jumlah_bayar'][$key]);
-
-                if ($type === 'tarif_spp') {
-                    $stmt = $db->prepare("INSERT INTO riwayat_transaksi_siswa_detail_tarifspp 
-                        (riwayat_transaksi_id, tarif_spp_id, jumlah_bayar) 
-                        VALUES (:riwayat_transaksi_id, :tarif_spp_id, :jumlah_bayar)");
-                    $stmt->execute([
-                        ':riwayat_transaksi_id' => $riwayat_transaksi_id,
-                        ':tarif_spp_id' => $item_id,
-                        ':jumlah_bayar' => $jumlah_bayar
-                    ]);
-                }
-
-                // Masukkan data ke tabel riwayat_transaksi_siswa_detail_pembayaranlain
-                if ($type === 'pembayaran_lainnya') {
-                    $stmt = $db->prepare("INSERT INTO riwayat_transaksi_siswa_detail_pembayaranlain 
-                        (riwayat_transaksi_id, pembayaran_lainnya_id, jumlah_bayar) 
-                        VALUES (:riwayat_transaksi_id, :pembayaran_lain_id, :jumlah_bayar)");
-                    $stmt->execute([
-                        ':riwayat_transaksi_id' => $riwayat_transaksi_id,
-                        ':pembayaran_lain_id' => $item_id,
-                        ':jumlah_bayar' => $jumlah_bayar
-                    ]);
+            // Hitung total bayar dari jumlah_bayar[]
+            if (isset($_POST['jumlah_bayar']) && is_array($_POST['jumlah_bayar'])) {
+                foreach ($_POST['jumlah_bayar'] as $jumlah) {
+                    $total_bayar += floatval($jumlah);
                 }
             }
+
+            // Masukkan data ke tabel riwayat_transaksi_siswa
+            $stmt = $db->prepare("INSERT INTO riwayat_transaksi_siswa 
+                (siswa_id, no_invoice, tanggal_bayar, jenis_bayar, total_bayar) 
+                VALUES (:siswa_id, :no_invoice, :tanggal_bayar, :jenis_bayar, :total_bayar)");
+            $stmt->execute([
+                ':siswa_id' => $siswa_id,
+                ':no_invoice' => $no_invoice,
+                ':tanggal_bayar' => $tanggal_bayar,
+                ':jenis_bayar' => $jenis_bayar,
+                ':total_bayar' => $total_bayar
+            ]);
+
+            // Dapatkan ID dari transaksi yang baru dimasukkan
+            $riwayat_transaksi_id = $db->lastInsertId();
+
+            // Masukkan data ke tabel riwayat_transaksi_siswa_detail_tarifspp
+            if (isset($_POST['item_type']) && is_array($_POST['item_type'])) {
+                foreach ($_POST['item_type'] as $key => $type) {
+                    $item_id = $_POST['item_id'][$key];
+                    $jumlah_bayar = floatval($_POST['jumlah_bayar'][$key]);
+
+                    if ($type === 'tarif_spp') {
+                        $stmt = $db->prepare("INSERT INTO riwayat_transaksi_siswa_detail_tarifspp 
+                            (riwayat_transaksi_id, tarif_spp_id, jumlah_bayar) 
+                            VALUES (:riwayat_transaksi_id, :tarif_spp_id, :jumlah_bayar)");
+                        $stmt->execute([
+                            ':riwayat_transaksi_id' => $riwayat_transaksi_id,
+                            ':tarif_spp_id' => $item_id,
+                            ':jumlah_bayar' => $jumlah_bayar
+                        ]);
+                    }
+
+                    // Masukkan data ke tabel riwayat_transaksi_siswa_detail_pembayaranlain
+                    if ($type === 'pembayaran_lainnya') {
+                        $stmt = $db->prepare("INSERT INTO riwayat_transaksi_siswa_detail_pembayaranlain 
+                            (riwayat_transaksi_id, pembayaran_lainnya_id, jumlah_bayar) 
+                            VALUES (:riwayat_transaksi_id, :pembayaran_lain_id, :jumlah_bayar)");
+                        $stmt->execute([
+                            ':riwayat_transaksi_id' => $riwayat_transaksi_id,
+                            ':pembayaran_lain_id' => $item_id,
+                            ':jumlah_bayar' => $jumlah_bayar
+                        ]);
+                    }
+                }
+            }
+
+            // Commit transaksi
+            $db->commit();
+
+            // Redirect atau tampilkan pesan sukses
+            echo "<script>
+                alert('Data telah berhasil masuk.');
+                window.location.href = '/pendapatan/pembayaran-siswa';
+            </script>";
+        } catch (Exception $e) {
+            // Rollback transaksi jika ada kesalahan
+            $db->rollBack();
+            echo "Terjadi kesalahan: " . $e->getMessage();
         }
+    }
 
-        // Commit transaksi
-        $db->commit();
+    // Delete transaction data
+    if ($action == 'delete') {
+        $riwayatId = $_POST['id'] ?? null;
 
-        // Redirect atau tampilkan pesan sukses
-        echo "<script>
-            alert('Data telah berhasil masuk.');
-            window.location.href = '/pendapatan/pembayaran-siswa';
-        </script>";
-    } catch (Exception $e) {
-        // Rollback transaksi jika ada kesalahan
-        $db->rollBack();
-        echo "Terjadi kesalahan: " . $e->getMessage();
+        if (!empty($riwayatId)) {
+            try {
+                // Start a transaction
+                $db->beginTransaction();
+
+                // Delete associated detail records
+                $deleteTarifStmt = $db->prepare("DELETE FROM riwayat_transaksi_siswa_detail_tarifspp WHERE riwayat_transaksi_id = :id");
+                $deleteTarifStmt->execute([':id' => $riwayatId]);
+
+                $deletePembayaranStmt = $db->prepare("DELETE FROM riwayat_transaksi_siswa_detail_pembayaranlain WHERE riwayat_transaksi_id = :id");
+                $deletePembayaranStmt->execute([':id' => $riwayatId]);
+
+                // Delete the main transaction record
+                $deleteMainStmt = $db->prepare("DELETE FROM riwayat_transaksi_siswa WHERE id = :id");
+                $deleteMainStmt->execute([':id' => $riwayatId]);
+
+                if ($deleteMainStmt->rowCount() > 0) {
+                    $db->commit(); // Commit the transaction if successful
+                    echo "<script>
+                        alert('Data berhasil dihapus.');
+                        window.location.href = '/pendapatan/pembayaran-siswa';
+                    </script>";
+                    exit();
+                } else {
+                    $db->rollBack(); // Rollback if no rows were affected
+                    echo "<script>alert('Data tidak ditemukan.');</script>";
+                }
+            } catch (Exception $e) {
+                $db->rollBack(); // Rollback in case of error
+                echo "<script>alert('Kesalahan server: " . $e->getMessage() . "');</script>";
+            }
+        } else {
+            echo "<script>alert('Parameter tidak ditemukan.');</script>";
+        }
     }
 }
 
@@ -88,10 +133,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $stmt = $db->query("SELECT id, nis, nama_lengkap, kelas_id FROM siswa WHERE status = 'Aktif'");
 $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Query to fetch data
-$query = "
+
+$stmt = $db->prepare("
     SELECT 
         rts.id AS riwayat_id,
+        rtt.id AS detail_tarifspp_id,
+        rtp.id AS detail_pembayaranlain_id,
         s.nis,
         s.nama_lengkap,
         k.nama_kelas,
@@ -99,20 +146,22 @@ $query = "
         rts.jenis_bayar,
         rts.total_bayar,
         ts.nama_tarif AS tarif_spp,
-        spl.nama_pembayaran AS pembayaran_lainnya
+        rtt.tarif_spp_id,
+        spl.nama_pembayaran AS pembayaran_lainnya,
+        rtp.pembayaran_lainnya_id
     FROM riwayat_transaksi_siswa rts
     LEFT JOIN siswa s ON rts.siswa_id = s.id
     LEFT JOIN kelas k ON s.kelas_id = k.id
-    LEFT JOIN riwayat_transaksi_siswa_detail_tarifspp drtst ON rts.id = drtst.riwayat_transaksi_id
-    LEFT JOIN tarif_spp ts ON drtst.tarif_spp_id = ts.id
-    LEFT JOIN riwayat_transaksi_siswa_detail_pembayaranlain drtspl ON rts.id = drtspl.riwayat_transaksi_id
-    LEFT JOIN siswa_pembayaran_lainnya spl ON drtspl.pembayaran_lainnya_id = spl.id
-    ORDER BY rts.tanggal_bayar DESC
-";
-$stmt = $db->prepare($query);
+    LEFT JOIN riwayat_transaksi_siswa_detail_tarifspp rtt ON rts.id = rtt.riwayat_transaksi_id
+    LEFT JOIN tarif_spp ts ON rtt.tarif_spp_id = ts.id
+    LEFT JOIN riwayat_transaksi_siswa_detail_pembayaranlain rtp ON rts.id = rtp.riwayat_transaksi_id
+    LEFT JOIN siswa_pembayaran_lainnya spl ON rtp.pembayaran_lainnya_id = spl.id
+    ORDER BY rts.id DESC
+");
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-// Combine results based on `riwayat_id`
+
+// Mengelompokkan data berdasarkan `riwayat_id`
 $combinedResults = [];
 foreach ($results as $row) {
     $riwayatId = $row['riwayat_id'];
@@ -125,45 +174,56 @@ foreach ($results as $row) {
             'tanggal_bayar' => $row['tanggal_bayar'],
             'jenis_bayar' => $row['jenis_bayar'],
             'total_bayar' => $row['total_bayar'],
-            'items' => []
+            'detail_tarifspp_ids' => [],
+            'detail_pembayaranlain_ids' => [],
+            'items' => [],
         ];
     }
-    // Append jenis pembayaran items
-    if (!empty($row['tarif_spp'])) {
+    if ($row['detail_tarifspp_id']) {
         $combinedResults[$riwayatId]['items'][] = [
-            'jenis_bayar' => 'TS: ' . $row['tarif_spp']
+            'id' => $row['detail_tarifspp_id'],
+            'jenis_bayar' => 'TS: ' . $row['tarif_spp'],
         ];
     }
-    if (!empty($row['pembayaran_lainnya'])) {
+    if ($row['detail_pembayaranlain_id']) {
         $combinedResults[$riwayatId]['items'][] = [
-            'jenis_bayar' => 'PL: ' . $row['pembayaran_lainnya']
+            'id' => $row['detail_pembayaranlain_id'],
+            'jenis_bayar' => 'PL: ' . $row['pembayaran_lainnya'],
         ];
     }
-
 }
-// Transform combined results into a numeric array
-$combinedResults = array_values($combinedResults);
 
 
 // Mengakhiri output buffering
 ob_end_flush();
 ?>
+<script>
+    const combinedResults = <?php echo json_encode($combinedResults); ?>;
+</script>
 
-<!DOCTYPE html>
-<html lang="en">
+<style>
+    td {
+        padding: 20px;
+        background: #eaeaea;
+        max-width: 400px;
+        margin: 50px auto;
+    }
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jenis Pembayaran</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    .list-circle {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+</style>
 
-    <!-- DataTables CSS/JS Dependencies -->
-    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
-</head>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+<!-- DataTables CSS/JS Dependencies -->
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
 
 <body>
     <!--begin::App Main-->
@@ -242,8 +302,38 @@ ob_end_flush();
                                                     <?= number_format($row['total_bayar'], 2) ?? '-'; ?>
                                                 </div>
                                             </td>
-                                            <td>
-                                                <button>cek</button>
+                                            <td class="text-center">
+                                                <div class="dropdown">
+                                                    <button class="btn btn-link p-0" type="button"
+                                                        id="settings-<?= $kat['id'] ?>" data-bs-toggle="dropdown"
+                                                        aria-expanded="false">
+                                                        <i class="bi bi-three-dots-vertical"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end"
+                                                        aria-labelledby="settings-<?= $kat['id'] ?>">
+                                                        <li>
+                                                            <button class="dropdown-item" data-bs-toggle="modal">
+                                                                <i class="bi bi-list-stars me-2"></i>
+                                                                Detail
+                                                            </button>
+                                                        </li>
+                                                        <li>
+                                                            <button class="dropdown-item" data-bs-toggle="modal">
+                                                                <i class="bi bi-pencil me-2"></i>
+                                                                Edit
+                                                            </button>
+                                                        </li>
+                                                        <li>
+                                                            <button class="dropdown-item" data-bs-toggle="modal"
+                                                                data-bs-target="#deleteModal"
+                                                                data-bs-id="<?= $row['riwayat_id']; ?>"
+                                                                data-bs-tanggal="<?= $row['tanggal_bayar']; ?>">
+                                                                <i class="bi bi-trash me-2"></i>
+                                                                Delete
+                                                            </button>
+                                                        </li>
+                                                    </ul>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -268,6 +358,7 @@ ob_end_flush();
                             </div>
                             <div class="modal-body">
                                 <form id="addDataForm" method="POST">
+                                    <input type="hidden" name="action" value="create">
                                     <div class="mb-3 row">
                                         <label for="student_name" class="form-label col-sm-3">Nama Siswa</label>
                                         <div class="col-sm-9">
@@ -401,13 +492,43 @@ ob_end_flush();
                         </div>
                     </div>
                 </div>
+
+                <!-- /.modal-dialog delete -->
+                <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteModalLabel">Hapus Pembayaran</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dikembalikan.
+                                </p>
+                                <p>Daftar:</p>
+                                <ul class="class-list"></ul>
+                            </div>
+                            <div class="modal-footer">
+                                <form id="deleteForm" method="POST">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" id="delete-id" name="id">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-danger">Hapus</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </main>
 
     <script>
         $(document).ready(function () {
-            // $('#DataPembayaranSiswa').DataTable();
+            $('#DataPembayaranSiswa').DataTable();
 
             // Initialize Select2 with dropdownParent option
             $('#student_name').select2({
@@ -472,15 +593,15 @@ ob_end_flush();
                                 ]).draw();
                             });
 
-                            // // Fungsi untuk memformat mata uang
-                            // function formatCurrency(value) {
-                            //     return Number(value).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).replace('IDR', '').trim();
-                            // }
+                            // Fungsi untuk memformat mata uang
                             function formatCurrency(value) {
                                 if (value === undefined || value === null) {
                                     return '-';
                                 }
-                                return Number(value).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                                return Number(value).toLocaleString('id-ID', {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                });
                             }
                         }
                     });
@@ -496,7 +617,6 @@ ob_end_flush();
             $('#jenisPembayaranModal').on('show.bs.modal', function () {
                 $('#addDataModal').modal('hide');
             });
-
 
             // Handle "Pilih" button click in the jenisPembayaranTable
             $('#jenisPembayaranTable').on('click', '.pilihBtn', function () {
@@ -563,6 +683,49 @@ ob_end_flush();
                     totalBayar += value;
                 });
                 $('#total-bayar').text(totalBayar.toFixed(2));
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const deleteModal = document.getElementById('deleteModal');
+
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const id = button.getAttribute('data-bs-id');
+                    const tanggalBayar = button.getAttribute('data-bs-tanggal');
+
+                    // Update the modal title
+                    const modalTitle = deleteModal.querySelector('.modal-title');
+                    modalTitle.textContent = `Hapus Data Tagihan: ${tanggalBayar}`;
+
+                    // Populate the form with the id
+                    const form = deleteModal.querySelector('#deleteForm');
+                    form.querySelector('#delete-id').value = id;
+
+                    // Get the list of payment items for the selected transaction
+                    const classListContainer = deleteModal.querySelector('.class-list');
+                    classListContainer.innerHTML = ''; // Clear previous content
+
+                    // Retrieve and display associated items
+                    const transaction = combinedResults[parseInt(id)];
+                    if (transaction && transaction.items.length > 0) {
+                        transaction.items.forEach(item => {
+                            const listItem = document.createElement('li');
+                            listItem.textContent = item.jenis_bayar;
+                            classListContainer.appendChild(listItem);
+                        });
+                    } else {
+                        const noItem = document.createElement('li');
+                        noItem.textContent = 'Tidak ada item terkait';
+                        classListContainer.appendChild(noItem);
+                    }
+
+                    // Debugging output
+                    // console.log(
+                    //     `ID: ${id}, Tanggal Bayar: ${tanggalBayar}, Item: ${transaction ? transaction.items.map(item => item.id).join(', ') : 'No items'}`
+                    // );
+                });
             }
         });
     </script>

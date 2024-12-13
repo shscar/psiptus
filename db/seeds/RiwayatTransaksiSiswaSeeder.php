@@ -34,7 +34,7 @@ class RiwayatTransaksiSiswaSeeder extends AbstractSeed
 
         // Data dasar untuk detail tarif spp
         $riwayatDetailTarif = [];
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= 2; $i++) {
             $riwayatDetailTarif[] = [
                 'riwayat_transaksi_id' => ($i % 3) + 1,
                 'tarif_spp_id' => $i,
@@ -48,7 +48,7 @@ class RiwayatTransaksiSiswaSeeder extends AbstractSeed
 
         // Data dasar untuk detail pembayaran lainnya
         $riwayatDetailPembayaranLain = [];
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= 2; $i++) {
             $riwayatDetailPembayaranLain[] = [
                 'riwayat_transaksi_id' => ($i % 3) + 1,
                 'pembayaran_lainnya_id' => $i,

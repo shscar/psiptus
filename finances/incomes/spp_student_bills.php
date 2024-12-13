@@ -394,31 +394,52 @@ ob_end_flush();
                                                         -- Tidak ada kelas --
                                                     <?php endif; ?>
                                                 </td>
-                                                <td class="text-center"><?= $tarif['status_aktif'] ? 'Aktif' : 'Tidak Aktif'; ?>
+                                                <td class="text-center">
+                                                    <?= $tarif['status_aktif'] ? 'Aktif' : 'Tidak Aktif'; ?>
                                                 </td>
                                                 <td class="text-center">
-                                                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                                                        data-bs-target="#editModal" data-id="<?= $tarif['tarif_spp_id']; ?>"
-                                                        data-nama_tarif="<?= $tarif['nama_tarif']; ?>"
-                                                        data-nominal="<?= $tarif['nominal']; ?>"
-                                                        data-tahun_ajaran_id="<?= $tarif['tahun_ajaran_id']; ?>"
-                                                        data-deskripsi="<?= $tarif['deskripsi']; ?>"
-                                                        data-status_aktif="<?= $tarif['status_aktif']; ?>"
-                                                        data-kelas='<?= json_encode($tarif['kelas']); ?>'>
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                        data-bs-target="#deleteModal"
-                                                        data-bs-id="<?= $tarif['tarif_spp_id']; ?>"
-                                                        data-nama_tarif="<?= $tarif['nama_tarif']; ?>">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                                        data-bs-target="#editkelasModal"
-                                                        data-bs-id="<?= $tarif['tarif_spp_id']; ?>"
-                                                        data-nama_tarif="<?= $tarif['nama_tarif']; ?>">
-                                                        <i class="bi bi-list-stars"></i>
-                                                    </button>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-link p-0" type="button"
+                                                            id="settings-<?= $kat['id'] ?>" data-bs-toggle="dropdown"
+                                                            aria-expanded="false">
+                                                            <i class="bi bi-three-dots-vertical"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end"
+                                                            aria-labelledby="settings-<?= $kat['id'] ?>">
+                                                            <li>
+                                                                <button class="btn btn-primary btn-sm m-1" style="width:95%"
+                                                                    data-bs-toggle="modal" data-bs-target="#editkelasModal"
+                                                                    data-bs-id="<?= $tarif['tarif_spp_id']; ?>"
+                                                                    data-nama_tarif="<?= $tarif['nama_tarif']; ?>">
+                                                                    <i class="bi bi-list-stars"></i>
+                                                                    Detail
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <button class="btn btn-warning btn-sm m-1" style="width:95%"
+                                                                    data-bs-toggle="modal" data-bs-target="#editModal"
+                                                                    data-id="<?= $tarif['tarif_spp_id']; ?>"
+                                                                    data-nama_tarif="<?= $tarif['nama_tarif']; ?>"
+                                                                    data-nominal="<?= $tarif['nominal']; ?>"
+                                                                    data-tahun_ajaran_id="<?= $tarif['tahun_ajaran_id']; ?>"
+                                                                    data-deskripsi="<?= $tarif['deskripsi']; ?>"
+                                                                    data-status_aktif="<?= $tarif['status_aktif']; ?>"
+                                                                    data-kelas='<?= json_encode($tarif['kelas']); ?>'>
+                                                                    <i class="bi bi-pencil"></i>
+                                                                    Edit
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <button class="btn btn-danger btn-sm m-1" style="width:95%"
+                                                                    data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                                                    data-bs-id="<?= $tarif['tarif_spp_id']; ?>"
+                                                                    data-nama_tarif="<?= $tarif['nama_tarif']; ?>">
+                                                                    <i class="bi bi-trash"></i>
+                                                                    Delete
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -572,7 +593,8 @@ ob_end_flush();
                                         <div class="form-group">
                                             <select class="form-select" id="itemSelect" name="kelas_id[]"
                                                 style="width: 87%;"></select>
-                                            <button type="submit" class="btn btn-success" id="addItemButton">Add</button>
+                                            <button type="submit" class="btn btn-success"
+                                                id="addItemButton">Add</button>
                                         </div>
                                     </div>
                                 </div>
@@ -734,7 +756,7 @@ ob_end_flush();
                 id: kelas.id,
                 text: kelas.nama_kelas
             })),
-            dropdownParent: $('#editkelasModal') // Mengaitkan dropdown dengan modal
+            dropdownParent: $('#editkelasModal')
         });
 
         if (editkelasModal) {
@@ -755,9 +777,6 @@ ob_end_flush();
                 $('#itemList').empty();
                 // updatedItemsDataInput.value = '';
 
-                // const associatedClasses = tarifData[id]?.kelas || [];
-                // console.log(`Data Kelas Terkait:`, associatedClasses);
-
                 // Retrieve and display associated classes (if any)
                 if (tarifData[id] && tarifData[id].kelas.length > 0) {
                     tarifData[id].kelas.forEach((kelas, index) => {
@@ -766,9 +785,6 @@ ob_end_flush();
                         $('#itemList').append(listItem);
                     });
                 }
-
-                // console.log(
-                //     `ID: ${id}, Tarif: ${nama_tarif}, Kelas: ${tarifData[id]?.kelas || 'No classes'}`);
 
             });
         }

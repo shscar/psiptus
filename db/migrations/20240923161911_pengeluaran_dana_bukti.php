@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-final class BuktiPengeluaranDana extends AbstractMigration
+final class PengeluaranDanaBukti extends AbstractMigration
 {
     /**
      * Change Method.
@@ -19,7 +19,7 @@ final class BuktiPengeluaranDana extends AbstractMigration
      */
     public function change(): void
     {
-        $buktiTable = $this->table('bukti_pengeluaran_dana');
+        $buktiTable = $this->table(tableName: 'pengeluaran_dana_bukti');
         $buktiTable->addColumn('pengeluaran_id', 'integer', ['null' => false])
             ->addColumn('file_path', 'string', ['null' => false])
             ->addTimestamps()

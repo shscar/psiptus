@@ -19,63 +19,96 @@ class PengeluaranDanaSeeder extends AbstractSeed
         // Data untuk tabel pengeluaran_dana
         $pengeluaranDanaData = [
             [
-                'tanggal_pengeluaran' => '2024-09-01',
-                'bukti_pengeluaran_id' => null,
-                'pihak_terlibat' => 'Supplier Alat Tulis',
-                'detail_kategori_pengeluaran_id' => 1,
-                'sumber_dana' => 'Dana Sekolah',
+                'tanggal_pengeluaran' => '2024-12-01',
+                'sumber_dana' => 'BOS',
+                'pihak_terlibat' => 'CV Sumber Rezeki',
+                'ket_pengeluaran' => 'Pembelian alat tulis',
                 'jenis_bayar' => 1,
-                'total_jumlah' => 1500000.00,
+                'total' => 5000000.00,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ],
             [
-                'tanggal_pengeluaran' => '2024-09-10',
-                'bukti_pengeluaran_id' => null,
-                'pihak_terlibat' => 'CV Jasa Listrik',
-                'detail_kategori_pengeluaran_id' => 2,
-                'sumber_dana' => 'Donasi Alumni',
+                'tanggal_pengeluaran' => '2024-12-02',
+                'sumber_dana' => 'Komite',
+                'pihak_terlibat' => 'PT Berkah Abadi',
+                'ket_pengeluaran' => 'Perbaikan gedung',
                 'jenis_bayar' => 2,
-                'total_jumlah' => 5000000.00,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s'),
-            ],
-            [
-                'tanggal_pengeluaran' => '2024-09-15',
-                'bukti_pengeluaran_id' => null,
-                'pihak_terlibat' => 'Toko Perlengkapan Gedung',
-                'detail_kategori_pengeluaran_id' => 3,
-                'sumber_dana' => 'Dana Pemerintah',
-                'jenis_bayar' => 3,
-                'total_jumlah' => 10000000.00,
+                'total' => 15000000.00,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ],
         ];
 
-        // Insert data ke tabel pengeluaran_dana
-        $this->table('pengeluaran_dana')->insert($pengeluaranDanaData)->saveData();
+        $pengeluaranDana = $this->table('pengeluaran_dana');
+        $pengeluaranDana->insert($pengeluaranDanaData)->saveData();
 
-        // Data untuk tabel item_pengeluaran_dana
-        $itemPengeluaranDanaData = [];
-        $pengeluaranIds = [1, 2, 3];
+        // Data untuk tabel pengeluaran_dana_item
+        $pengeluaranDanaItemData = [
+            [
+                'pengeluaran_dana_id' => 1,
+                'use_kategori' => false,
+                'nama_pengeluaran' => 'Buku Tulis',
+                'item' => 50,
+                'satuan' => 'pcs',
+                'harga' => 10000.00,
+                'nominal' => 500000.00,
+                'komite' => 0,
+                'bosda' => 500000.00,
+                'jumlah' => 500000.00,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'pengeluaran_dana_id' => 2,
+                'use_kategori' => false,
+                'nama_pengeluaran' => 'Kaca Jendela',
+                'item' => 10,
+                'satuan' => 'unit',
+                'harga' => 1000000.00,
+                'nominal' => 10000000.00,
+                'komite' => 10000000.00,
+                'bosda' => 0,
+                'jumlah' => 10000000.00,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'pengeluaran_dana_id' => 2,
+                'use_kategori' => true,
+                'nama_pengeluaran' => 3,
+                'item' => 10,
+                'satuan' => 'unit',
+                'harga' => 500000.00,
+                'nominal' => 5000000.00,
+                'komite' => 0,
+                'bosda' => 5000000.00,
+                'jumlah' => 5000000.00,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+        ];
 
-        foreach ($pengeluaranIds as $id) {
-            for ($i = 1; $i <= 5; $i++) {
-                $itemPengeluaranDanaData[] = [
-                    'pengeluaran_id' => $id,
-                    'detail_kategori_pengeluaran_id' => null,
-                    'nama_pengeluaran' => "Item $i untuk Pengeluaran $id",
-                    'keterangan' => "Keterangan pengeluaran item $i untuk pengeluaran $id",
-                    'jumlah_barang' => rand(1, 30),
-                    'nilai_bayar' => rand(100000, 2500000) / 100,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'updated_at' => date('Y-m-d H:i:s'),
-                ];
-            }
-        }
+        $pengeluaranDanaItem = $this->table('pengeluaran_dana_item');
+        $pengeluaranDanaItem->insert($pengeluaranDanaItemData)->saveData();
 
-        // Insert data ke tabel item_pengeluaran_dana
-        $this->table('item_pengeluaran_dana')->insert($itemPengeluaranDanaData)->saveData();
+        // Data untuk tabel pengeluaran_dana_bukti
+        $pengeluaranDanaBuktiData = [
+            [
+                'pengeluaran_id' => 1,
+                'file_path' => 'bukti1.png',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'pengeluaran_id' => 2,
+                'file_path' => 'bukti2.png',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+        ];
+
+        $pengeluaranDanaBukti = $this->table('pengeluaran_dana_bukti');
+        $pengeluaranDanaBukti->insert($pengeluaranDanaBuktiData)->saveData();
     }
 }

@@ -1,125 +1,83 @@
 <?php
 $db = Database::getInstance()->getConnection();
 
-// Query to fetch data
-$query = "
-    SELECT 
-        rts.id AS riwayat_id,
-        s.nis,
-        s.nama_lengkap,
-        k.nama_kelas,
-        rts.tanggal_bayar,
-        rts.jenis_bayar,
-        ts.nama_tarif AS tarif_spp,
-        spl.nama_pembayaran AS pembayaran_lainnya
-    FROM riwayat_transaksi_siswa rts
-    LEFT JOIN siswa s ON rts.siswa_id = s.id
-    LEFT JOIN kelas k ON s.kelas_id = k.id
-    LEFT JOIN detail_riwayat_transaksi_siswa_tarifspp drtst ON rts.id = drtst.riwayat_transaksi_id
-    LEFT JOIN tarif_spp ts ON drtst.tarif_spp_id = ts.id
-    LEFT JOIN detail_riwayat_transaksi_siswa_pembayaranlain drtspl ON rts.id = drtspl.riwayat_transaksi_id
-    LEFT JOIN siswa_pembayaran_lainnya spl ON drtspl.pembayaran_lainnya_id = spl.id
-    ORDER BY rts.tanggal_bayar DESC
-";
-$stmt = $db->prepare($query);
+// Query untuk mengambil data dari relasi tabel
+$stmt = $db->prepare("SELECT 
+    pd.id AS pengeluaran_id,
+    pd.tanggal_pengeluaran,
+    pd.sumber_dana,
+    pd.pihak_terlibat,
+    pd.ket_pengeluaran,
+    pd.jenis_bayar,
+    pd.total,
+    pdi.id AS item_id,
+    pdi.use_kategori,
+    pdi.nama_pengeluaran,
+    pdi.item,
+    pdi.satuan,
+    pdi.harga,
+    pdi.nominal,
+    pdi.komite,
+    pdi.bosda,
+    pdi.jumlah,
+    pdb.id AS bukti_id,
+    pdb.file_path,
+    dkp.judul AS kategori_judul
+FROM pengeluaran_dana pd
+LEFT JOIN pengeluaran_dana_item pdi ON pd.id = pdi.pengeluaran_dana_id
+LEFT JOIN pengeluaran_dana_bukti pdb ON pd.id = pdb.pengeluaran_id
+LEFT JOIN detail_kategori_pengeluaran dkp ON pdi.nama_pengeluaran = dkp.id AND pdi.use_kategori = true
+ORDER BY pd.tanggal_pengeluaran DESC");
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Combine results based on `riwayat_id`
+// Mengelompokkan data berdasarkan `pengeluaran_id`
 $combinedResults = [];
 foreach ($results as $row) {
-    $riwayatId = $row['riwayat_id'];
-    if (!isset($combinedResults[$riwayatId])) {
-        $combinedResults[$riwayatId] = [
-            'riwayat_id' => $row['riwayat_id'],
-            'nis' => $row['nis'],
-            'nama_lengkap' => $row['nama_lengkap'],
-            'nama_kelas' => $row['nama_kelas'],
-            'tanggal_bayar' => $row['tanggal_bayar'],
+    $pengeluaranId = $row['pengeluaran_id'];
+
+    // Jika pengeluaran_id belum ada, tambahkan ke dalam hasil
+    if (!isset($combinedResults[$pengeluaranId])) {
+        $combinedResults[$pengeluaranId] = [
+            'pengeluaran_id' => $row['pengeluaran_id'],
+            'tanggal_pengeluaran' => $row['tanggal_pengeluaran'],
+            'sumber_dana' => $row['sumber_dana'],
+            'pihak_terlibat' => $row['pihak_terlibat'],
+            'ket_pengeluaran' => $row['ket_pengeluaran'],
             'jenis_bayar' => $row['jenis_bayar'],
-            'items' => []
+            'total' => $row['total'],
+            'items' => [],
+            'bukti_files' => []
         ];
     }
 
-    // Append jenis pembayaran items
-    if (!empty($row['tarif_spp'])) {
-        $combinedResults[$riwayatId]['items'][] = $row['tarif_spp'];
+    // Tambahkan item pengeluaran jika ada
+    if ($row['item_id']) {
+        $namaPengeluaran = $row['use_kategori'] && is_numeric($row['nama_pengeluaran'])
+            ? $row['kategori_judul']
+            : $row['nama_pengeluaran'];
+
+        $combinedResults[$pengeluaranId]['items'][] = [
+            'id' => $row['item_id'],
+            'nama_pengeluaran' => $namaPengeluaran,
+            'item' => $row['item'],
+            'satuan' => $row['satuan'],
+            'harga' => $row['harga'],
+            'nominal' => $row['nominal'],
+            'komite' => $row['komite'],
+            'bosda' => $row['bosda'],
+            'jumlah' => $row['jumlah']
+        ];
     }
-    if (!empty($row['pembayaran_lainnya'])) {
-        $combinedResults[$riwayatId]['items'][] = $row['pembayaran_lainnya'];
+
+    // Tambahkan bukti pengeluaran jika ada
+    if ($row['bukti_id']) {
+        $combinedResults[$pengeluaranId]['bukti_files'][] = [
+            'id' => $row['bukti_id'],
+            'file_path' => $row['file_path']
+        ];
     }
 }
 
-// Transform combined results into a numeric array
-$combinedResults = array_values($combinedResults);
-
-// Menampilkan hasil untuk debugging
-echo '<pre>';
-print_r($combinedResults);
-echo '</pre>';
-
-?>
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Pembayaran Siswa</title>
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
-</head>
-
-<body>
-    <div class="container mt-5">
-        <h1 class="text-center">Data Pembayaran Siswa</h1>
-        <table id="DataPembayaranSiswa" class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Nama</th>
-                    <th>Kelas</th>
-                    <th>Tanggal</th>
-                    <th>Jenis Pembayaran</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $no = 1;
-                foreach ($combinedResults as $row) {
-                    $items = implode(', ', $row['items']);
-                    echo "<tr>";
-                    echo "<td>{$no}</td>";
-                    echo "<td>{$row['nama_lengkap']}</td>";
-                    echo "<td>{$row['nama_kelas']}</td>";
-                    echo "<td>{$row['tanggal_bayar']}</td>";
-                    echo "<td>{$items}</td>";
-                    echo "<td>
-                            <button class='btn btn-primary btn-sm'>Edit</button>
-                            <button class='btn btn-danger btn-sm'>Hapus</button>
-                          </td>";
-                    echo "</tr>";
-                    $no++;
-                }
-                ?>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- jQuery and DataTables JS -->
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('#DataPembayaranSiswa').DataTable();
-        });
-    </script>
-</body>
-
-</html>
+// Menampilkan hasil untuk debug atau penggunaan lebih lanjut
+echo '<pre>' . print_r($combinedResults, true) . '</pre>';

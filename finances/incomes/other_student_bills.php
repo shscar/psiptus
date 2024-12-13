@@ -447,29 +447,52 @@ ob_end_flush();
                                                     <?php endif; ?>
                                                 </td>
                                                 <td class="text-center">
-                                                    <button type="button" class="btn btn-warning btn-sm edit-button"
-                                                        data-bs-toggle="modal" data-bs-target="#editModal"
-                                                        data-id="<?= $row['pembayaran_id'] ?? '-'; ?>"
-                                                        data-nama_pembayaran="<?= $row['nama_pembayaran'] ?? '-'; ?>"
-                                                        data-nominal="<?= $row['nominal'] ?? '-'; ?>"
-                                                        data-tahun_ajaran_id="<?= $row['tahun_ajaran_id'] ?? '-'; ?>"
-                                                        data-keterangan="<?= $row['keterangan'] ?? '-'; ?>"
-                                                        data-bisa_diangsur="<?= $row['bisa_diangsur'] ?? '-'; ?>"
-                                                        data-status_aktif="<?= $row['status_aktif'] ?? '-'; ?>">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                        data-bs-target="#deleteModal"
-                                                        data-id="<?= $row['pembayaran_id'] ?? '-'; ?>"
-                                                        data-nama_pembayaran="<?= $row['nama_pembayaran'] ?? '-'; ?>">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                                        data-bs-target="#editkelasModal"
-                                                        data-bs-id="<?= $row['pembayaran_id']; ?>"
-                                                        data-nama_pembayaran="<?= $row['nama_pembayaran']; ?>">
-                                                        <i class="bi bi-list-stars"></i>
-                                                    </button>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-link p-0" type="button"
+                                                            id="settings-<?= $kat['id'] ?>" data-bs-toggle="dropdown"
+                                                            aria-expanded="false">
+                                                            <i class="bi bi-three-dots-vertical"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end"
+                                                            aria-labelledby="settings-<?= $kat['id'] ?>">
+                                                            <li>
+                                                                <button class="btn btn-primary btn-sm m-1" style="width:95%"
+                                                                    data-bs-toggle="modal" data-bs-target="#editkelasModal"
+                                                                    data-bs-id="<?= $row['pembayaran_id']; ?>"
+                                                                    data-nama_pembayaran="<?= $row['nama_pembayaran']; ?>">
+                                                                    <i class="bi bi-list-stars"></i>
+                                                                    Pilih kelas
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <button type="button"
+                                                                    class="btn btn-warning btn-sm edit-button m-1"
+                                                                    style="width:95%" data-bs-toggle="modal"
+                                                                    data-bs-target="#editModal"
+                                                                    data-id="<?= $row['pembayaran_id'] ?? '-'; ?>"
+                                                                    data-nama_pembayaran="<?= $row['nama_pembayaran'] ?? '-'; ?>"
+                                                                    data-nominal="<?= $row['nominal'] ?? '-'; ?>"
+                                                                    data-tahun_ajaran_id="<?= $row['tahun_ajaran_id'] ?? '-'; ?>"
+                                                                    data-keterangan="<?= $row['keterangan'] ?? '-'; ?>"
+                                                                    data-bisa_diangsur="<?= $row['bisa_diangsur'] ?? '-'; ?>"
+                                                                    data-status_aktif="<?= $row['status_aktif'] ?? '-'; ?>">
+                                                                    <i class="bi bi-pencil"></i>
+                                                                    Update
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <button class="btn btn-danger btn-sm m-1" style="width:95%"
+                                                                    data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                                                    data-id="<?= $row['pembayaran_id'] ?? '-'; ?>"
+                                                                    data-nama_pembayaran="<?= $row['nama_pembayaran'] ?? '-'; ?>">
+                                                                    <i class="bi bi-trash"></i>
+                                                                    Delete
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -635,7 +658,8 @@ ob_end_flush();
                                         <div class="form-group">
                                             <select class="form-select" id="itemSelect" name="kelas_id[]"
                                                 style="width: 87%;"></select>
-                                            <button type="submit" class="btn btn-success" id="addItemButton">Add</button>
+                                            <button type="submit" class="btn btn-success"
+                                                id="addItemButton">Add</button>
                                         </div>
                                     </div>
                                 </div>
@@ -757,9 +781,9 @@ ob_end_flush();
                 // Populate the form with the id
                 const form = deleteModal.querySelector('#deleteForm');
                 form.querySelector('#delete-id').value = id;
-                console.log(
-                    `ID: ${id}, A: ${nama_pembayaran}`
-                );
+                // console.log(
+                //     `ID: ${id}, A: ${nama_pembayaran}`
+                // );
             });
         }
     })
