@@ -233,7 +233,42 @@ ob_end_flush();
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-sm-6">
-                        <h3 class="mb-0">Pembayaran Siswa</h3>
+                        <h3 class="mb-0">Pembayaran Siswa
+
+                            <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-info dropdown-toggle rounded-5"
+                                        data-bs-toggle="dropdown" aria-expanded="false">?</button>
+                                    <ul class="dropdown-menu">
+                                        <li class="dropdown-item">
+                                            <i class="bi bi-dash me-2"></i>
+                                            Detail
+                                        </li>
+                                        <li class="dropdown-item">
+                                            <i class="bi bi-check2 me-2"></i>
+                                            Aksi Create
+                                        </li>
+                                        <li class="dropdown-item">
+                                            <i class="bi bi-dash me-2"></i>
+                                            Aksi Edit
+                                        </li>
+                                        <li class="dropdown-item">
+                                            <i class="bi bi-check2 me-2"></i>
+                                            Aksi Delete
+                                        </li>
+                                        <li class="dropdown-item">
+                                            <i class="bi bi-dash me-2"></i>
+                                            Export
+                                        </li>
+                                        <li class="dropdown-item">
+                                            <i class="bi bi-dash me-2"></i>
+                                            Import
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                        </h3>
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-end">
@@ -351,13 +386,13 @@ ob_end_flush();
                     aria-hidden="true">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="addDataLabel">Tambah Data Siswa</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form id="addDataForm" method="POST">
+                            <form id="addDataForm" method="POST">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="addDataLabel">Tambah Data Siswa</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
                                     <input type="hidden" name="action" value="create">
                                     <div class="mb-3 row">
                                         <label for="student_name" class="form-label col-sm-3">Nama Siswa</label>
@@ -392,7 +427,7 @@ ob_end_flush();
                                         <label for="tanggalBayar" class="col-sm-3 col-form-label">Tanggal Bayar</label>
                                         <div class="col-sm-9">
                                             <input type="date" class="form-control" id="tanggalBayar"
-                                                name="tanggal_bayar">
+                                                name="tanggal_bayar" required>
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
@@ -446,13 +481,14 @@ ob_end_flush();
                                         </table>
                                     </div>
 
-                                </form>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                                <button type="submit" form="addDataForm" class="btn btn-primary">Simpan</button>
-                            </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Tutup</button>
+                                    <button type="submit" form="addDataForm" class="btn btn-primary">Simpan</button>
+                                </div>
 
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -530,34 +566,32 @@ ob_end_flush();
         $(document).ready(function () {
             $('#DataPembayaranSiswa').DataTable();
 
+            // Nonaktifkan tombol Simpan saat pertama kali dimuat
+            toggleSimpanButton();
+
             // Initialize Select2 with dropdownParent option
             $('#student_name').select2({
                 placeholder: 'Pilih Nama Siswa',
                 dropdownParent: $('#addDataModal')
             });
 
-            // Validasi tombol berdasarkan pemilihan dropdown siswa
             $('#student_name').on('change', function () {
                 var selectedValue = $(this).val();
-                if (selectedValue) {
-                    $('#modalspilihtagihan').prop('disabled', false);
-                } else {
-                    $('#modalspilihtagihan').prop('disabled',
-                        true);
-                }
+                $('#modalspilihtagihan').prop('disabled', !selectedValue);
 
-                // Ambil nis siswa berdasarkan pilihan di dropdown
                 var nis = $('#student_name option:selected').data('nis');
                 $('#nis_siswa').val(nis);
+
+                resetSelectedItems(); // Reset items pembayaran jika siswa diganti
+
+                if (selectedValue) {
+                    loadJenisPembayaran(selectedValue);
+                }
             }).trigger('change');
 
-            // Initialize DataTable
             $('#jenisPembayaranTable').DataTable();
 
-            // Fetch and populate data in the second modal
-            $('#student_name').on('change', function () {
-                const id = $(this).val();
-
+            function loadJenisPembayaran(id) {
                 if (id) {
                     $.ajax({
                         url: 'student_paid_fees_child',
@@ -593,32 +627,19 @@ ob_end_flush();
                                 ]).draw();
                             });
 
-                            // Fungsi untuk memformat mata uang
-                            function formatCurrency(value) {
-                                if (value === undefined || value === null) {
-                                    return '-';
-                                }
-                                return Number(value).toLocaleString('id-ID', {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0
-                                });
-                            }
                         }
                     });
                 }
-            });
+            }
 
-            // Show the first modal when the second modal is closed
             $('#jenisPembayaranModal').on('hidden.bs.modal', function () {
                 $('#addDataModal').modal('show');
             });
 
-            // Ensure the second modal is opened without closing the first modal
             $('#jenisPembayaranModal').on('show.bs.modal', function () {
                 $('#addDataModal').modal('hide');
             });
 
-            // Handle "Pilih" button click in the jenisPembayaranTable
             $('#jenisPembayaranTable').on('click', '.pilihBtn', function () {
                 var row = $(this).closest('tr');
                 var jenisPembayaran = row.find('td:nth-child(2)').text();
@@ -627,36 +648,35 @@ ob_end_flush();
                 var itemId = $(this).data('id');
                 var type = $(this).data('type');
 
-                // Check if already selected to prevent duplicates
                 if ($('#selectedPembayaran').find(`[data-jenis="${jenisPembayaran}"]`).length === 0) {
                     $('#selectedPembayaran').append(`
-                        <button class="btn btn-outline-success me-2" data-jenis="${jenisPembayaran}">
-                            ${jenisPembayaran} (${type}) <span class="removeItem">&times;</span>
-                        </button>
-                    `);
+                <button class="btn btn-outline-success me-2" data-jenis="${jenisPembayaran}">
+                    ${jenisPembayaran} (${type}) <span class="removeItem">&times;</span>
+                </button>
+            `);
 
-                    // Append to row-item-bayar in the main table
                     $('#tabel-list-item-pengeluaran tbody').append(`
-                        <tr class="row-item-bayar">
-                            <td>${$('#tabel-list-item-pengeluaran tbody tr').length + 1}</td>
-                            <td>
-                                <label for="jenis" class="form-label" name="item_id">${jenisPembayaran}</label>
-                                <input type="hidden" name="item_type[]" value="${type}">
-                                <input type="hidden" name="item_id[]" value="${itemId}">
-                            </td>
-                            <td><label for="tagihan" class="form-label">${tagihan}</label></td>
-                            <td><label for="jumlah" class="form-label">${total_dibayar}</label></td>
-                            <td><input type="number" class="form-control jumlah-bayar" name="jumlah_bayar[]" required></td>
-                        </tr>
-                    `);
+                <tr class="row-item-bayar">
+                    <td>${$('#tabel-list-item-pengeluaran tbody tr').length + 1}</td>
+                    <td>
+                        <label for="jenis" class="form-label" name="item_id">${jenisPembayaran}</label>
+                        <input type="hidden" name="item_type[]" value="${type}">
+                        <input type="hidden" name="item_id[]" value="${itemId}">
+                    </td>
+                    <td><label for="tagihan" class="form-label">${tagihan}</label></td>
+                    <td><label for="jumlah" class="form-label">${total_dibayar}</label></td>
+                    <td><input type="number" class="form-control jumlah-bayar" name="jumlah_bayar[]" required></td>
+                </tr>
+            `);
 
                     calculateTotal();
                 } else {
                     alert('Item ini sudah dipilih.');
                 }
+
+                toggleSimpanButton();
             });
 
-            // Remove selected item on click
             $('#selectedPembayaran').on('click', '.removeItem', function () {
                 var jenisPembayaran = $(this).closest('button').data('jenis');
                 $(this).closest('button').remove();
@@ -668,14 +688,22 @@ ob_end_flush();
                 });
 
                 calculateTotal();
+                toggleSimpanButton();
             });
 
-            // Event listener to calculate total bayar
             $(document).on('input', '.jumlah-bayar', function () {
                 calculateTotal();
+                toggleSimpanButton();
             });
 
-            // Function to calculate total bayar
+            function resetSelectedItems() {
+                // Clear selected items and table rows
+                $('#selectedPembayaran').empty();
+                $('#tabel-list-item-pengeluaran tbody').empty();
+                calculateTotal();
+                toggleSimpanButton();
+            }
+
             function calculateTotal() {
                 var totalBayar = 0;
                 $('.jumlah-bayar').each(function () {
@@ -684,7 +712,36 @@ ob_end_flush();
                 });
                 $('#total-bayar').text(totalBayar.toFixed(2));
             }
+
+            function toggleSimpanButton() {
+                var hasItems = $('#tabel-list-item-pengeluaran tbody .row-item-bayar').length > 0;
+                var allAmountsFilled = true;
+
+                $('.jumlah-bayar').each(function () {
+                    if (!$(this).val()) {
+                        allAmountsFilled = false;
+                        return false;
+                    }
+                });
+
+                if (hasItems && allAmountsFilled) {
+                    $('#addDataForm button[type="submit"]').prop('disabled', false);
+                } else {
+                    $('#addDataForm button[type="submit"]').prop('disabled', true);
+                }
+            }
+
+            function formatCurrency(value) {
+                if (value === undefined || value === null) {
+                    return '-';
+                }
+                return Number(value).toLocaleString('id-ID', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                });
+            }
         });
+
 
         document.addEventListener('DOMContentLoaded', function () {
             const deleteModal = document.getElementById('deleteModal');

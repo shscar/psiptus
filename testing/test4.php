@@ -244,9 +244,46 @@ ob_end_flush();
             <div class="row">
                 <div class="col-sm-6">
                     <h3 class="mb-0">
-                        Kebutuhan Pengeluaran Dana Sekolah
+                        (Keperluan) Pengeluaran Dana Sekolah
+
+                        <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-info dropdown-toggle rounded-5"
+                                    data-bs-toggle="dropdown" aria-expanded="false">?</button>
+                                <ul class="dropdown-menu">
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Detail
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Approval
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-check2 me-2"></i>
+                                        Aksi Create
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Aksi Edit
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Aksi Delete
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Export
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Import
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
                     </h3>
-                    <span class="text-danger">Maintance</span>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
@@ -334,6 +371,7 @@ ob_end_flush();
                                                     <button class="btn btn-sm btn-danger" data-bs-toggle="modal"
                                                         data-bs-target="#deleteModal"
                                                         data-bs-id="<?= $row['pengeluaran_id']; ?>"
+                                                        data-bs-keterangan="<?= $row['ket_pengeluaran']; ?>"
                                                         data-nama_pengeluaran="<?= $row['items'][0]['nama_pengeluaran'] ?? 'Tidak Ada'; ?>"
                                                         data-items='<?= json_encode($row['items']); ?>'>
                                                         <i class="bi bi-trash"></i>
@@ -513,7 +551,7 @@ ob_end_flush();
                                     <tfoot>
                                         <tr id="row-total-bayar">
                                             <td></td>
-                                            <td colspan="2">
+                                            <td colspan="4">
                                                 <div class="d-flex justify-content-between">
                                                     Total
                                                     <select name="jenis_bayar" class="form-select" style="width:auto">
@@ -522,6 +560,9 @@ ob_end_flush();
                                                     </select>
                                                 </div>
                                             </td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
                                             <td class="text-end fw-bold" id="total-item-nilai-bayar">0</td>
                                             <td></td>
                                         </tr>
@@ -538,6 +579,32 @@ ob_end_flush();
                 </div>
             </div>
         </div>
+
+        <!-- Modal Delete -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Hapus Data</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dikembalikan.</p>
+                        <h6>Item Pengeluaran Terkait:</h6>
+                        <ul id="item-list"></ul>
+                    </div>
+                    <div class="modal-footer">
+                        <form id="deleteForm" method="POST">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" id="delete-id" name="id">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-danger">Hapus</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- App Content -->
@@ -642,9 +709,9 @@ ob_end_flush();
                                 <option selected disabled value="">Pilih pengeluaran
                                 </option>
                                 <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
-                                        <option value="<?php echo $dkp['id']; ?>">
-                                            <?php echo $dkp['judul']; ?>
-                                        </option>
+                                                                                                                <option value="<?php echo $dkp['id']; ?>">
+                                                                                                                    <?php echo $dkp['judul']; ?>
+                                                                                                                </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -795,6 +862,36 @@ ob_end_flush();
         jumlahInputs.forEach(input => {
             input.disabled = false;
         });
+    });
+
+    // delete
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handling Delete
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const pengeluaranId = button.getAttribute('data-bs-id');
+                const keterangan = button.getAttribute('data-bs-keterangan');
+                const items = JSON.parse(button.getAttribute('data-items'));
+
+                const modalTitle = deleteModal.querySelector('.modal-title');
+                modalTitle.textContent = `Hapus Data Pengeluaran: ${keterangan}`;
+
+                // Populate item list in modal body
+                const itemList = deleteModal.querySelector('#item-list');
+                itemList.innerHTML = '';
+                items.forEach(item => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent =
+                        `${item.nama_pengeluaran} - Jumlah Harga ${item.jumlah} unit (${item.item})`;
+                    itemList.appendChild(listItem);
+                });
+
+                const deleteForm = deleteModal.querySelector('#deleteForm');
+                deleteForm.querySelector('#delete-id').value = pengeluaranId;
+            });
+        }
     });
 </script>
 

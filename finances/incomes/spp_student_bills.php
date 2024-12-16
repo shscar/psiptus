@@ -329,7 +329,42 @@ ob_end_flush();
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-6">
-                    <h3 class="mb-0">Tagihan SPP Siswa</h3>
+                    <h3 class="mb-0">Tagihan SPP Siswa
+
+                        <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-info dropdown-toggle rounded-5"
+                                    data-bs-toggle="dropdown" aria-expanded="false">?</button>
+                                <ul class="dropdown-menu">
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-check2 me-2"></i>
+                                        Update Kelas
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-check2 me-2"></i>
+                                        Aksi Create
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-check2 me-2"></i>
+                                        Aksi Edit
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-check2 me-2"></i>
+                                        Aksi Delete
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Export
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Import
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </h3>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
@@ -412,7 +447,7 @@ ob_end_flush();
                                                                     data-bs-id="<?= $tarif['tarif_spp_id']; ?>"
                                                                     data-nama_tarif="<?= $tarif['nama_tarif']; ?>">
                                                                     <i class="bi bi-list-stars"></i>
-                                                                    Detail
+                                                                    Pilih kelas
                                                                 </button>
                                                             </li>
                                                             <li>

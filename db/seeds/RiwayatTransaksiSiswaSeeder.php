@@ -18,7 +18,7 @@ class RiwayatTransaksiSiswaSeeder extends AbstractSeed
     {
         // Data dasar untuk riwayat transaksi siswa
         $riwayatTransaksi = [];
-        for ($i = 1; $i <= 3; $i++) {
+        for ($i = 1; $i <= 2; $i++) {
             $riwayatTransaksi[] = [
                 'siswa_id' => $i,
                 'no_invoice' => sprintf('INV-20241206%03d', $i),

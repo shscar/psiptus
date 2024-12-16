@@ -11,15 +11,14 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 $totalSiswa = $result['total'];
 
 // menghitung jumlah dana bos yang masuk
-$stmt = $db->prepare("SELECT SUM(nominal) AS total_nominal FROM pemasukan_dana_bos");
+$stmt = $db->prepare("SELECT SUM(nominal) AS total_bos_masuk FROM pemasukan_dana_bos");
 $stmt->execute();
-$total = $stmt->fetchColumn();
+$totalBosMasuk = $stmt->fetchColumn();
 
 // menghitung total dari total_jumlah
-$stmt = $db->query("SELECT SUM(total_jumlah) AS total FROM pengeluaran_dana");
+$stmt = $db->query("SELECT SUM(total) AS total_dana_keluar FROM pengeluaran_dana");
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
-$totalJumlah = $result['total'] ? $result['total'] : 0;
-
+$totalDanaKeluar = $result['total_dana_keluar'] ? $result['total_dana_keluar'] : 0;
 
 ?>
 
@@ -78,7 +77,7 @@ $totalJumlah = $result['total'] ? $result['total'] : 0;
                         <div class="info-box-content">
                             <span class="info-box-text">Pemasukan D</span>
                             <span class="info-box-number">
-                                Rp. <?php echo number_format($total, 2, ',', '.'); ?>
+                                Rp. <?php echo number_format($totalBosMasuk, 2, ',', '.'); ?>
                             </span>
                         </div>
                     </div>
@@ -93,7 +92,7 @@ $totalJumlah = $result['total'] ? $result['total'] : 0;
                         <div class="info-box-content">
                             <span class="info-box-text">Belanja/Pengeluaran</span>
                             <span class="info-box-number">
-                                Rp <?php echo number_format($totalJumlah, 2, ',', '.'); ?>
+                                Rp <?php echo number_format($totalDanaKeluar, 2, ',', '.'); ?>
                             </span>
                         </div>
                     </div>
