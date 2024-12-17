@@ -95,22 +95,6 @@ $stmt = $db->prepare("SELECT * FROM detail_kategori_pengeluaran ORDER BY id DESC
 $stmt->execute();
 $detail_kategori_pengeluaran = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fungsi untuk menangani unggah file dan mengubah nama file
-function handleFileUpload($file)
-{
-    $uploadDir = 'assets/images/dana_pengeluaran/';
-    $timestamp = date('YmdHis');
-    $uniqueCode = substr(bin2hex(random_bytes(3)), 0, 6); // Kode unik dengan panjang 6 karakter
-    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-    $newFileName = "{$timestamp}-{$uniqueCode}.{$extension}";
-    $filePath = $uploadDir . $newFileName;
-
-    // Pindahkan file ke folder tujuan
-    if (move_uploaded_file($file['tmp_name'], $filePath)) {
-        return $filePath; // Kembalikan path lengkap untuk disimpan di database
-    }
-    return null; // Gagal upload
-}
 
 // Handle Form Submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -118,68 +102,172 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Create Record
     if ($action == 'create') {
-        $select = isset($kategori_id) ? 1 : 0;
+        try {
+            // Mulai transaksi
+            $db->beginTransaction();
 
-        echo '<pre>';
-        print_r($_POST);
-        echo '</pre>';
-        exit;
+            // Data utama untuk tabel pengeluaran_dana
+            $tanggal_pengeluaran = $_POST['tanggal_pengeluaran'] ?? null;
+            $sumber_dana = $_POST['sumber_dana'] ?? null;
+            $pihak_terlibat = $_POST['pihak_terlibat'] ?? null;
+            $ket_pengeluaran = $_POST['ket_pengeluaran'] ?? null;
+            $jenis_bayar = $_POST['jenis_bayar'] ?? null;
 
-        // // Prepare variables
-        // $tanggal_pengeluaran = $_POST['tanggal_pengeluaran'];
-        // $pihak_terlibat = $_POST['pihak_terlibat'];
-        // $detail_kategori_pengeluaran_id = $_POST['detail_kategori_pengeluaran_id'];
-        // $sumber_dana = $_POST['sumber_dana'];
-        // $jenis_bayar = $_POST['jenis_bayar'];
-        // $total_jumlah = 0;
+            // Validasi input
+            if (empty($tanggal_pengeluaran) || empty($sumber_dana) || empty($jenis_bayar)) {
+                throw new Exception("Data utama tidak lengkap.");
+            }
 
-        // // Calculate total from the jumlah inputs
-        // foreach ($_POST['jumlah'] as $jumlah) {
-        //     $total_jumlah += (float) $jumlah;
-        // }
+            // Hitung total jumlah dari item
+            $total = 0;
+            foreach ($_POST['jumlah'] as $jumlah) {
+                $total += (float) $jumlah;
+            }
 
-        // // Insert pengeluaran_dana record
-        // $stmt = $db->prepare("INSERT INTO pengeluaran_dana (tanggal_pengeluaran, pihak_terlibat, detail_kategori_pengeluaran_id, sumber_dana, jenis_bayar, total_jumlah) VALUES (?, ?, ?, ?, ?, ?)");
-        // $stmt->execute([$tanggal_pengeluaran, $pihak_terlibat, $detail_kategori_pengeluaran_id, $sumber_dana, $jenis_bayar, $total_jumlah]);
+            // Insert ke tabel pengeluaran_dana
+            $stmt = $db->prepare("
+            INSERT INTO pengeluaran_dana (tanggal_pengeluaran, sumber_dana, pihak_terlibat, ket_pengeluaran, jenis_bayar, total, created_at, updated_at) 
+            VALUES (:tanggal_pengeluaran, :sumber_dana, :pihak_terlibat, :ket_pengeluaran, :jenis_bayar, :total, NOW(), NOW())
+        ");
+            $stmt->execute([
+                ':tanggal_pengeluaran' => $tanggal_pengeluaran,
+                ':sumber_dana' => $sumber_dana,
+                ':pihak_terlibat' => $pihak_terlibat,
+                ':ket_pengeluaran' => $ket_pengeluaran,
+                ':jenis_bayar' => $jenis_bayar,
+                ':total' => $total
+            ]);
 
-        // // Get the last inserted ID for the pengeluaran_dana table
-        // $pengeluaran_id = $db->lastInsertId();
+            $pengeluaran_dana_id = $db->lastInsertId();
 
-        // // Handle file uploads
-        // if (isset($_FILES['bukti_pengeluaran']) && !empty($_FILES['bukti_pengeluaran']['name'][0])) {
-        //     foreach ($_FILES['bukti_pengeluaran']['name'] as $index => $name) {
-        //         $file = [
-        //             'name' => $_FILES['bukti_pengeluaran']['name'][$index],
-        //             'type' => $_FILES['bukti_pengeluaran']['type'][$index],
-        //             'tmp_name' => $_FILES['bukti_pengeluaran']['tmp_name'][$index],
-        //             'error' => $_FILES['bukti_pengeluaran']['error'][$index],
-        //             'size' => $_FILES['bukti_pengeluaran']['size'][$index]
-        //         ];
+            // Insert ke tabel pengeluaran_dana_item
+            foreach ($_POST['nama_pengeluaran'] as $index => $nama_pengeluaran) {
+                $use_kategori = isset($_POST['use_kategori'][$index]) && $_POST['use_kategori'][$index] === 'on' ? 1 : 0;
 
-        //         $filePath = handleFileUpload($file);
-        //         if ($filePath) {
-        //             // Insert into bukti_pengeluaran_dana table
-        //             $buktiStmt = $db->prepare("INSERT INTO bukti_pengeluaran_dana (pengeluaran_id, file_path) VALUES (?, ?)");
-        //             $buktiStmt->execute([$pengeluaran_id, $filePath]);
-        //         }
-        //     }
-        // }
+                $item = (int) ($_POST['item'][$index] ?? 0);
+                $satuan = $_POST['satuan'][$index] ?? null;
+                $harga = (float) ($_POST['harga'][$index] ?? 0);
+                $nominal = (float) ($_POST['nominal'][$index] ?? 0);
+                $komite = (float) ($_POST['komite'][$index] ?? 0);
+                $bosda = (float) ($_POST['bosda'][$index] ?? 0);
+                $jumlah = (float) ($_POST['jumlah'][$index] ?? 0);
 
-        // // Insert item_pengeluaran_dana records
-        // $itemStmt = $db->prepare("INSERT INTO item_pengeluaran_dana (pengeluaran_id, nama_pengeluaran, keterangan, jumlah, nilai_bayar) VALUES (?, ?, ?, ?, ?)");
-        // foreach ($_POST['nama_pengeluaran'] as $index => $nama_pengeluaran) {
-        //     $keterangan = $_POST['keterangan'][$index];
-        //     $jumlah = $_POST['jumlah'][$index];
-        //     $nilai_bayar = (float) $jumlah; // Assuming nilai_bayar is the same as jumlah for this example
+                if (empty($nama_pengeluaran)) {
+                    throw new Exception("Nama pengeluaran tidak boleh kosong pada baris $index.");
+                }
 
-        //     $itemStmt->execute([$pengeluaran_id, $nama_pengeluaran, $keterangan, $jumlah, $nilai_bayar]);
-        // }
+                $stmt = $db->prepare("
+                INSERT INTO pengeluaran_dana_item (pengeluaran_dana_id, use_kategori, nama_pengeluaran, item, satuan, harga, nominal, komite, bosda, jumlah, created_at, updated_at) 
+                VALUES (:pengeluaran_dana_id, :use_kategori, :nama_pengeluaran, :item, :satuan, :harga, :nominal, :komite, :bosda, :jumlah, NOW(), NOW())
+            ");
+                $stmt->execute([
+                    ':pengeluaran_dana_id' => $pengeluaran_dana_id,
+                    ':use_kategori' => $use_kategori,
+                    ':nama_pengeluaran' => $nama_pengeluaran,
+                    ':item' => $item,
+                    ':satuan' => $satuan,
+                    ':harga' => $harga,
+                    ':nominal' => $nominal,
+                    ':komite' => $komite,
+                    ':bosda' => $bosda,
+                    ':jumlah' => $jumlah
+                ]);
+            }
 
-        // // Redirect or show success message
-        // echo "<script>
-        //     alert('Data pengeluaran berhasil ditambah.');
-        //     window.location.href = '/pengeluaran/detail-pengeluaran';
-        // </script>";
+            // Handle upload file untuk tabel pengeluaran_dana_bukti
+            if (!empty($_FILES['bukti_pengeluaran']['name'][0])) {
+                $uploadDir = 'assets/images/dana_pengeluaran/';
+
+                foreach ($_FILES['bukti_pengeluaran']['tmp_name'] as $index => $tmpName) {
+                    $fileName = date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . pathinfo($_FILES['bukti_pengeluaran']['name'][$index], PATHINFO_EXTENSION);
+                    $filePath = $uploadDir . $fileName;
+
+                    if (move_uploaded_file($tmpName, $filePath)) {
+                        $stmt = $db->prepare("
+                        INSERT INTO pengeluaran_dana_bukti (pengeluaran_id, file_path, created_at, updated_at) 
+                        VALUES (:pengeluaran_id, :file_path, NOW(), NOW())
+                    ");
+                        $stmt->execute([
+                            ':pengeluaran_id' => $pengeluaran_dana_id,
+                            ':file_path' => $fileName
+                        ]);
+                    }
+                }
+            }
+
+            // Commit transaksi
+            $db->commit();
+            // Redirect or show success message
+            echo "<script>
+                alert('Data pengeluaran berhasil ditambah.');
+                window.location.href = '/pengeluaran/detail-pengeluaran';
+            </script>";
+        } catch (Exception $e) {
+            // Rollback transaksi jika terjadi kesalahan
+            $db->rollBack();
+            // Redirect or show message
+            echo "<script>
+                alert(" . json_encode(['status' => 'error', 'message' => $e->getMessage()]) . ");
+                window.location.href = '/pengeluaran/detail-pengeluaran';
+            </script>";
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+    }
+
+    // Delete Record
+    if ($action == 'delete') {
+        try {
+            // Ambil ID dari POST request
+            $pengeluaranId = $_POST['id'] ?? null;
+
+            if (!$pengeluaranId || !is_numeric($pengeluaranId)) {
+                throw new Exception('ID pengeluaran tidak valid.');
+            }
+
+            // Mulai transaksi
+            $db->beginTransaction();
+
+            // Hapus data dari tabel pengeluaran_dana_bukti
+            $stmt = $db->prepare("SELECT file_path FROM pengeluaran_dana_bukti WHERE pengeluaran_id = :id");
+            $stmt->bindParam(':id', $pengeluaranId, PDO::PARAM_INT);
+            $stmt->execute();
+            $files = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            foreach ($files as $file) {
+                $filePath = __DIR__ . '/../assets/images/dana_pengeluaran/' . $file; // Pastikan path file benar
+                if (file_exists($filePath)) {
+                    unlink($filePath); // Hapus file dari sistem
+                }
+            }
+
+            // Hapus data dari tabel pengeluaran_dana_bukti
+            $stmt = $db->prepare("DELETE FROM pengeluaran_dana_bukti WHERE pengeluaran_id = :id");
+            $stmt->bindParam(':id', $pengeluaranId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            // Hapus data dari tabel pengeluaran_dana_item
+            $stmt = $db->prepare("DELETE FROM pengeluaran_dana_item WHERE pengeluaran_dana_id = :id");
+            $stmt->bindParam(':id', $pengeluaranId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            // Hapus data dari tabel pengeluaran_dana
+            $stmt = $db->prepare("DELETE FROM pengeluaran_dana WHERE id = :id");
+            $stmt->bindParam(':id', $pengeluaranId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            // Commit transaksi
+            $db->commit();
+
+            // Redirect atau kirim respons sukses
+            echo "<script>
+                alert('Data pengeluaran berhasil diapus.');
+                window.location.href = '/pengeluaran/detail-pengeluaran';
+            </script>";
+            exit;
+        } catch (Exception $e) {
+            $db->rollBack();
+            die('Gagal menghapus data: ' . $e->getMessage());
+        }
     }
 
 }
@@ -211,9 +299,50 @@ ob_end_flush();
             <div class="row">
                 <div class="col-sm-6">
                     <h3 class="mb-0">
-                        Pengeluaran Dana Sekolah
+                        (Keperluan) Pengeluaran Dana Sekolah
+
+                        <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-info dropdown-toggle rounded-5"
+                                    data-bs-toggle="dropdown" aria-expanded="false">?</button>
+                                <ul class="dropdown-menu">
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Detail
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Detail Bukti (update, delete)
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Approval
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-check2 me-2"></i>
+                                        Aksi Create
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Aksi Edit
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-check2 me-2"></i>
+                                        Aksi Delete
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Export
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Import
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
                     </h3>
-                    <span class="text-danger">Maintance</span>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
@@ -253,7 +382,7 @@ ob_end_flush();
                                             <th>Pihak Terlibat</th>
                                             <th>Item Pengeluaran</th>
                                             <th>Total</th>
-                                            <th>Aksi</th>
+                                            <th class="text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -261,7 +390,7 @@ ob_end_flush();
                                             <tr>
                                                 <td><?= $row['pengeluaran_id'] ?? '-'; ?></td>
                                                 <td>
-                                                    <div class="text-end">
+                                                    <div>
                                                         <?= date('d M Y', strtotime($row['tanggal_pengeluaran'])) ?? '-'; ?>
                                                     </div>
                                                 </td>
@@ -280,33 +409,53 @@ ob_end_flush();
                                                     </div>
                                                 </td>
                                                 <td class="text-center">
-                                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                                        data-bs-target="#SModal" data-bs-id="<?= $row['pengeluaran_id']; ?>"
-                                                        data-bs-tanggal_pengeluaran="<?= $row['tanggal_pengeluaran']; ?>"
-                                                        data-bs-pihak_terlibat="<?= $row['pihak_terlibat']; ?>"
-                                                        data-bs-sumber_dana="<?= $row['sumber_dana']; ?>"
-                                                        data-bs-total="<?= $row['total']; ?>"
-                                                        data-items='<?= json_encode($row['items']); ?>'>
-                                                        <i class="bi bi-search"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                                                        data-bs-target="#editModal" data-bs-id="<?= $row['pengeluaran_id']; ?>"
-                                                        data-bs-tanggal_pengeluaran="<?= $row['tanggal_pengeluaran']; ?>"
-                                                        data-bs-pihak_terlibat="<?= $row['pihak_terlibat']; ?>"
-                                                        data-bs-sumber_dana="<?= $row['sumber_dana']; ?>"
-                                                        data-bs-total="<?= $row['total']; ?>"
-                                                        data-items='<?= json_encode($row['items']); ?>'>
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal"
-                                                        data-bs-target="#deleteModal"
-                                                        data-bs-id="<?= $row['pengeluaran_id']; ?>"
-                                                        data-nama_pengeluaran="<?= $row['items'][0]['nama_pengeluaran'] ?? 'Tidak Ada'; ?>"
-                                                        data-items='<?= json_encode($row['items']); ?>'>
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                    </button>
-
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-link p-0" type="button"
+                                                            id="settings-<?= $kat['id'] ?>" data-bs-toggle="dropdown"
+                                                            aria-expanded="false">
+                                                            <i class="bi bi-three-dots-vertical"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end"
+                                                            aria-labelledby="settings-<?= $kat['id'] ?>">
+                                                            <li>
+                                                                <button class="dropdown-item" data-bs-toggle="modal"
+                                                                    data-bs-target="#detailModal"
+                                                                    data-bs-id="<?= $row['pengeluaran_id']; ?>"
+                                                                    data-bs-tanggal_pengeluaran="<?= $row['tanggal_pengeluaran']; ?>"
+                                                                    data-bs-pihak_terlibat="<?= $row['pihak_terlibat']; ?>"
+                                                                    data-bs-sumber_dana="<?= $row['sumber_dana']; ?>"
+                                                                    data-bs-total="<?= $row['total']; ?>"
+                                                                    data-items='<?= json_encode($row['items']); ?>'>
+                                                                    <i class="bi bi-list-stars me-2"></i>
+                                                                    Detail
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <button class="dropdown-item" data-bs-toggle="modal"
+                                                                    data-bs-target="#editModal"
+                                                                    data-bs-id="<?= $row['pengeluaran_id']; ?>"
+                                                                    data-bs-tanggal_pengeluaran="<?= $row['tanggal_pengeluaran']; ?>"
+                                                                    data-bs-pihak_terlibat="<?= $row['pihak_terlibat']; ?>"
+                                                                    data-bs-sumber_dana="<?= $row['sumber_dana']; ?>"
+                                                                    data-bs-total="<?= $row['total']; ?>"
+                                                                    data-items='<?= json_encode($row['items']); ?>'>
+                                                                    <i class="bi bi-pencil me-2"></i>
+                                                                    Edit
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <button class="dropdown-item" data-bs-toggle="modal"
+                                                                    data-bs-target="#deleteModal"
+                                                                    data-bs-id="<?= $row['pengeluaran_id']; ?>"
+                                                                    data-bs-keterangan="<?= $row['ket_pengeluaran']; ?>"
+                                                                    data-nama_pengeluaran="<?= $row['items'][0]['nama_pengeluaran'] ?? 'Tidak Ada'; ?>"
+                                                                    data-items='<?= json_encode($row['items']); ?>'>
+                                                                    <i class="bi bi-trash me-2"></i>
+                                                                    Delete
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -398,12 +547,12 @@ ob_end_flush();
                                         <tr class="row-item-bayar">
                                             <td>1</td>
                                             <td>
-                                                <div class="form-group">
+                                                <div class="form-group form-kategori">
                                                     <!-- Switch Checkbox -->
                                                     <div class="form-check form-switch mb-2">
                                                         <input type="checkbox" class="form-check-input toggle-select"
-                                                            id="useselectkategori">
-                                                        <label class="form-check-label" for="useselectkategori">Use
+                                                            id="useselectkategori1" name="use_kategori[]">
+                                                        <label class="form-check-label" for="useselectkategori1">Use
                                                             Kategori</label>
                                                     </div>
 
@@ -480,7 +629,7 @@ ob_end_flush();
                                     <tfoot>
                                         <tr id="row-total-bayar">
                                             <td></td>
-                                            <td colspan="2">
+                                            <td colspan="4">
                                                 <div class="d-flex justify-content-between">
                                                     Total
                                                     <select name="jenis_bayar" class="form-select" style="width:auto">
@@ -489,6 +638,9 @@ ob_end_flush();
                                                     </select>
                                                 </div>
                                             </td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
                                             <td class="text-end fw-bold" id="total-item-nilai-bayar">0</td>
                                             <td></td>
                                         </tr>
@@ -505,136 +657,32 @@ ob_end_flush();
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Edit Modal -->
-    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Pengeluaran</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editForm" method="POST" enctype="multipart/form-data">
-                        <input type="hidden" name="action" value="update">
-                        <input type="hidden" name="pengeluaran_id" id="editPengeluaranId">
-                        <div class="row">
-                            <div class="form-group col-4 mb-3">
-                                <label for="editTanggalPengeluaran" class="form-label">Tanggal Pengeluaran</label>
-                                <input type="date" class="form-control" id="editTanggalPengeluaran"
-                                    name="tanggal_pengeluaran" required>
-                            </div>
-                            <div class="form-group col-4 mb-3">
-                                <label for="bukti_pengeluaran" class="form-label">Unggah Bukti Pengeluaran
-                                    (Opsional)</label>
-                                <input type="file" class="form-control" id="bukti_pengeluaran" name="bukti_pengeluaran"
-                                    accept=".jpg,.jpeg,.png,.pdf">
-                            </div>
-                            <div class="form-group col-4 mb-3">
-                                <label for="editPihakTerlibat" class="form-label">Pihak Terlibat</label>
-                                <input type="text" class="form-control" id="editPihakTerlibat" name="pihak_terlibat"
-                                    placeholder="Contoh: Bagian Keuangan" required>
-                            </div>
-                            <div class="form-group col-6 mb-3">
-                                <label for="detail_kategori_pengeluaran_id" class="form-label">Kategori
-                                    Pengeluaran</label>
-                                <select class="form-select" id="detail_kategori_pengeluaran_id"
-                                    name="detail_kategori_pengeluaran_id" required>
-                                    <option selected disabled value="">Pilih pengeluaran</option>
-                                    <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
-                                        <option value="<?php echo $dkp['id']; ?>">
-                                            <?php echo $dkp['judul']; ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="form-group col-6 mb-3">
-                                <label for="editSumberDana" class="form-label">Sumber Dana</label>
-                                <select class="form-control" id="editSumberDana" name="sumber_dana" required>
-                                    <option selected disabled value="">Pilih Sumber Dana</option>
-                                    <option value="Dana BOS">Dana BOS</option>
-                                    <option value="Dana Sumbangan">Dana Sumbangan</option>
-                                    <option value="Dana Sekolah">Dana Sekolah</option>
-                                    <option value="Lain-lain">Lain-lain</option>
-                                </select>
-                            </div>
-                            <hr>
-                            <!-- ... other fields ... -->
-                            <div class="form-group">
-                                <table class="table table-striped table-bordered" id="edit-tabel-list-item-pengeluaran">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Nama Pengeluaran</th>
-                                            <th>Keterangan</th>
-                                            <th style="width:130px">Jumlah</th>
-                                            <th style="width:20px">
-                                                <button type="button" class="btn btn-outline-success add-row-edit">
-                                                    <i class="bi bi-plus-lg"></i>
-                                                </button>
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Will be populated dynamically -->
-                                    </tbody>
-                                    <tfoot>
-                                        <tr id="edit-row-total-bayar">
-                                            <td></td>
-                                            <td colspan="2">
-                                                <div class="d-flex justify-content-between">
-                                                    Total
-                                                    <select name="jenis_bayar" id="edit_jenis_bayar" class="form-select"
-                                                        style="width:auto">
-                                                        <option value="1">Tunai</option>
-                                                        <option value="2">Transfer</option>
-                                                    </select>
-                                                </div>
-                                            </td>
-                                            <td class="text-end fw-bold" style="padding-right:17px"
-                                                id="edit-total-item-nilai-bayar">
-                                                0
-                                            </td>
-                                            <td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                            <button type="submit" form="editForm" class="btn btn-primary">Simpan Perubahan</button>
-                        </div>
-                    </form>
+        <!-- Modal Delete -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Hapus Data</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dikembalikan.</p>
+                        <h6>Item Pengeluaran Terkait:</h6>
+                        <ul id="item-list"></ul>
+                    </div>
+                    <div class="modal-footer">
+                        <form id="deleteForm" method="POST">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" id="delete-id" name="id">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-danger">Hapus</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Modal Delete -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">Hapus Data</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dikembalikan.</p>
-                    <h6>Item Pengeluaran Terkait:</h6>
-                    <ul id="item-list"></ul>
-                </div>
-                <div class="modal-footer">
-                    <form id="deleteForm" method="POST">
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" id="delete-id" name="id">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-danger">Hapus</button>
-                    </form>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- App Content -->
@@ -656,58 +704,49 @@ ob_end_flush();
         });
     });
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', () => {
         const tableBody = document.querySelector('#tabel-list-item-pengeluaran tbody');
         const totalAmountDisplay = document.getElementById('total-item-nilai-bayar');
         const previewContainer = document.getElementById('image-preview-container');
         const fileInput = document.getElementById('bukti_pengeluaran');
 
-        // Preview images with delete functionality
+        // Image preview with delete functionality
         fileInput.addEventListener('change', handleImagePreview);
 
         function handleImagePreview(event) {
+            const files = Array.from(event.target.files);
             previewContainer.innerHTML = ''; // Clear previous previews
-            selectedFiles = Array.from(event.target.files); // Update files array
-            Array.from(event.target.files).forEach((file, index) => {
+
+            files.forEach((file, index) => {
                 if (file.type.startsWith('image/')) {
                     const reader = new FileReader();
                     reader.onload = (e) => createImagePreview(e.target.result, index);
                     reader.readAsDataURL(file);
                 }
             });
-
         }
 
         function createImagePreview(src, index) {
-            const imageContainer = document.createElement('div');
-            imageContainer.classList.add('position-relative', 'd-inline-block');
+            const container = document.createElement('div');
+            container.className = 'position-relative d-inline-block';
 
-            const img = document.createElement('img');
-            img.src = src;
-            img.classList.add('img-thumbnail');
-            img.style.width = '100px';
-            img.style.height = '100px';
-            img.style.objectFit = 'cover';
+            container.innerHTML = `
+                <img src="${src}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                <button class="btn btn-sm btn-danger position-absolute top-0 end-0" style="z-index: 1;">&times;</button>
+            `;
 
-            const deleteBtn = document.createElement('button');
-            deleteBtn.innerHTML = '&times;';
-            deleteBtn.classList.add('btn', 'btn-sm', 'btn-danger', 'position-absolute', 'top-0', 'end-0');
-            deleteBtn.style.zIndex = '1';
-            deleteBtn.addEventListener('click', () => removeImagePreview(index));
-
-            imageContainer.append(img, deleteBtn);
-            previewContainer.appendChild(imageContainer);
+            container.querySelector('button').addEventListener('click', () => removeImagePreview(index));
+            previewContainer.appendChild(container);
         }
 
-
         function removeImagePreview(index) {
-            selectedFiles.splice(index, 1); // Remove file from array
-            // Reset file input and reassign files
+            const files = Array.from(fileInput.files);
+            files.splice(index, 1);
+
             const dataTransfer = new DataTransfer();
-            selectedFiles.forEach(file => dataTransfer.items.add(file));
+            files.forEach(file => dataTransfer.items.add(file));
             fileInput.files = dataTransfer.files;
 
-            // Re-render previews
             handleImagePreview({
                 target: {
                     files: fileInput.files
@@ -715,100 +754,87 @@ ob_end_flush();
             });
         }
 
-        // Add row functionality
+        // Add new row to the table
         document.querySelector('.add-row').addEventListener('click', () => {
             addNewRow();
             updateTotal();
         });
 
-        // Add a new row to the table
         function addNewRow() {
-            const rowCount = tableBody.rows.length + 1;
+            const rowCount = tableBody.rows.length;
             const newRow = document.createElement('tr');
-            newRow.classList.add('row-item-bayar');
+            newRow.className = 'row-item-bayar';
+
             newRow.innerHTML = `
-            <td>${rowCount}</td>
-            <td>
-                <div class="form-group">
-                    <!-- Switch Checkbox -->
-                    <div class="form-check form-switch mb-2">
-                        <input type="checkbox" class="form-check-input toggle-select" id="useselectkategori${rowCount}">
-                        <label class="form-check-label" for="useselectkategori${rowCount}">Use Kategori</label>
-                    </div>
+                <td>${rowCount + 1}</td>
+                <td>
+                    <div class="form-group form-kategori">
+                        <!-- Switch Checkbox -->
+                        <div class="form-check form-switch mb-2">
+                            <input type="checkbox" class="form-check-input toggle-select" id="useselectkategori${rowCount}" name="use_kategori[${rowCount}]">
+                            <label class="form-check-label" for="useselectkategori${rowCount}">Use Kategori</label>
+                        </div>
 
-                    <!-- Input Text -->
-                    <div class="input-container">
-                        <input type="text" class="form-control nama-pengeluaran-input" name="nama_pengeluaran[]" placeholder="Nama Pengeluaran" required>
-                    </div>
+                        <!-- Input Text -->
+                        <div class="input-container">
+                            <input type="text" class="form-control nama-pengeluaran-input"
+                                name="nama_pengeluaran[]" placeholder="Nama Pengeluaran" required>
+                        </div>
 
-                    <!-- Select Dropdown -->
-                    <div class="select-container" style="display: none;">
-                        <select class="form-select detail-kategori-select" name="nama_pengeluaran[]">
-                            <option selected disabled value="">Pilih pengeluaran</option>
-                            <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
-                                                                                                <option value="<?php echo $dkp['id']; ?>">
-                                                                                                    <?php echo $dkp['judul']; ?>
-                                                                                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <!-- Select Dropdown -->
+                        <div class="select-container" style="display: none;">
+                            <select class="form-select detail-kategori-select" name="nama_pengeluaran[]">
+                                <option selected disabled value="">Pilih pengeluaran
+                                </option>
+                                <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
+                                                                                                                                                                                                                <option value="<?php echo $dkp['id']; ?>">
+                                                                                                                                                                                                                    <?php echo $dkp['judul']; ?>
+                                                                                                                                                                                                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     </div>
-                </div>
-            </td>
-            <td>
-                <input type="number" class="form-control item" name="item[]" placeholder="Item" min="1" required>
-            </td>
-            <td>
-                <select class="form-select mb-3" name="satuan[]" required>
-                    <option selected disabled value="">Pilih</option>
-                    <option value="rim">Rim</option>
-                    <option value="lembar">Lembar</option>
-                    <option value="soal">Soal</option>
-                    <option value="ruang">Ruang</option>
-                    <option value="kali">Kali</option>
-                    <option value="pack">Pack</option>
-                    <option value="dus">Dus</option>
-                    <option value="box">Box</option>
-                    <option value="buah">Buah</option>
-                    <option value="bendel">Bendel</option>
-                    <option value="siswa">Siswa</option>
-                    <option value="orang">Orang</option>
-                </select>
-            </td>
-            <td>
-                <input type="number" class="form-control harga" name="harga[]" placeholder="Harga" min="0" required>
-            </td>
-            <td>
-                <input type="number" class="form-control nominal" name="nominal[]" placeholder="Rp 0.00" min="0" disabled>
-            </td>
-            <td>
-                <input type="number" class="form-control komite" name="komite[]" placeholder="Komite" min="0" required>
-            </td>
-            <td>
-                <input type="number" class="form-control bos" name="bosda[]" placeholder="Bosda" min="0" required>
-            </td>
-            <td>
-                <input type="number" class="form-control jumlah" name="jumlah[]" placeholder="0.00" min="0" disabled>
-            </td>
-            <td>
-                <button type="button" class="btn btn-outline-danger remove-row"><i class="bi bi-dash-lg"></i></button>
-            </td>
-        `;
+                </td>
+                <td><input type="number" class="form-control item" name="item[]" placeholder="Item" min="1" required></td>
+                <td>
+                    <select class="form-select mb-3" name="satuan[]" required>
+                        <option selected disabled value="">Pilih</option>
+                        <option value="rim">Rim</option>
+                        <option value="lembar">Lembar</option>
+                        <option value="soal">Soal</option>
+                        <option value="ruang">Ruang</option>
+                        <option value="kali">Kali</option>
+                        <option value="pack">Pack</option>
+                        <option value="dus">Dus</option>
+                        <option value="box">Box</option>
+                        <option value="buah">Buah</option>
+                        <option value="bendel">Bendel</option>
+                        <option value="siswa">Siswa</option>
+                        <option value="orang">orang</option>
+                    </select>
+                </td>
+                <td><input type="number" class="form-control harga" name="harga[]" placeholder="Harga" min="0" required></td>
+                <td><input type="number" class="form-control nominal" name="nominal[]" placeholder="Rp 0.00" min="0" disabled></td>
+                <td><input type="number" class="form-control komite" name="komite[]" placeholder="Komite" min="0" required></td>
+                <td><input type="number" class="form-control bos" name="bosda[]" placeholder="Bosda" min="0" required></td>
+                <td><input type="number" class="form-control jumlah" name="jumlah[]" placeholder="0.00" min="0" disabled></td>
+                <td><button type="button" class="btn btn-outline-danger remove-row"><i class="bi bi-dash-lg"></i></button></td>
+            `;
+
             tableBody.appendChild(newRow);
             updateRowNumbers();
         }
 
-
-        // Event delegation for table actions
-        tableBody.addEventListener('click', function (e) {
+        tableBody.addEventListener('click', (e) => {
             if (e.target.closest('.remove-row')) {
-                // Find and remove the row
                 e.target.closest('.row-item-bayar').remove();
-                updateRowNumbers(); // Update row numbers after removal
-                updateTotal(); // Update the total
-            } else if (e.target.classList.contains('toggle-select')) {
-                const row = e.target.closest('.row-item-bayar');
-                toggleSelectDisplay(e.target.checked, row);
+                updateRowNumbers();
+                updateTotal();
             }
+            // else if (e.target.classList.contains('toggle-select')) {
+            //     const row = e.target.closest('.row-item-bayar');
+            //     toggleInputDisplay(e.target.checked, row);
+            // }
         });
         tableBody.addEventListener('input', function (e) {
             if (e.target.classList.contains('jumlah')) {
@@ -816,140 +842,107 @@ ob_end_flush();
             }
         });
 
-        // script untuk memilih (detail item) pengeluaran menggunakan select atau manual
-        const checkbox = document.getElementById('useselectkategori');
-        const formGroup = checkbox.closest('.form-group');
-        const textInput = formGroup.querySelector('.nama-pengeluaran-input');
-        const textInputContainer = formGroup.querySelector('.input-container');
-        const selectInput = formGroup.querySelector('.detail-kategori-select');
-        const selectInputContainer = formGroup.querySelector('.select-container');
-        // Fungsi untuk mengatur tampilan dan status elemen
-        function toggleInputDisplay(isChecked) {
-            if (isChecked) {
-                // Menampilkan select dropdown dan menyembunyikan input teks
-                textInputContainer.style.display = 'none';
-                selectInputContainer.style.display = 'block';
-                // Nonaktifkan input teks dan aktifkan dropdown
-                textInput.disabled = true;
-                selectInput.disabled = false;
-                // Validasi
-                textInput.required = false;
-                selectInput.required = true;
-            } else {
-                // Menampilkan input teks dan menyembunyikan select dropdown
-                textInputContainer.style.display = 'block';
-                selectInputContainer.style.display = 'none';
-                // Nonaktifkan dropdown dan aktifkan input teks
-                selectInput.disabled = true;
-                textInput.disabled = false;
-                // Validasi
-                selectInput.required = false;
-                textInput.required = true;
-            }
-        }
-        // Event listener untuk checkbox
-        checkbox.addEventListener('change', function () {
-            toggleInputDisplay(checkbox.checked);
+        tableBody.addEventListener('input', (e) => {
+            if (e.target.matches('.item, .harga')) calculateNominal(e.target.closest('tr'));
+            if (e.target.matches('.komite, .bos')) calculateJumlah(e.target.closest('tr'));
         });
-        // Kondisi awal
-        toggleInputDisplay(checkbox.checked);
 
-
-        // Mendapatkan semua elemen input (item, harga, menjadi nominal)
-        const items = document.querySelectorAll('.item');
-        const harga = document.querySelectorAll('.harga');
-        const nominal = document.querySelectorAll('.nominal');
-        // menghitung jumlah item
-        items.forEach((item, index) => {
-            item.addEventListener('input', () => {
-                calculateNominal(index);
-            });
-        });
-        // menghitung jumlah harga
-        harga.forEach((hargaInput, index) => {
-            hargaInput.addEventListener('input', () => {
-                calculateNominal(index);
-            });
-        });
-        // kalkulasi item dikali harga
-        function calculateNominal(index) {
-            const itemValue = parseFloat(items[index].value) || 0;
-            const hargaValue = parseFloat(harga[index].value) || 0;
-            const totalNominal = itemValue * hargaValue;
-            nominal[index].value = totalNominal.toFixed(2);
+        function calculateNominal(row) {
+            const item = parseFloat(row.querySelector('.item').value) || 0;
+            const harga = parseFloat(row.querySelector('.harga').value) || 0;
+            const nominal = item * harga;
+            row.querySelector('.nominal').value = nominal.toFixed(2);
+            updateTotal();
         }
 
+        function calculateJumlah(row) {
+            const komite = parseFloat(row.querySelector('.komite').value) || 0;
+            const bos = parseFloat(row.querySelector('.bos').value) || 0;
+            const jumlah = komite + bos;
+            row.querySelector('.jumlah').value = jumlah.toFixed(2);
+            updateTotal();
+        }
 
-        // Mendapatkan semua elemen input (komite, bosda, menjadi jumlah)
-        const komiteInputs = document.querySelectorAll('.komite');
-        const bosInputs = document.querySelectorAll('.bos');
-        const jumlahInputs = document.querySelectorAll('.jumlah');
-        // Fungsi untuk menghitung jumlah
-        function hitungJumlah(index) {
-            const komiteValue = parseFloat(komiteInputs[index].value) || 0;
-            const bosValue = parseFloat(bosInputs[index].value) || 0;
-            const total = komiteValue + bosValue;
-            jumlahInputs[index].value = total.toFixed(2); // Menampilkan dua desimal
-        }
-        // Menambahkan event listener untuk setiap input
-        komiteInputs.forEach((input, index) => {
-            input.addEventListener('input', () => hitungJumlah(index));
-        });
-        bosInputs.forEach((input, index) => {
-            input.addEventListener('input', () => hitungJumlah(index));
-        });
-        // update total dari jumlah
-        function updateTotal() {
-            let total = 0;
-            document.querySelectorAll('.jumlah').forEach(input => {
-                total += parseFloat(input.value) || 0;
-            });
-            totalAmountDisplay.textContent = total.toLocaleString();
-        }
-        // update penambahan (detail item) untuk pengeluaran
         function updateRowNumbers() {
             document.querySelectorAll('.row-item-bayar').forEach((row, index) => {
                 row.querySelector('td:first-child').textContent = index + 1;
             });
         }
+
+        function updateTotal() {
+            const total = Array.from(document.querySelectorAll('.jumlah'))
+                .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
+            totalAmountDisplay.textContent = total.toLocaleString('id-ID');
+        }
+
+        // Fungsi untuk mengatur tampilan elemen berdasarkan status checkbox
+        function toggleInputDisplay(isChecked, formGroup) {
+            const textInputContainer = formGroup.querySelector('.input-container');
+            const selectInputContainer = formGroup.querySelector('.select-container');
+            const textInput = formGroup.querySelector('.nama-pengeluaran-input');
+            const selectInput = formGroup.querySelector('.detail-kategori-select');
+
+            if (isChecked) {
+                textInputContainer.style.display = 'none';
+                selectInputContainer.style.display = 'block';
+                textInput.disabled = true;
+                selectInput.disabled = false;
+                textInput.required = false;
+                selectInput.required = true;
+            } else {
+                textInputContainer.style.display = 'block';
+                selectInputContainer.style.display = 'none';
+                textInput.disabled = false;
+                selectInput.disabled = true;
+                textInput.required = true;
+                selectInput.required = false;
+            }
+        }
+
+        // Event listener global untuk menangani semua checkbox dinamis
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('toggle-select')) {
+                const formGroup = e.target.closest('.form-kategori');
+                toggleInputDisplay(e.target.checked, formGroup);
+
+                // Update nilai use_kategori agar sesuai dengan row
+                const index = Array.from(document.querySelectorAll('.toggle-select')).indexOf(e.target);
+                e.target.name = `use_kategori[${index}]`;
+            }
+        });
+
+        // Fungsi untuk menginisialisasi semua checkbox yang ada di awal
+        function initializeCheckboxes() {
+            document.querySelectorAll('.toggle-select').forEach((checkbox, index) => {
+                const formGroup = checkbox.closest('.form-kategori');
+                toggleInputDisplay(checkbox.checked, formGroup);
+
+                // Set name attribute agar sesuai dengan indeks
+                checkbox.name = `use_kategori[${index}]`;
+            });
+        }
+
+        // Panggil fungsi untuk menginisialisasi saat halaman dimuat
+        initializeCheckboxes();
+
     });
 
-    // // Function to calculate total
-    // function updateTotal() {
-    //     let total = 0;
-    //     const jumlahInputs = document.querySelectorAll('input[name="jumlah[]"]');
-    //     jumlahInputs.forEach(input => {
-    //         total += parseFloat(input.value) || 0;
-    //     });
-    //     document.querySelector('#total-item-nilai-bayar').textContent = total;
-    // }
+    // untuk mengaktifkan form nominal dan jumlah
+    document.querySelector('form').addEventListener('submit', (e) => {
+        // Mengaktifkan input yang dinonaktifkan
+        const nominalInputs = document.querySelectorAll('.nominal');
+        const jumlahInputs = document.querySelectorAll('.jumlah');
 
-    // // Attach event listener to existing quantity inputs to update the total
-    // document.querySelectorAll('input[name="jumlah[]"]').forEach(input => {
-    //     input.addEventListener('input', updateTotal);
-    // });
-
-    // Fungsi untuk menghitung total
-    function updateTotal() {
-        let total = 0;
-        const jumlahInputs = document.querySelectorAll('input[name="jumlah[]"]');
-        jumlahInputs.forEach(input => {
-            total += parseFloat(input.value) || 0;
+        nominalInputs.forEach(input => {
+            input.disabled = false;
         });
-        document.querySelector('#total-item-nilai-bayar').textContent = total.toFixed(2); // Format total dengan 2 desimal
-    }
-    // Fungsi debounce untuk membatasi frekuensi pemanggilan fungsi
-    function debounce(func, delay) {
-        let timeout;
-        return function (...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), delay);
-        };
-    }
-    // Mengaitkan event listener pada kontainer input
-    document.querySelector('#input-container').addEventListener('input', debounce(updateTotal, 300));
 
+        jumlahInputs.forEach(input => {
+            input.disabled = false;
+        });
+    });
 
+    // delete
     document.addEventListener('DOMContentLoaded', function () {
         // Handling Delete
         const deleteModal = document.getElementById('deleteModal');
@@ -957,10 +950,11 @@ ob_end_flush();
             deleteModal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
                 const pengeluaranId = button.getAttribute('data-bs-id');
+                const keterangan = button.getAttribute('data-bs-keterangan');
                 const items = JSON.parse(button.getAttribute('data-items'));
 
                 const modalTitle = deleteModal.querySelector('.modal-title');
-                modalTitle.textContent = `Hapus Data Pengeluaran ID: ${pengeluaranId}`;
+                modalTitle.textContent = `Hapus Data Pengeluaran: ${keterangan}`;
 
                 // Populate item list in modal body
                 const itemList = deleteModal.querySelector('#item-list');
@@ -968,92 +962,20 @@ ob_end_flush();
                 items.forEach(item => {
                     const listItem = document.createElement('li');
                     listItem.textContent =
-                        `${item.nama_pengeluaran} - Jumlah ${item.jumlah} unit (${item.nilai_bayar})`;
+                        `${item.nama_pengeluaran} - Jumlah Harga ${item.jumlah} unit (${item.item})`;
                     itemList.appendChild(listItem);
                 });
 
                 const deleteForm = deleteModal.querySelector('#deleteForm');
                 deleteForm.querySelector('#delete-id').value = pengeluaranId;
+
+                // Debugging output
+                // console.log(
+                //     `ID: ${pengeluaranId}, Keterangan: ${keterangan}, Item: ${items.length > 0 ? items.map(item => item.id).join(', ') : 'No items'}`
+                // );
+
             });
         }
-    });
-
-
-    // var editModal = document.getElementById('editModal');
-    // editModal.addEventListener('show.bs.modal', function (event) {
-    //     // Kode untuk mengisi data ke dalam modal
-    // });
-
-    // Add event listener to buttons that trigger the modal
-    document.querySelectorAll('button[data-bs-target="#editModal"]').forEach(button => {
-        var editModal = document.getElementById('editModal');
-
-        // editModal.addEventListener('show.bs.modal', function (event) {
-        button.addEventListener('click', function () {
-            // Fetch the data attributes from the clicked button
-            const pengeluaranId = this.getAttribute('data-bs-id');
-            const tanggalPengeluaran = this.getAttribute('data-bs-tanggal_pengeluaran');
-            const pihakTerlibat = this.getAttribute('data-bs-pihak_terlibat');
-            const sumberDana = this.getAttribute('data-bs-sumber_dana');
-            const totalJumlah = this.getAttribute('data-bs-total');
-            const items = JSON.parse(this.getAttribute('data-items'));
-
-            console.log(
-                `ID: ${pengeluaranId}, Tahun ID: ${totalJumlah}`
-            );
-
-            // Populate the form fields in the modal
-            document.getElementById('editPengeluaranId').value = pengeluaranId;
-            document.getElementById('editTanggalPengeluaran').value = tanggalPengeluaran;
-            document.getElementById('editPihakTerlibat').value = pihakTerlibat;
-            document.getElementById('editSumberDana').value = sumberDana;
-            // document.getElementById('editTotalJumlah').value = totalJumlah;
-
-            // Populate the item list
-            const itemList = document.getElementById('editItemList');
-            itemList.innerHTML = ''; // Clear previous items
-
-            items.forEach((item, index) => {
-                let itemRow = `
-                <div class="mb-3">
-                    <label class="form-label">Item ${index + 1}: ${item.nama_pengeluaran}</label>
-                    <input type="hidden" name="items[${index}][nama_pengeluaran]" value="${item.nama_pengeluaran}">
-                    <input type="number" class="form-control" name="items[${index}][jumlah]" value="${item.jumlah}" required>
-                </div>
-            `;
-                itemList.insertAdjacentHTML('beforeend', itemRow);
-            });
-        });
-    });
-
-    // Submit the form for updating
-    document.getElementById('editForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        // Collect the form data
-        const formData = new FormData(this);
-
-        // Send the AJAX request to update the data
-        fetch('update_pengeluaran.php', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Close the modal
-                    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
-                    editModal.hide();
-
-                    // Optionally, refresh the table or update the row directly
-                    alert('Data updated successfully!');
-                } else {
-                    alert('Failed to update data: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
     });
 </script>
 
@@ -1061,18 +983,3 @@ ob_end_flush();
 <link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
-
-
-<!-- 
-optimalkan kembali code dengan kriteria berikut:
-- pada "Nama Pengeluaran" saya ingin menggunakan kondisi jika "Use Select Kategori" isChecked maka dapat menggunakan
-select dan ini memanggil data dari tabel detail_kategori_pengeluaran
-- pada "upload bukti pengeluaran" dapat masuk kedalam tabel "bukti_pengeluaran_dana" dan saya ingin agar nama file
-    diubah menjadi format datetime dan unicode contoh: "202411030101-kcAwH8.png"
-        $buktiTable = $this->table('bukti_pengeluaran_dana');
-        $buktiTable->addColumn('pengeluaran_id', 'integer', ['null' => false])
-        ->addColumn('file_path', 'string', ['null' => false])
-        ->addTimestamps()
-        ->create(); 
-- 
--->

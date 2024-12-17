@@ -214,6 +214,61 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
+    // Delete Record
+    if ($action == 'delete') {
+        try {
+            // Ambil ID dari POST request
+            $pengeluaranId = $_POST['id'] ?? null;
+
+            if (!$pengeluaranId || !is_numeric($pengeluaranId)) {
+                throw new Exception('ID pengeluaran tidak valid.');
+            }
+
+            // Mulai transaksi
+            $db->beginTransaction();
+
+            // Hapus data dari tabel pengeluaran_dana_bukti
+            $stmt = $db->prepare("SELECT file_path FROM pengeluaran_dana_bukti WHERE pengeluaran_id = :id");
+            $stmt->bindParam(':id', $pengeluaranId, PDO::PARAM_INT);
+            $stmt->execute();
+            $files = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            foreach ($files as $file) {
+                $filePath = __DIR__ . '/../assets/images/dana_pengeluaran/' . $file; // Pastikan path file benar
+                if (file_exists($filePath)) {
+                    unlink($filePath); // Hapus file dari sistem
+                }
+            }
+
+            // Hapus data dari tabel pengeluaran_dana_bukti
+            $stmt = $db->prepare("DELETE FROM pengeluaran_dana_bukti WHERE pengeluaran_id = :id");
+            $stmt->bindParam(':id', $pengeluaranId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            // Hapus data dari tabel pengeluaran_dana_item
+            $stmt = $db->prepare("DELETE FROM pengeluaran_dana_item WHERE pengeluaran_dana_id = :id");
+            $stmt->bindParam(':id', $pengeluaranId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            // Hapus data dari tabel pengeluaran_dana
+            $stmt = $db->prepare("DELETE FROM pengeluaran_dana WHERE id = :id");
+            $stmt->bindParam(':id', $pengeluaranId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            // Commit transaksi
+            $db->commit();
+
+            // Redirect atau kirim respons sukses
+            echo "<script>
+                alert('Data pengeluaran berhasil diapus.');
+                window.location.href = '/pengeluaran/detail-pengeluaran';
+            </script>";
+            exit;
+        } catch (Exception $e) {
+            $db->rollBack();
+            die('Gagal menghapus data: ' . $e->getMessage());
+        }
+    }
 
 }
 
@@ -257,6 +312,10 @@ ob_end_flush();
                                     </li>
                                     <li class="dropdown-item">
                                         <i class="bi bi-dash me-2"></i>
+                                        Detail Bukti (update, delete)
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
                                         Approval
                                     </li>
                                     <li class="dropdown-item">
@@ -268,7 +327,7 @@ ob_end_flush();
                                         Aksi Edit
                                     </li>
                                     <li class="dropdown-item">
-                                        <i class="bi bi-dash me-2"></i>
+                                        <i class="bi bi-check2 me-2"></i>
                                         Aksi Delete
                                     </li>
                                     <li class="dropdown-item">
@@ -323,7 +382,7 @@ ob_end_flush();
                                             <th>Pihak Terlibat</th>
                                             <th>Item Pengeluaran</th>
                                             <th>Total</th>
-                                            <th>Aksi</th>
+                                            <th class="text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -331,7 +390,7 @@ ob_end_flush();
                                             <tr>
                                                 <td><?= $row['pengeluaran_id'] ?? '-'; ?></td>
                                                 <td>
-                                                    <div class="text-end">
+                                                    <div>
                                                         <?= date('d M Y', strtotime($row['tanggal_pengeluaran'])) ?? '-'; ?>
                                                     </div>
                                                 </td>
@@ -350,34 +409,53 @@ ob_end_flush();
                                                     </div>
                                                 </td>
                                                 <td class="text-center">
-                                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                                        data-bs-target="#SModal" data-bs-id="<?= $row['pengeluaran_id']; ?>"
-                                                        data-bs-tanggal_pengeluaran="<?= $row['tanggal_pengeluaran']; ?>"
-                                                        data-bs-pihak_terlibat="<?= $row['pihak_terlibat']; ?>"
-                                                        data-bs-sumber_dana="<?= $row['sumber_dana']; ?>"
-                                                        data-bs-total="<?= $row['total']; ?>"
-                                                        data-items='<?= json_encode($row['items']); ?>'>
-                                                        <i class="bi bi-search"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                                                        data-bs-target="#editModal" data-bs-id="<?= $row['pengeluaran_id']; ?>"
-                                                        data-bs-tanggal_pengeluaran="<?= $row['tanggal_pengeluaran']; ?>"
-                                                        data-bs-pihak_terlibat="<?= $row['pihak_terlibat']; ?>"
-                                                        data-bs-sumber_dana="<?= $row['sumber_dana']; ?>"
-                                                        data-bs-total="<?= $row['total']; ?>"
-                                                        data-items='<?= json_encode($row['items']); ?>'>
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal"
-                                                        data-bs-target="#deleteModal"
-                                                        data-bs-id="<?= $row['pengeluaran_id']; ?>"
-                                                        data-bs-keterangan="<?= $row['ket_pengeluaran']; ?>"
-                                                        data-nama_pengeluaran="<?= $row['items'][0]['nama_pengeluaran'] ?? 'Tidak Ada'; ?>"
-                                                        data-items='<?= json_encode($row['items']); ?>'>
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                    </button>
-
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-link p-0" type="button"
+                                                            id="settings-<?= $kat['id'] ?>" data-bs-toggle="dropdown"
+                                                            aria-expanded="false">
+                                                            <i class="bi bi-three-dots-vertical"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end"
+                                                            aria-labelledby="settings-<?= $kat['id'] ?>">
+                                                            <li>
+                                                                <button class="dropdown-item" data-bs-toggle="modal"
+                                                                    data-bs-target="#detailModal"
+                                                                    data-bs-id="<?= $row['pengeluaran_id']; ?>"
+                                                                    data-bs-tanggal_pengeluaran="<?= $row['tanggal_pengeluaran']; ?>"
+                                                                    data-bs-pihak_terlibat="<?= $row['pihak_terlibat']; ?>"
+                                                                    data-bs-sumber_dana="<?= $row['sumber_dana']; ?>"
+                                                                    data-bs-total="<?= $row['total']; ?>"
+                                                                    data-items="<?= json_encode($row['items']); ?>">
+                                                                    <i class="bi bi-list-stars me-2"></i>
+                                                                    Detail
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <button class="dropdown-item" data-bs-toggle="modal"
+                                                                    data-bs-target="#editModal"
+                                                                    data-bs-id="<?= $row['pengeluaran_id']; ?>"
+                                                                    data-bs-tanggal_pengeluaran="<?= $row['tanggal_pengeluaran']; ?>"
+                                                                    data-bs-pihak_terlibat="<?= $row['pihak_terlibat']; ?>"
+                                                                    data-bs-sumber_dana="<?= $row['sumber_dana']; ?>"
+                                                                    data-bs-total="<?= $row['total']; ?>"
+                                                                    data-items='<?= json_encode($row['items']); ?>'>
+                                                                    <i class="bi bi-pencil me-2"></i>
+                                                                    Edit
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <button class="dropdown-item" data-bs-toggle="modal"
+                                                                    data-bs-target="#deleteModal"
+                                                                    data-bs-id="<?= $row['pengeluaran_id']; ?>"
+                                                                    data-bs-keterangan="<?= $row['ket_pengeluaran']; ?>"
+                                                                    data-nama_pengeluaran="<?= $row['items'][0]['nama_pengeluaran'] ?? 'Tidak Ada'; ?>"
+                                                                    data-items='<?= json_encode($row['items']); ?>'>
+                                                                    <i class="bi bi-trash me-2"></i>
+                                                                    Delete
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -709,9 +787,9 @@ ob_end_flush();
                                 <option selected disabled value="">Pilih pengeluaran
                                 </option>
                                 <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
-                                                                                                                <option value="<?php echo $dkp['id']; ?>">
-                                                                                                                    <?php echo $dkp['judul']; ?>
-                                                                                                                </option>
+                                                                                                                                                                                                                <option value="<?php echo $dkp['id']; ?>">
+                                                                                                                                                                                                                    <?php echo $dkp['judul']; ?>
+                                                                                                                                                                                                                </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -890,6 +968,12 @@ ob_end_flush();
 
                 const deleteForm = deleteModal.querySelector('#deleteForm');
                 deleteForm.querySelector('#delete-id').value = pengeluaranId;
+
+                // Debugging output
+                // console.log(
+                //     `ID: ${pengeluaranId}, Keterangan: ${keterangan}, Item: ${items.length > 0 ? items.map(item => item.id).join(', ') : 'No items'}`
+                // );
+
             });
         }
     });
