@@ -134,8 +134,7 @@ $stmt = $db->query("SELECT id, nis, nama_lengkap, kelas_id FROM siswa WHERE stat
 $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
-$stmt = $db->prepare("
-    SELECT 
+$stmt = $db->prepare("SELECT 
         rts.id AS riwayat_id,
         rtt.id AS detail_tarifspp_id,
         rtp.id AS detail_pembayaranlain_id,
@@ -143,12 +142,16 @@ $stmt = $db->prepare("
         s.nama_lengkap,
         k.nama_kelas,
         rts.tanggal_bayar,
+        rts.no_invoice,
         rts.jenis_bayar,
         rts.total_bayar,
+        -- rts.jumlah_bayar,
         ts.nama_tarif AS tarif_spp,
         rtt.tarif_spp_id,
+        rtt.jumlah_bayar AS jmlb_tfs,
         spl.nama_pembayaran AS pembayaran_lainnya,
-        rtp.pembayaran_lainnya_id
+        rtp.pembayaran_lainnya_id,
+        rtp.jumlah_bayar AS jmlb_pyl
     FROM riwayat_transaksi_siswa rts
     LEFT JOIN siswa s ON rts.siswa_id = s.id
     LEFT JOIN kelas k ON s.kelas_id = k.id
@@ -171,6 +174,7 @@ foreach ($results as $row) {
             'nis' => $row['nis'],
             'nama_lengkap' => $row['nama_lengkap'],
             'nama_kelas' => $row['nama_kelas'],
+            'no_invoice' => $row['no_invoice'],
             'tanggal_bayar' => $row['tanggal_bayar'],
             'jenis_bayar' => $row['jenis_bayar'],
             'total_bayar' => $row['total_bayar'],
@@ -183,16 +187,21 @@ foreach ($results as $row) {
         $combinedResults[$riwayatId]['items'][] = [
             'id' => $row['detail_tarifspp_id'],
             'jenis_bayar' => 'TS: ' . $row['tarif_spp'],
+            'jumlah_bayar' => 'Rp. ' . $row['jmlb_tfs'],
         ];
     }
     if ($row['detail_pembayaranlain_id']) {
         $combinedResults[$riwayatId]['items'][] = [
             'id' => $row['detail_pembayaranlain_id'],
             'jenis_bayar' => 'PL: ' . $row['pembayaran_lainnya'],
+            'jumlah_bayar' => 'Rp. ' . $row['jmlb_pyl'],
         ];
     }
 }
 
+// echo '<pre>';
+// print_r($combinedResults);
+// echo '</pre>';
 
 // Mengakhiri output buffering
 ob_end_flush();
@@ -241,7 +250,7 @@ ob_end_flush();
                                         data-bs-toggle="dropdown" aria-expanded="false">?</button>
                                     <ul class="dropdown-menu">
                                         <li class="dropdown-item">
-                                            <i class="bi bi-dash me-2"></i>
+                                            <i class="bi bi-x me-2"></i>
                                             Detail
                                         </li>
                                         <li class="dropdown-item">
@@ -249,7 +258,7 @@ ob_end_flush();
                                             Aksi Create
                                         </li>
                                         <li class="dropdown-item">
-                                            <i class="bi bi-dash me-2"></i>
+                                            <i class="bi bi-x me-2"></i>
                                             Aksi Edit
                                         </li>
                                         <li class="dropdown-item">
@@ -257,12 +266,16 @@ ob_end_flush();
                                             Aksi Delete
                                         </li>
                                         <li class="dropdown-item">
-                                            <i class="bi bi-dash me-2"></i>
+                                            <i class="bi bi-x me-2"></i>
                                             Export
                                         </li>
                                         <li class="dropdown-item">
-                                            <i class="bi bi-dash me-2"></i>
+                                            <i class="bi bi-x me-2"></i>
                                             Import
+                                        </li>
+                                        <li class="dropdown-item">
+                                            <i class="bi bi-dash me-2"></i>
+                                            Print
                                         </li>
                                     </ul>
                                 </div>
@@ -347,7 +360,17 @@ ob_end_flush();
                                                     <ul class="dropdown-menu dropdown-menu-end"
                                                         aria-labelledby="settings-<?= $kat['id'] ?>">
                                                         <li>
-                                                            <button class="dropdown-item" data-bs-toggle="modal">
+                                                            <button class="dropdown-item" data-bs-toggle="modal"
+                                                                data-bs-target="#showModal"
+                                                                data-bs-id="<?= $row['riwayat_id']; ?>"
+                                                                data-bs-nama_lengkap="<?= $row['nama_lengkap']; ?>"
+                                                                data-bs-nis="<?= $row['nis']; ?>"
+                                                                data-bs-nama_kelas="<?= $row['nama_kelas']; ?>"
+                                                                data-bs-no_invoice="<?= $row['no_invoice']; ?>"
+                                                                data-bs-tanggal="<?= $row['tanggal_bayar']; ?>"
+                                                                data-bs-jenis_bayar="<?= $row['jenis_bayar']; ?>"
+                                                                data-bs-total_bayar="<?= $row['total_bayar']; ?>"
+                                                                data-bs-items='<?= json_encode($row['items']); ?>'>
                                                                 <i class="bi bi-list-stars me-2"></i>
                                                                 Detail
                                                             </button>
@@ -529,6 +552,79 @@ ob_end_flush();
                     </div>
                 </div>
 
+                <!-- /.modal-dialog Show/Detail -->
+                <div class="modal fade" id="showModal" tabindex="-1" aria-labelledby="showModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="showModalLabel">Hapus Pembayaran</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <h3 class="text-center">Bukti Pembayaran</h3>
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <p>Nama : <span id="nama_lengkap"></span></p>
+                                        <p>NIS : <span id="nis"></span></p>
+                                    </div>
+                                    <div class="col-md-6 ms-auto">
+                                        <p>No. Invoice : <span id="no_invoice"></span></p>
+                                        <p>Tgl. Invoice : <span id="tanggal"></span></p>
+                                    </div>
+                                </div>
+                                <!-- <p>Berikut bukti pemayaran siswa.</p> -->
+                                <!-- <p class="fw-bold mt-3">Daftar Item:</p> -->
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Nama Pembayaran</th>
+                                            <th>Jumlah</th>
+                                            <th>Kurang</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td></td>
+                                            <td class="fw-bold">Total</td>
+                                            <td id="total_bayar"></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td class="fw-bold" id="jenis_bayar">Jenis Pembayaran()</td>
+                                            <td id="total_bayar">0</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td class="fw-bold">Kembali</td>
+                                            <td>0</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td class="fw-bold">Total kurang bayar</td>
+                                            <td></td>
+                                            <td>0</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="modal-footer">
+                                <form method="">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-danger">Print</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- /.modal-dialog delete -->
                 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
                     aria-hidden="true">
@@ -540,7 +636,8 @@ ob_end_flush();
                                     aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <p>Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dikembalikan.</p>
+                                <p>Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dikembalikan.
+                                </p>
                                 <p>Daftar Item:</p>
                                 <ul class="class-list"></ul>
                             </div>
@@ -743,8 +840,105 @@ ob_end_flush();
 
 
         document.addEventListener('DOMContentLoaded', function () {
-            const deleteModal = document.getElementById('deleteModal');
+            // show record
+            const showModal = document.getElementById('showModal');
+            if (showModal) {
+                showModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const id = button.getAttribute('data-bs-id');
+                    const nama_lengkap = button.getAttribute('data-bs-nama_lengkap');
+                    const nis = button.getAttribute('data-bs-nis');
+                    const nama_kelas = button.getAttribute('data-bs-nama_kelas');
+                    const no_invoice = button.getAttribute('data-bs-no_invoice');
+                    const tanggal = button.getAttribute('data-bs-tanggal');
+                    const jenis_bayar = button.getAttribute('data-bs-jenis_bayar');
+                    const total_bayar = button.getAttribute('data-bs-total_bayar');
 
+                    // Update the modal title
+                    const modalTitle = showModal.querySelector('.modal-title');
+                    modalTitle.textContent = `Data Pembayaran: ${nama_lengkap} ${nama_kelas}`;
+
+                    const classListContainer = showModal.querySelector('.table tbody');
+                    classListContainer.innerHTML = ''; // Clear previous content
+
+                    // Retrieve and display associated items
+                    const transaction = combinedResults[parseInt(id)];
+                    if (transaction && transaction.items.length > 0) {
+                        transaction.items.forEach((item, index) => {
+                            const row = document.createElement('tr');
+
+                            // Create and append cells
+                            const indexCell = document.createElement('th');
+                            indexCell.scope = 'row';
+                            indexCell.textContent = index + 1;
+                            row.appendChild(indexCell);
+
+                            const nameCell = document.createElement('td');
+                            nameCell.textContent = item.jenis_bayar || 'N/A'; // Nama Pembayaran
+                            row.appendChild(nameCell);
+
+                            const paidCell = document.createElement('td');
+                            paidCell.textContent = item.jumlah_bayar ||
+                                '0'; // Jumlah yang dibayarkan
+                            row.appendChild(paidCell);
+
+                            const remainingCell = document.createElement('td');
+                            remainingCell.textContent = item.jumlah_kurang || '0'; // Jumlah kurang
+                            row.appendChild(remainingCell);
+
+                            // Append the row to the table body
+                            classListContainer.appendChild(row);
+                        });
+                    } else {
+                        const noItemRow = document.createElement('tr');
+
+                        const noItemCell = document.createElement('td');
+                        noItemCell.colSpan = 4; // Span across all columns
+                        noItemCell.className = 'text-center';
+                        noItemCell.textContent = 'Tidak ada item terkait';
+
+                        noItemRow.appendChild(noItemCell);
+                        classListContainer.appendChild(noItemRow);
+                    }
+
+
+
+                    // format tanggal 
+                    function formatTanggal(tanggal) {
+                        const bulan = [
+                            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                        ];
+                        const [tahun, bulanIndex, hari] = tanggal.split('-');
+                        return `${parseInt(hari)} ${bulan[parseInt(bulanIndex) - 1]} ${tahun}`;
+                    }
+
+                    // Mengisi konten modal dengan data yang didapat
+                    document.getElementById('nama_lengkap').textContent = nama_lengkap;
+                    document.getElementById('nis').textContent = nis;
+                    // document.getElementById('nama_kelas').textContent = nama_kelas;
+                    document.getElementById('no_invoice').textContent = no_invoice;
+                    document.getElementById('tanggal').textContent = formatTanggal(tanggal);
+                    document.getElementById('jenis_bayar').textContent = jenis_bayar;
+                    document.getElementById('total_bayar').textContent = total_bayar;
+
+                    // // Debugging output
+                    // console.log(
+                    //     `ID: ${id}, 
+                    //         nama lengkap: ${nama_lengkap}, 
+                    //         NIS: ${nis}, 
+                    //         nama kelas: ${nama_kelas}, 
+                    //         no invoice: ${no_invoice}, 
+                    //         Tanggal: ${tanggal}, 
+                    //         jenis bayar: ${jenis_bayar}, 
+                    //         total bayar: ${total_bayar}, 
+                    //         Item: ${transaction ? transaction.items.map(item => item.id).join(', ') : 'No items'}`
+                    // );
+                });
+            }
+
+            // delete record
+            const deleteModal = document.getElementById('deleteModal');
             if (deleteModal) {
                 deleteModal.addEventListener('show.bs.modal', function (event) {
                     const button = event.relatedTarget;
@@ -783,6 +977,46 @@ ob_end_flush();
                     // );
                 });
             }
+        });
+
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const printButton = document.querySelector('.btn-danger'); // Tombol print
+            const modalBody = document.querySelector('#showModal .modal-body'); // Konten modal-body
+
+            printButton.addEventListener('click', function () {
+                // Ambil konten dari modal-body
+                const printContent = modalBody.innerHTML;
+
+                // Buat jendela baru untuk mencetak
+                const printWindow = window.open('', '', 'height=600,width=800');
+
+                // Tambahkan konten ke jendela baru
+                printWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>Cetak Bukti Pembayaran</title>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css">
+                    </head>
+                    <body>
+                        <div class="container mt-3">
+                            ${printContent}
+                        </div>
+                    </body>
+                    </html>
+                `);
+
+                // Tunggu hingga konten dimuat
+                printWindow.document.close();
+                printWindow.focus();
+
+                // Cetak halaman
+                printWindow.print();
+
+                // Tutup jendela setelah cetak
+                printWindow.close();
+            });
         });
     </script>
 

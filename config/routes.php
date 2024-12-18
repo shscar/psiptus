@@ -2,6 +2,7 @@
 // config/router.php
 
 $routes = [
+    '' => '/dashboard/login.php',
     '/dashboard' => '/dashboards/index.php',
     '/test' => '/testing/index.php',
     '/test2' => '/testing/index3.php',
