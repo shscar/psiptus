@@ -35,13 +35,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         echo "<script>
                 alert('Data siswa berhasil diHapus.');
                 window.location.href = '/siswa';
-              </script>";
+            </script>";
         exit();
     } else {
         echo "Error deleting record: " . $stmt->errorInfo()[2];
     }
-} else {
-    echo "Invalid request.";
 }
 
 // Mengakhiri output buffering
@@ -232,9 +230,7 @@ ob_end_flush();
                                     </tr>
                                 </table>
                                 </p>
-                                <p>
-                                    Tindakan ini tidak dapat dikembalikan!.
-                                </p>
+                                <p>Jika dihapus, Data tidak dapat dikembalikan!..</p>
                                 <input type="hidden" id="delete-id" name="delete-id" value="">
                             </div>
                             <div class="modal-footer">

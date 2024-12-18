@@ -1,11 +1,11 @@
 <?php
 include __DIR__ . '/../../layouts/master.php';
-$db = Database::getInstance();
+$db = Database::getInstance()->getConnection();
 
-$query = "SELECT 
-            kelas.id, 
-            kelas.nama_kelas, 
-            tingkat_kelas.tingkat, 
+$query = "SELECT
+            kelas.id,
+            kelas.nama_kelas,
+            tingkat_kelas.tingkat,
             tahun_ajaran.tahun
         FROM kelas
         JOIN tingkat_kelas ON kelas.tingkat_kelas_id = tingkat_kelas.id
@@ -13,9 +13,10 @@ $query = "SELECT
         -- WHERE tahun_ajaran.status = 'Aktif'
     ";
 
-$stmt = $conn->prepare($query);
+$stmt = $db->prepare($query);
 $stmt->execute();
-$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$resultKelas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nis = $_POST['nis'];
@@ -32,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Query untuk menambahkan data ke tabel siswa
         $sql = "INSERT INTO siswa (nis, nisn, nama_lengkap, jenis_kelamin, tanggal_lahir, tempat_lahir, alamat, kelas_id, status) 
                 VALUES (:nis, :nisn, :nama_lengkap, :jenis_kelamin, :tanggal_lahir, :tempat_lahir, :alamat, :kelas_id, :status)";
-        $stmt = $conn->prepare($sql);
+        $stmt = $db->prepare($sql);
         $stmt->bindParam(':nis', $nis, PDO::PARAM_STR);
         $stmt->bindParam(':nisn', $nisn, PDO::PARAM_STR);
         $stmt->bindParam(':nama_lengkap', $nama_lengkap, PDO::PARAM_STR);
@@ -47,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             echo "<script>
                     alert('Data siswa berhasil ditambahkan.');
                     window.location.href = '/siswa';
-                  </script>";
+                </script>";
             exit();
         } else {
             echo "Error: Gagal menambahkan data siswa.";
@@ -68,7 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
-    $conn = null;
+    $db = null;
 }
 ?>
 
@@ -111,67 +112,59 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <div class="row">
                                     <div class="form-group col-6 mb-3">
                                         <label for="nis">NIS</label>
-                                        <input type="text" class="form-control" id="nis" name="nis" required
-                                            maxlength="20" value="<?php echo $nis; ?>">
+                                        <input type="number" class="form-control" id="nis" name="nis" required
+                                            maxlength="20">
                                     </div>
                                     <div class="form-group col-6 mb-3">
                                         <label for="nisn">NISN</label>
                                         <input type="number" class="form-control" id="nisn" name="nisn" required
-                                            value="<?php echo $nisn; ?>">
+                                            >
                                     </div>
 
                                     <div class="form-group col-8 mb-3">
                                         <label for="nama_lengkap">Nama Lengkap</label>
                                         <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap"
-                                            required maxlength="100" value="<?php echo $nama_lengkap; ?>">
+                                            required maxlength="100" >
                                     </div>
                                     <div class="form-group col-md-4 mb-3">
                                         <label for="jenis_kelamin">Jenis Kelamin</label>
                                         <select class="form-control" id="jenis_kelamin" name="jenis_kelamin" required>
-                                            <option value="Laki-laki"
-                                                <?php echo ($jenis_kelamin == 'Laki-laki') ? 'selected' : ''; ?>>
-                                                Laki-laki</option>
-                                            <option value="Perempuan"
-                                                <?php echo ($jenis_kelamin == 'Perempuan') ? 'selected' : ''; ?>>
-                                                Perempuan</option>
+                                            <option value="No">Pilih</option>
+                                            <option value="Laki-laki">Laki-laki</option>
+                                            <option value="Perempuan">Perempuan</option>
                                         </select>
                                     </div>
                                     <div class="form-group col-md-4 mb-3">
                                         <label for="tanggal_lahir">Tanggal Lahir</label>
                                         <input type="date" class="form-control" id="tanggal_lahir" name="tanggal_lahir"
-                                            required value="<?php echo $tanggal_lahir; ?>">
+                                            required>
                                     </div>
                                     <div class="form-group col-md-8 mb-3">
                                         <label for="tempat_lahir">Tempat Lahir</label>
                                         <input type="text" class="form-control" id="tempat_lahir" name="tempat_lahir"
-                                            maxlength="50" value="<?php echo $tempat_lahir; ?>">
+                                            maxlength="50">
                                     </div>
                                     <div class="form-group col-md-12 mb-3">
                                         <label for="alamat">Alamat</label>
                                         <textarea class="form-control" id="alamat" name="alamat"
-                                            rows="3"><?php echo $alamat; ?></textarea>
+                                            rows="3"></textarea>
                                     </div>
                                     <div class="form-group col-md-6 mb-3">
                                         <label for="kelas_id">Kelas</label>
                                         <select class="form-control" id="kelas_id" name="kelas_id">
                                             <option value="">-- Pilih Kelas --</option>
-                                            <?php foreach ($result as $row): ?>
-                                            <option value="<?php echo $row['id']; ?>"
-                                                <?php echo ($kelas_id == $row['id']) ? 'selected' : ''; ?>>
-                                                <?php echo "{$row['tingkat']} {$row['nama_kelas']} - {$row['tahun']}"; ?>
-                                            </option>
+                                            <?php foreach ($resultKelas as $kelas): ?>
+                                                <option value="<?php echo $kelas['id']; ?>">
+                                                    <?php echo "{$kelas['tingkat']} {$kelas['nama_kelas']} - {$kelas['tahun']}"; ?>
+                                                </option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
                                     <div class="form-group col-md-6 mb-3">
                                         <label for="status">Status</label>
                                         <select class="form-control" id="status" name="status">
-                                            <option value="Aktif" <?php echo ($status == 'Aktif') ? 'selected' : ''; ?>>
-                                                Aktif
-                                            </option>
-                                            <option value="Tidak Aktif"
-                                                <?php echo ($status == 'Tidak Aktif') ? 'selected' : ''; ?>>Tidak Aktif
-                                            </option>
+                                            <option value="Aktif">Aktif</option>
+                                            <option value="Tidak Aktif">Tidak Aktif</option>
                                         </select>
                                     </div>
                                 </div>

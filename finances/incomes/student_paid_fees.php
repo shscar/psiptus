@@ -540,9 +540,8 @@ ob_end_flush();
                                     aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <p>Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dikembalikan.
-                                </p>
-                                <p>Daftar:</p>
+                                <p>Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dikembalikan.</p>
+                                <p>Daftar Item:</p>
                                 <ul class="class-list"></ul>
                             </div>
                             <div class="modal-footer">
