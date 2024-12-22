@@ -20,6 +20,10 @@ $routes = [
     '/siswa/tambah-siswa' => '/academics/students/create.php',
     '/siswa/edit-siswa' => '/academics/students/update.php',
 
+    // export data
+    '/export-data-siswa' => '/academics/students/export_siswa.php',
+    '/export_siswa_kelas' => '/academics/students/export_siswa_kelas.php',
+
     // lain-lain
     '/tahun-ajaran' => '/academics/school_years/index.php',
     '/tingkat-kelas' => '/academics/classrooms/grade_lv.php',

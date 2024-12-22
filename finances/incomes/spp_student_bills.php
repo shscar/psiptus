@@ -447,7 +447,7 @@ ob_end_flush();
                                                                     data-bs-id="<?= $tarif['tarif_spp_id']; ?>"
                                                                     data-nama_tarif="<?= $tarif['nama_tarif']; ?>">
                                                                     <i class="bi bi-list-stars"></i>
-                                                                    Pilih kelas
+                                                                    Edit kelas
                                                                 </button>
                                                             </li>
                                                             <li>

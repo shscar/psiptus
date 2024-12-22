@@ -6,22 +6,6 @@ include __DIR__ . '/../../layouts/master.php';
 $db = Database::getInstance()->getConnection();
 
 // Menyiapkan dan mengeksekusi query untuk mengambil data dari tabel siswa_pembayaran_lainnya
-// $stmt = $db->prepare("SELECT 
-//         pl.id,
-//         pl.nama_pembayaran,
-//         pl.bisa_diangsur,
-//         pl.nominal,
-//         pl.keterangan,
-//         pl.status_aktif,
-//         ta.tahun AS tahun_ajaran,
-//         pl.tahun_ajaran_id
-//     FROM siswa_pembayaran_lainnya pl
-//     LEFT JOIN tahun_ajaran ta ON pl.tahun_ajaran_id = ta.id
-//     ORDER BY pl.id DESC
-// ");
-// $stmt->execute();
-// $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-// SQL query untuk mengambil data dari siswa_pembayaran_lainnya dan semua kelas terkait
 $stmt = $db->prepare("SELECT 
     pl.id AS pembayaran_id,
     pl.nama_pembayaran,
@@ -496,7 +480,7 @@ ob_end_flush();
                                                                     data-bs-id="<?= $row['pembayaran_id']; ?>"
                                                                     data-nama_pembayaran="<?= $row['nama_pembayaran']; ?>">
                                                                     <i class="bi bi-list-stars"></i>
-                                                                    Pilih kelas
+                                                                    Edit kelas
                                                                 </button>
                                                             </li>
                                                             <li>
@@ -526,8 +510,6 @@ ob_end_flush();
                                                             </li>
                                                         </ul>
                                                     </div>
-                                                </td>
-                                                <td class="text-center">
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>

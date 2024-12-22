@@ -263,7 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                                 <td><?= $row['jurusan'] ?? '-'; ?></td>
                                                 <td><?= $row['tahun_ajaran'] ?? '-'; ?></td>
                                                 <td class="text-center">
-                                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
                                                         data-bs-target="#editModal" data-id="<?= $row['id'] ?? '-'; ?>"
                                                         data-tingkat_kelas_id="<?= $row['tingkat_kelas_id'] ?? '-'; ?>"
                                                         data-wali_kelas_id="<?= $row['wali_kelas_id'] ?? '-'; ?>"

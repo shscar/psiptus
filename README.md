@@ -1,11 +1,11 @@
 # psiptus
 
 Install & Run Phinx untuk membuat tabel database
-install Phinx:
+Install Phinx:
 
 - php composer.phar require robmorgan/phinx
 
-your first migration:
+Your first migration:
 
 - vendor/bin/phinx init .
 - vendor/bin/phinx migrate -e development
@@ -13,3 +13,7 @@ your first migration:
 Membuat folder
 
 - mkdir -p db/migrations db/seeds
+
+Instalasi Library PhpSpreadsheet
+
+- composer require phpoffice/phpspreadsheet

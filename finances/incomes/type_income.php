@@ -1,6 +1,6 @@
 <?php
 // Memulai output buffering
-ob_start(); 
+ob_start();
 
 include __DIR__ . '/../../layouts/master.php';
 $db = Database::getInstance()->getConnection();
@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo "Silakan isi semua bidang yang diperlukan!";
         }
     }
-    
+
     // Delete Record
     if ($action == 'delete') {
         $id = $_POST['id'];
@@ -186,30 +186,28 @@ ob_end_flush();
                                     </thead>
                                     <tbody>
                                         <?php foreach ($results as $index => $row): ?>
-                                        <tr>
-                                            <td><?= $index + 1; ?></td>
-                                            <td><?= $row['nama_pendapatan']; ?></td>
-                                            <td><?= $row['kategori']; ?></td>
-                                            <td><?= $row['periode']; ?></td>
-                                            <td><?= $row['sumber'] ?? '-'; ?></td>
-                                            <td class="text-center">
-                                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                                                    data-bs-target="#editModal" 
-                                                    data-id="<?= $row['id']; ?>"
-                                                    data-nama_pendapatan="<?= $row['nama_pendapatan']; ?>"
-                                                    data-kategori="<?= $row['kategori']; ?>"
-                                                    data-periode="<?= $row['periode']; ?>"
-                                                    data-sumber="<?= $row['sumber']; ?>">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                    data-bs-target="#deleteModal" 
-                                                    data-bs-id="<?= $row['id']; ?>" 
-                                                    data-nama_pendapatan="<?= $row['nama_pendapatan']; ?>">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                            <tr>
+                                                <td><?= $index + 1; ?></td>
+                                                <td><?= $row['nama_pendapatan']; ?></td>
+                                                <td><?= $row['kategori']; ?></td>
+                                                <td><?= $row['periode']; ?></td>
+                                                <td><?= $row['sumber'] ?? '-'; ?></td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                                        data-bs-target="#editModal" data-id="<?= $row['id']; ?>"
+                                                        data-nama_pendapatan="<?= $row['nama_pendapatan']; ?>"
+                                                        data-kategori="<?= $row['kategori']; ?>"
+                                                        data-periode="<?= $row['periode']; ?>"
+                                                        data-sumber="<?= $row['sumber']; ?>">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                                        data-bs-target="#deleteModal" data-bs-id="<?= $row['id']; ?>"
+                                                        data-nama_pendapatan="<?= $row['nama_pendapatan']; ?>">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
@@ -222,7 +220,8 @@ ob_end_flush();
             </div>
 
             <!-- /.modal-dialog create -->
-            <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+            <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel"
+                aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -234,7 +233,8 @@ ob_end_flush();
                                 <input type="hidden" name="action" value="create">
                                 <div class="form-group mb-3">
                                     <label for="nama_pendapatan" class="form-label">Nama Pendapatan</label>
-                                    <input type="text" class="form-control" id="nama_pendapatan" name="nama_pendapatan" required>
+                                    <input type="text" class="form-control" id="nama_pendapatan" name="nama_pendapatan"
+                                        required>
                                 </div>
                                 <div class="form-group mb-3">
                                     <label for="kategori" class="form-label">Kategori</label>
@@ -282,7 +282,8 @@ ob_end_flush();
                                 <input type="hidden" name="id" id="edit_id">
                                 <div class="form-group mb-3">
                                     <label for="edit_nama_pendapatan" class="form-label">Nama Pendapatan</label>
-                                    <input type="text" class="form-control" id="edit_nama_pendapatan" name="nama_pendapatan" required>
+                                    <input type="text" class="form-control" id="edit_nama_pendapatan"
+                                        name="nama_pendapatan" required>
                                 </div>
                                 <div class="form-group mb-3">
                                     <label for="edit_kategori" class="form-label">Kategori</label>
@@ -297,7 +298,8 @@ ob_end_flush();
                                 </div>
                                 <div class="form-group">
                                     <div class="mb-2">
-                                        <input type="checkbox" class="form-check-input" id="use_edit_priode" name="use_edit_priode">
+                                        <input type="checkbox" class="form-check-input" id="use_edit_priode"
+                                            name="use_edit_priode">
                                         <label class="form-check-label" for="use_edit_priode">Gunakan Periode</label>
                                     </div>
                                     <div id="priodeSelect2" class="mb-3">
@@ -349,82 +351,82 @@ ob_end_flush();
 
 <!-- Inisialisasi DataTables -->
 <script>
-$(document).ready(function() {
-    $('#datatable').DataTable({
-        "paging": true,
-        "lengthChange": true,
-        "searching": true,
-        "ordering": true,
-        "info": true,
-        "autoWidth": false,
-        "responsive": true
+    $(document).ready(function () {
+        $('#datatable').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true
+        });
     });
-});
 
-document.getElementById('use_priode').addEventListener('change', function() {
-    const priodeSelect = document.getElementById('priodeSelect');
-    priodeSelect.style.display = this.checked ? 'block' : 'none';
-});
+    document.getElementById('use_priode').addEventListener('change', function () {
+        const priodeSelect = document.getElementById('priodeSelect');
+        priodeSelect.style.display = this.checked ? 'block' : 'none';
+    });
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Handling Update
-    const editModal = document.getElementById('editModal');
-    if (editModal) {
-        editModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handling Update
+        const editModal = document.getElementById('editModal');
+        if (editModal) {
+            editModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
 
-            // Get data attributes from the button
-            const id = button.getAttribute('data-id');
-            const nama_pendapatan = button.getAttribute('data-nama_pendapatan');
-            const kategori = button.getAttribute('data-kategori');
-            const periode = button.getAttribute('data-periode');
-            const sumber = button.getAttribute('data-sumber');
+                // Get data attributes from the button
+                const id = button.getAttribute('data-id');
+                const nama_pendapatan = button.getAttribute('data-nama_pendapatan');
+                const kategori = button.getAttribute('data-kategori');
+                const periode = button.getAttribute('data-periode');
+                const sumber = button.getAttribute('data-sumber');
 
-            // Update the modal's content.
-            document.getElementById('edit_id').value = id;
-            document.getElementById('edit_nama_pendapatan').value = nama_pendapatan;
-            document.getElementById('edit_kategori').value = kategori;
-            document.getElementById('edit_sumber').value = sumber;
+                // Update the modal's content.
+                document.getElementById('edit_id').value = id;
+                document.getElementById('edit_nama_pendapatan').value = nama_pendapatan;
+                document.getElementById('edit_kategori').value = kategori;
+                document.getElementById('edit_sumber').value = sumber;
 
-            // Handling the "Gunakan Periode" checkbox and periode dropdown
-            const useEditPeriode = document.getElementById('use_edit_priode');
-            const priodeSelect = document.getElementById('priodeSelect2');
-            const editPeriode = document.getElementById('edit_periode');
+                // Handling the "Gunakan Periode" checkbox and periode dropdown
+                const useEditPeriode = document.getElementById('use_edit_priode');
+                const priodeSelect = document.getElementById('priodeSelect2');
+                const editPeriode = document.getElementById('edit_periode');
 
-            if (periode) {
-                useEditPeriode.checked = true;
-                priodeSelect.style.display = 'block';
-                editPeriode.value = periode;
-            } else {
-                useEditPeriode.checked = false;
-                priodeSelect.style.display = 'none';
-            }
+                if (periode) {
+                    useEditPeriode.checked = true;
+                    priodeSelect.style.display = 'block';
+                    editPeriode.value = periode;
+                } else {
+                    useEditPeriode.checked = false;
+                    priodeSelect.style.display = 'none';
+                }
 
-            // Toggle visibility of the periode dropdown when the checkbox changes
-            useEditPeriode.addEventListener('change', function() {
-                priodeSelect.style.display = this.checked ? 'block' : 'none';
+                // Toggle visibility of the periode dropdown when the checkbox changes
+                useEditPeriode.addEventListener('change', function () {
+                    priodeSelect.style.display = this.checked ? 'block' : 'none';
+                });
             });
-        });
-    }
+        }
 
-    // Handling Delete
-    const deleteModal = document.getElementById('deleteModal');
-    if (deleteModal) {
-        deleteModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-bs-id');
-            const nama_pendapatan = button.getAttribute('data-nama_pendapatan');
+        // Handling Delete
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-bs-id');
+                const nama_pendapatan = button.getAttribute('data-nama_pendapatan');
 
-            // Update the modal's content.
-            const modalTitle = deleteModal.querySelector('.modal-title');
-            modalTitle.textContent = `Hapus Data Tagihan: ${nama_pendapatan}`;
+                // Update the modal's content.
+                const modalTitle = deleteModal.querySelector('.modal-title');
+                modalTitle.textContent = `Hapus Data Tagihan: ${nama_pendapatan}`;
 
-            // Populate the form with the id
-            const form = deleteModal.querySelector('#deleteForm');
-            form.querySelector('#delete-id').value = id;
-        });
-    }
-})
+                // Populate the form with the id
+                const form = deleteModal.querySelector('#deleteForm');
+                form.querySelector('#delete-id').value = id;
+            });
+        }
+    })
 </script>
 
 <!-- DataTables CSS/JS Dependencies -->

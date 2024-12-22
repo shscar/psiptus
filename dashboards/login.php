@@ -1,7 +1,7 @@
 <?php
 
-include __DIR__ . '/../layouts/master.php';
-$db = Database::getInstance()->getConnection();
+// include __DIR__ . '/../layouts/master.php';
+// $db = Database::getInstance()->getConnection();
 ?>
 <!doctype html>
 <html lang="en">
@@ -23,7 +23,7 @@ $db = Database::getInstance()->getConnection();
     <div class="container-fluid px-4 py-5 my-5 text-center">
         <div class="lc-block mb-4">
             <div editable="rich">
-                <h2 class="display-2 fw-bold">Level up your <span class="text-primary">WordPress page!</span></h2>
+                <h2 class="display-2 fw-bold">Level up your <span class="text-primary">Page!</span></h2>
             </div>
         </div>
         <div class="lc-block col-lg-6 mx-auto mb-5">

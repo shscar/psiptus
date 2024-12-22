@@ -72,11 +72,15 @@ ob_end_flush();
                                         Aksi Delete
                                     </li>
                                     <li class="dropdown-item">
-                                        <i class="bi bi-dash me-2"></i>
-                                        Export
+                                        <i class="bi bi-check2 me-2"></i>
+                                        Export All
                                     </li>
                                     <li class="dropdown-item">
-                                        <i class="bi bi-dash me-2"></i>
+                                        <i class="bi bi-check2 me-2"></i>
+                                        Export Sesuai Kelas
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-x me-2"></i>
                                         Import
                                     </li>
                                 </ul>
@@ -111,6 +115,9 @@ ob_end_flush();
                                     onclick="window.location.href='/siswa/tambah-siswa';">
                                     <i class="fas fa-plus"></i> Tambah
                                 </button>
+                                <button id="exportExcel" class="btn btn-success btn-sm">Export All</button>
+                                <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#ExportKelas">Export Kelas</button>
                             </div>
                             <?php
                             if (!empty($success)) {
@@ -162,7 +169,7 @@ ob_end_flush();
                                                     <span class="<?php echo $badgeClass; ?>"><?php echo $statusText; ?></span>
                                                 </td>
                                                 <td class="project-actions text-right">
-                                                    <button class="btn btn-info btn-sm"
+                                                    <button class="btn btn-warning btn-sm"
                                                         onclick="window.location.href='/siswa/edit-siswa?<?= htmlspecialchars($row['id']); ?>'">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
@@ -242,6 +249,38 @@ ob_end_flush();
                 </div>
             </div>
 
+            <!-- /.modal-dialog export data per kelas -->
+            <div class="modal fade" id="ExportKelas" tabindex="-1" aria-labelledby="ExportKelasLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="ExportKelasLabel">Export Data Kelas</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="exportSiswaKelas" action="/export_siswa_kelas" method="post">
+                                <label for="kelas_id" class="form-label">Pilih Kelas:</label>
+                                <select name="kelas_id" id="kelas_id" class="form-select" required>
+                                    <?php
+                                    // Ambil data kelas
+                                    $query = $db->query("SELECT id, nama_kelas FROM kelas ORDER BY nama_kelas ASC");
+                                    while ($kelas = $query->fetch(PDO::FETCH_ASSOC)) {
+                                        echo "<option value='{$kelas['id']}'>{$kelas['nama_kelas']}</option>";
+                                    }
+                                    ?>
+                                </select>
+                                <!-- <button type="submit" class="btn btn-success">Export Kelas</button> -->
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" form="exportSiswaKelas" class="btn btn-primary">Download</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -289,6 +328,10 @@ ob_end_flush();
                 document.getElementById('kelas').textContent = kelas;
             });
         }
+    });
+
+    document.getElementById('exportExcel').addEventListener('click', function () {
+        window.location.href = '/export-data-siswa';
     });
 </script>
 
