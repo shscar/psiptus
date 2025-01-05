@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-final class CreatePemasukanDanaBosTable extends AbstractMigration
+final class CreatePemasukanDanaTable extends AbstractMigration
 {
     /**
      * Change Method.
@@ -19,7 +19,7 @@ final class CreatePemasukanDanaBosTable extends AbstractMigration
      */
     public function change(): void
     {
-        $table = $this->table('pemasukan_dana_bos');
+        $table = $this->table('pemasukan_dana');
         $table->addColumn('tanggal', 'date', ['null' => false])
             ->addColumn('deskripsi', 'string', ['null' => true])
             ->addColumn('nominal', 'decimal', ['precision' => 15, 'scale' => 2, 'null' => false])

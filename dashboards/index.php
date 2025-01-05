@@ -11,9 +11,9 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 $totalSiswa = $result['total'];
 
 // menghitung jumlah dana bos yang masuk
-$stmt = $db->prepare("SELECT SUM(nominal) AS total_bos_masuk FROM pemasukan_dana_bos");
+$stmt = $db->prepare("SELECT SUM(nominal) AS total_bos_masuk FROM pemasukan_dana");
 $stmt->execute();
-$totalBosMasuk = $stmt->fetchColumn();
+$totalMasuk = $stmt->fetchColumn();
 
 // menghitung total dari total_jumlah
 $stmt = $db->query("SELECT SUM(total) AS total_dana_keluar FROM pengeluaran_dana");
@@ -77,7 +77,7 @@ $totalDanaKeluar = $result['total_dana_keluar'] ? $result['total_dana_keluar'] :
                         <div class="info-box-content">
                             <span class="info-box-text">Pemasukan D</span>
                             <span class="info-box-number">
-                                Rp. <?php echo number_format($totalBosMasuk, 2, ',', '.'); ?>
+                                Rp. <?php echo number_format($totalMasuk, 2, ',', '.'); ?>
                             </span>
                         </div>
                     </div>

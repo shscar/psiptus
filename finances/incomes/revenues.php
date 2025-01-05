@@ -5,7 +5,7 @@ ob_start();
 include __DIR__ . '/../../layouts/master.php';
 $db = Database::getInstance()->getConnection();
 
-// query untuk mengambil data dari tabel `pemasukan_dana_bos`
+// query untuk mengambil data dari tabel `pemasukan_dana`
 $stmt = $db->prepare("SELECT 
         p.id,
         p.tanggal,
@@ -15,7 +15,7 @@ $stmt = $db->prepare("SELECT
         p.keterangan,
         ta.tahun AS tahun_ajaran,
         p.tahun_ajaran_id
-    FROM pemasukan_dana_bos p
+    FROM pemasukan_dana p
     LEFT JOIN tahun_ajaran ta ON p.tahun_ajaran_id = ta.id
     ORDER BY p.id DESC
 ");
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (!empty($tanggal) && !empty($deskripsi) && !empty($nominal) && !empty($sumber_dana)) {
             try {
                 // Siapkan query SQL
-                $sql = "INSERT INTO pemasukan_dana_bos 
+                $sql = "INSERT INTO pemasukan_dana 
                         (tanggal, deskripsi, nominal, sumber_dana, tahun_ajaran_id, keterangan) 
                         VALUES (:tanggal, :deskripsi, :nominal, :sumber_dana, :tahun_ajaran_id, :keterangan)";
                 $stmt = $conn->prepare($sql);
@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (!empty($id) && !empty($tanggal) && !empty($deskripsi) && !empty($nominal) && !empty($sumber_dana)) {
             try {
                 // Siapkan query SQL untuk update
-                $sql = "UPDATE pemasukan_dana_bos 
+                $sql = "UPDATE pemasukan_dana 
                         SET tanggal = :tanggal, 
                             deskripsi = :deskripsi, 
                             nominal = :nominal, 
@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (!empty($id)) {
             try {
                 // Siapkan query SQL untuk delete
-                $sql = "DELETE FROM pemasukan_dana_bos WHERE id = :id";
+                $sql = "DELETE FROM pemasukan_dana WHERE id = :id";
                 $stmt = $conn->prepare($sql);
 
                 // Bind parameter dan eksekusi
@@ -252,7 +252,7 @@ ob_end_flush();
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="createModalLabel">Tambah Pemasukan Dana BOS</h5>
+                            <h5 class="modal-title" id="createModalLabel">Tambah Pemasukan Dana</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -313,7 +313,7 @@ ob_end_flush();
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="editModalLabel">Edit Pemasukan Dana BOS</h5>
+                            <h5 class="modal-title" id="editModalLabel">Edit Pemasukan Dana</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -370,12 +370,13 @@ ob_end_flush();
                 </div>
             </div>
 
+            <!-- /.modal-dialog Delete New Record -->
             <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
                 aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="deleteModalLabel">Hapus Pemasukan Dana BOS</h5>
+                            <h5 class="modal-title" id="deleteModalLabel">Hapus Pemasukan Dana</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">

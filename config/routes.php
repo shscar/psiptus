@@ -34,9 +34,7 @@ $routes = [
     '/pendapatan/pembayaran-siswa' => '/finances/incomes/student_paid_fees.php',
     '/pendapatan/tagihan-spp-siswa' => '/finances/incomes/spp_student_bills.php',
     '/pendapatan/tagihan-lain-siswa' => '/finances/incomes/other_student_bills.php',
-    '/pendapatan/pemasukan-bos' => '/finances/incomes/revenues_bos.php',
-    '/pendapatan/pemasukan-lain' => '/finances/incomes/revenues_other.php',
-    '/pendapatan/jenis-pemasukan' => '/finances/incomes/type_income.php',
+    '/pendapatan/pemasukan' => '/finances/incomes/revenues.php',
     // child
     '/child-update-tarif' => '/finances/incomes/child_tarif_spp_kelas_realtime.php',
     '/pendapatan/student_paid_fees_child' => '/finances/incomes/student_paid_fees_child.php',

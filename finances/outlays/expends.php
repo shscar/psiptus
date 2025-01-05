@@ -363,7 +363,7 @@ ob_end_flush();
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Grade Level </h3>
                     <div class="ms-auto">
-                        <button type="button" class="btn btn-primary btn-sm"
+                        <button type="button" class="btn btn-info btn-sm"
                             onclick="document.location='/pengeluaran/kategori-pengeluaran'">
                             <i class="bi pe-1"></i>Kategori
                         </button>
@@ -793,9 +793,9 @@ ob_end_flush();
                                 <option selected disabled value="">Pilih pengeluaran
                                 </option>
                                 <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
-                                                                                                                                                                                                                                                    <option value="<?php echo $dkp['id']; ?>">
-                                                                                                                                                                                                                                                        <?php echo $dkp['judul']; ?>
-                                                                                                                                                                                                                                                    </option>
+                                                                                                                                                                                                                                                        <option value="<?php echo $dkp['id']; ?>">
+                                                                                                                                                                                                                                                            <?php echo $dkp['judul']; ?>
+                                                                                                                                                                                                                                                        </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>

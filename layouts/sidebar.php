@@ -19,11 +19,13 @@ $dropdownRoutes = [
         '/pendapatan/tagihan-lain-siswa',
     ],
     'sid-03' => [
-        '/pendapatan/pemasukan-bos',
         '/pendapatan/pemasukan-lain',
-        '/pendapatan/jenis-pemasukan'
     ],
-    'sid-04' => ['/pengeluaran/kategori-pengeluaran', '/pengeluaran/detail-pengeluaran'],
+    'sid-04' => [
+        '/pendapatan/pemasukan',
+        '/pengeluaran/kategori-pengeluaran',
+        '/pengeluaran/detail-pengeluaran'
+    ],
 ];
 
 $activeDropdown = null;
@@ -104,7 +106,7 @@ foreach ($dropdownRoutes as $key => $routes) {
                     <a href="#" class="nav-link <?php echo $activeDropdown === 'sid-02' ? 'active' : ''; ?>">
                         <i class="nav-icon bi bi-cash-coin"></i>
                         <p>
-                            T&P Siswa
+                            Tagihan Siswa
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
@@ -133,7 +135,7 @@ foreach ($dropdownRoutes as $key => $routes) {
                         </li>
                     </ul>
                 </li>
-                <li class="nav-item dropdown <?php echo $activeDropdown === 'sid-03' ? 'menu-open' : ''; ?>">
+                <!-- <li class="nav-item dropdown <?php echo $activeDropdown === 'sid-03' ? 'menu-open' : ''; ?>">
                     <a href="#" class="nav-link <?php echo $activeDropdown === 'sid-03' ? 'active' : ''; ?>">
                         <i class="nav-icon bi bi-cash-coin"></i>
                         <p>
@@ -143,13 +145,7 @@ foreach ($dropdownRoutes as $key => $routes) {
                     </a>
                     <ul class="nav nav-treeview"
                         style="<?php echo $activeDropdown === 'sid-03' ? 'display: block;' : 'display: none;'; ?>">
-                        <li class="nav-item">
-                            <a href="/pendapatan/pemasukan-bos"
-                                class="nav-link ms-3 <?php echo isActive('/pendapatan/pemasukan-bos', $requestUri); ?>">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Dana BOS</p>
-                            </a>
-                        </li>
+
                         <li class="nav-item">
                             <a href="/pendapatan/pemasukan-lain"
                                 class="nav-link ms-3 <?php echo isActive('/pendapatan/pemasukan-lain', $requestUri); ?>">
@@ -157,55 +153,30 @@ foreach ($dropdownRoutes as $key => $routes) {
                                 <p>Pendapatan lain-lain</p>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a href="/pendapatan/jenis-pemasukan"
-                                class="nav-link ms-3 <?php echo isActive('/pendapatan/jenis-pemasukan', $requestUri); ?>">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Jenis Pendapatan</p>
-                            </a>
-                        </li>
-                        <!-- <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Event</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Mitra</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Infaq</p>
-                            </a>
-                        </li> -->
                     </ul>
-                </li>
+                </li> -->
                 <li class="nav-item dropdown <?php echo $activeDropdown === 'sid-04' ? 'menu-open' : ''; ?>">
                     <a href="#" class="nav-link <?php echo $activeDropdown === 'sid-04' ? 'active' : ''; ?>">
                         <i class="nav-icon bi bi-cash-stack"></i>
                         <p>
-                            pengeluaran
+                            Pembiayaan
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
                     <ul class="nav nav-treeview"
                         style="<?php echo $activeDropdown === 'sid-04' ? 'display: block;' : 'display: none;'; ?>">
                         <li class="nav-item">
-                            <a href="/pengeluaran/kategori-pengeluaran"
-                                class="nav-link ms-3 <?php echo isActive('/pengeluaran/kategori-pengeluaran', $requestUri); ?>">
+                            <a href="/pendapatan/pemasukan"
+                                class="nav-link ms-3 <?php echo isActive('/pendapatan/pemasukan', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
-                                <p>Jenis Pengeluaran</p>
+                                <p>Pendapatan Dana</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pengeluaran/detail-pengeluaran"
                                 class="nav-link ms-3 <?php echo isActive('/pengeluaran/detail-pengeluaran', $requestUri); ?>">
                                 <i class="nav-icon bi bi-circle"></i>
-                                <p>Kebutuhan Pengeluaran</p>
+                                <p>Pengeluaran</p>
                             </a>
                         </li>
                         <!-- <li class="nav-item">
@@ -235,26 +206,26 @@ foreach ($dropdownRoutes as $key => $routes) {
 
 <!--begin::OverlayScrollbars Configure-->
 <script>
-    const SELECTOR_SIDEBAR_WRAPPER = ".sidebar-wrapper";
-    const Default = {
-        scrollbarTheme: "os-theme-light",
-        scrollbarAutoHide: "leave",
-        scrollbarClickScroll: true,
-    };
-    document.addEventListener("DOMContentLoaded", function () {
-        const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
-        if (
-            sidebarWrapper &&
-            typeof OverlayScrollbarsGlobal?.OverlayScrollbars !== "undefined"
-        ) {
-            OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
-                scrollbars: {
-                    theme: Default.scrollbarTheme,
-                    autoHide: Default.scrollbarAutoHide,
-                    clickScroll: Default.scrollbarClickScroll,
-                },
-            });
-        }
-    });
+const SELECTOR_SIDEBAR_WRAPPER = ".sidebar-wrapper";
+const Default = {
+    scrollbarTheme: "os-theme-light",
+    scrollbarAutoHide: "leave",
+    scrollbarClickScroll: true,
+};
+document.addEventListener("DOMContentLoaded", function() {
+    const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+    if (
+        sidebarWrapper &&
+        typeof OverlayScrollbarsGlobal?.OverlayScrollbars !== "undefined"
+    ) {
+        OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+            scrollbars: {
+                theme: Default.scrollbarTheme,
+                autoHide: Default.scrollbarAutoHide,
+                clickScroll: Default.scrollbarClickScroll,
+            },
+        });
+    }
+});
 </script>
 <!--end::OverlayScrollbars Configure-->

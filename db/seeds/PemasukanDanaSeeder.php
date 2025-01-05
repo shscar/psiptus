@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Phinx\Seed\AbstractSeed;
 
-class PemasukanDanaBosSeeder extends AbstractSeed
+class PemasukanDanaSeeder extends AbstractSeed
 {
     /**
      * Run Method.
@@ -43,7 +43,7 @@ class PemasukanDanaBosSeeder extends AbstractSeed
             ],
         ];
 
-        $pemasukanDanaBos = $this->table('pemasukan_dana_bos');
-        $pemasukanDanaBos->insert($data)->save();
+        $pemasukanDana = $this->table('pemasukan_dana');
+        $pemasukanDana->insert($data)->save();
     }
 }

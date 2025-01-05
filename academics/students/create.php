@@ -77,111 +77,163 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <main class="app-main">
     <div class="app-content-header">
         <div class="container-fluid">
+
             <div class="row">
                 <div class="col-sm-6">
-                    <h3 class="mb-0">Form S</h3>
+                    <h3 class="mb-0">Form Siswa</h3>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            Form S
+                            Student-C
                         </li>
                     </ol>
                 </div>
             </div>
+
         </div>
     </div>
+
     <!-- App Content -->
     <div class="app-content">
         <div class="container-fluid">
-            <div class="row g-4">
-                <div class="col-md-12">
-                    <div class="card card-primary card-outline mb-4">
-                        <div class="card-header">
-                            <div class="card-title">Form Tambah S</div>
-                            <?php
-                                if (!empty($error)) {
-                                    // echo '<div class="alert alert-danger">' . $error . '</div>';
-                                    echo '<div class="alert alert-danger">' . $error . '</div>';
-                                }
-                            ?>
-                        </div>
-                        <form action="#" method="POST">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="form-group col-6 mb-3">
-                                        <label for="nis">NIS</label>
-                                        <input type="number" class="form-control" id="nis" name="nis" required
-                                            maxlength="20">
-                                    </div>
-                                    <div class="form-group col-6 mb-3">
-                                        <label for="nisn">NISN</label>
-                                        <input type="number" class="form-control" id="nisn" name="nisn" required
-                                            >
-                                    </div>
 
-                                    <div class="form-group col-8 mb-3">
-                                        <label for="nama_lengkap">Nama Lengkap</label>
-                                        <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap"
-                                            required maxlength="100" >
+            <ul class="nav nav-tabs" id="formTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual"
+                        type="button" role="tab" aria-controls="manual" aria-selected="true">
+                        Masukan Data (Form Manual)
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="excel-tab" data-bs-toggle="tab" data-bs-target="#excel" type="button"
+                        role="tab" aria-controls="excel" aria-selected="false">
+                        Masukan dengan Excel
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="formTabsContent">
+                <!-- Form Manual -->
+                <div class="tab-pane fade show active" id="manual" role="tabpanel" aria-labelledby="manual-tab">
+                    <div class="row g-4">
+                        <div class="col-md-12">
+                            <div class="card card-primary card-outline mb-4">
+                                <div class="card-header">
+                                    <div class="card-title">Form Tambah Siswa</div>
+                                    <?php
+                                    if (!empty($error)) {
+                                        // echo '<div class="alert alert-danger">' . $error . '</div>';
+                                        echo '<div class="alert alert-danger">' . $error . '</div>';
+                                    }
+                                    ?>
+                                </div>
+                                <form action="#" method="POST">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="form-group col-6 mb-3">
+                                                <label for="nis">NIS</label>
+                                                <input type="number" class="form-control" id="nis" name="nis" required
+                                                    maxlength="20">
+                                            </div>
+                                            <div class="form-group col-6 mb-3">
+                                                <label for="nisn">NISN</label>
+                                                <input type="number" class="form-control" id="nisn" name="nisn"
+                                                    required>
+                                            </div>
+
+                                            <div class="form-group col-8 mb-3">
+                                                <label for="nama_lengkap">Nama Lengkap</label>
+                                                <input type="text" class="form-control" id="nama_lengkap"
+                                                    name="nama_lengkap" required maxlength="100">
+                                            </div>
+                                            <div class="form-group col-md-4 mb-3">
+                                                <label for="jenis_kelamin">Jenis Kelamin</label>
+                                                <select class="form-control" id="jenis_kelamin" name="jenis_kelamin"
+                                                    required>
+                                                    <option value="No">Pilih</option>
+                                                    <option value="Laki-laki">Laki-laki</option>
+                                                    <option value="Perempuan">Perempuan</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group col-md-4 mb-3">
+                                                <label for="tanggal_lahir">Tanggal Lahir</label>
+                                                <input type="date" class="form-control" id="tanggal_lahir"
+                                                    name="tanggal_lahir" required>
+                                            </div>
+                                            <div class="form-group col-md-8 mb-3">
+                                                <label for="tempat_lahir">Tempat Lahir</label>
+                                                <input type="text" class="form-control" id="tempat_lahir"
+                                                    name="tempat_lahir" maxlength="50">
+                                            </div>
+                                            <div class="form-group col-md-12 mb-3">
+                                                <label for="alamat">Alamat</label>
+                                                <textarea class="form-control" id="alamat" name="alamat"
+                                                    rows="3"></textarea>
+                                            </div>
+                                            <div class="form-group col-md-6 mb-3">
+                                                <label for="kelas_id">Kelas</label>
+                                                <select class="form-control" id="kelas_id" name="kelas_id">
+                                                    <option value="">-- Pilih Kelas --</option>
+                                                    <?php foreach ($resultKelas as $kelas): ?>
+                                                    <option value="<?php echo $kelas['id']; ?>">
+                                                        <?php echo "{$kelas['tingkat']} {$kelas['nama_kelas']} - {$kelas['tahun']}"; ?>
+                                                    </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                            <div class="form-group col-md-6 mb-3">
+                                                <label for="status">Status</label>
+                                                <select class="form-control" id="status" name="status">
+                                                    <option value="Aktif">Aktif</option>
+                                                    <option value="Tidak Aktif">Tidak Aktif</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="form-group col-md-4 mb-3">
-                                        <label for="jenis_kelamin">Jenis Kelamin</label>
-                                        <select class="form-control" id="jenis_kelamin" name="jenis_kelamin" required>
-                                            <option value="No">Pilih</option>
-                                            <option value="Laki-laki">Laki-laki</option>
-                                            <option value="Perempuan">Perempuan</option>
-                                        </select>
+                                    <div class="card-footer">
+                                        <button type="button" class="btn btn-secondary" onclick="history.back();">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                        <button type="submit" class="btn btn-primary">
+                                            Submit
+                                        </button>
                                     </div>
-                                    <div class="form-group col-md-4 mb-3">
-                                        <label for="tanggal_lahir">Tanggal Lahir</label>
-                                        <input type="date" class="form-control" id="tanggal_lahir" name="tanggal_lahir"
-                                            required>
-                                    </div>
-                                    <div class="form-group col-md-8 mb-3">
-                                        <label for="tempat_lahir">Tempat Lahir</label>
-                                        <input type="text" class="form-control" id="tempat_lahir" name="tempat_lahir"
-                                            maxlength="50">
-                                    </div>
-                                    <div class="form-group col-md-12 mb-3">
-                                        <label for="alamat">Alamat</label>
-                                        <textarea class="form-control" id="alamat" name="alamat"
-                                            rows="3"></textarea>
-                                    </div>
-                                    <div class="form-group col-md-6 mb-3">
-                                        <label for="kelas_id">Kelas</label>
-                                        <select class="form-control" id="kelas_id" name="kelas_id">
-                                            <option value="">-- Pilih Kelas --</option>
-                                            <?php foreach ($resultKelas as $kelas): ?>
-                                                <option value="<?php echo $kelas['id']; ?>">
-                                                    <?php echo "{$kelas['tingkat']} {$kelas['nama_kelas']} - {$kelas['tahun']}"; ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                    <div class="form-group col-md-6 mb-3">
-                                        <label for="status">Status</label>
-                                        <select class="form-control" id="status" name="status">
-                                            <option value="Aktif">Aktif</option>
-                                            <option value="Tidak Aktif">Tidak Aktif</option>
-                                        </select>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Excel -->
+                <div class="tab-pane fade" id="excel" role="tabpanel" aria-labelledby="excel-tab">
+                    <div class="row g-4">
+                        <div class="col-md-12">
+                            <div class="card card-primary card-outline mb-4">
+                                <div class="card-header">
+                                    <h4>Form Excel</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <form>
+                                            <div class="mb-3">
+                                                <label for="upload" class="form-label">Upload File Excel</label>
+                                                <input type="file" class="form-control" id="upload"
+                                                    accept=".xlsx, .xls">
+                                            </div>
+                                            <button type="submit" class="btn btn-warning">Upload</button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
-                            <div class="card-footer">
-                                <button type="button" class="btn btn-secondary" onclick="history.back();">
-                                    <i class="fas fa-times"></i> Cancel
-                                </button>
-                                <button type="submit" class="btn btn-primary">
-                                    Submit
-                                </button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
+    </div>
     </div>
 </main>
 <!--end::App Main-->
