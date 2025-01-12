@@ -544,7 +544,7 @@ ob_end_flush();
                                     <label for="nominal" class="form-label">Nominal</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp.</span>
-                                        <input type="number" class="form-control" id="nominal" name="nominal" required
+                                        <input type="text" class="form-control" id="nominal" name="nominal" required
                                             aria-label="Jumlah (ke rupiah)" />
                                         <span class="input-group-text">.00</span>
                                     </div>
@@ -615,7 +615,7 @@ ob_end_flush();
                                     <label for="edit_nominal" class="form-label">Nominal</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp.</span>
-                                        <input type="number" class="form-control" id="edit_nominal" name="nominal"
+                                        <input type="text" class="form-control" id="edit_nominal" name="nominal"
                                             required aria-label="Jumlah (ke rupiah)" />
                                         <span class="input-group-text">.00</span>
                                     </div>
@@ -751,6 +751,18 @@ ob_end_flush();
         });
     });
 
+    // format mata uang rupiah 
+    const nominal = document.getElementById('nominal');
+    nominal.addEventListener('keyup', function (e) {
+        nominal.value = formatRupiah(this.value);
+    });
+    const edit_nominal = document.getElementById('edit_nominal');
+    edit_nominal.addEventListener('keyup', function (e) {
+        // Menghapus karakter non-numeric sebelum memformat
+        const numericValue = parseRupiah(this.value);
+        edit_nominal.value = formatRupiah(numericValue);
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         // Handling Update
         const editModal = document.getElementById('editModal');
@@ -774,7 +786,7 @@ ob_end_flush();
                 // Populate the form in the modal with the data
                 document.getElementById('edit_id').value = id;
                 document.getElementById('edit_nama_pembayaran').value = nama_pembayaran;
-                document.getElementById('edit_nominal').value = nominal;
+                document.getElementById('edit_nominal').value = formatRupiah(nominal);
                 document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;
                 document.getElementById('edit_keterangan').value = keterangan;
                 document.getElementById('edit_bisa_diangsur').checked = bisa_diangsur;

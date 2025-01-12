@@ -132,8 +132,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Ambil data siswa dari database untuk digunakan di Select2
 $stmt = $db->query("SELECT id, nis, nama_lengkap, kelas_id FROM siswa WHERE status = 'Aktif'");
 $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-
 $stmt = $db->prepare("SELECT 
         rts.id AS riwayat_id,
         rtt.id AS detail_tarifspp_id,
@@ -180,6 +178,8 @@ foreach ($results as $row) {
             'total_bayar' => $row['total_bayar'],
             'detail_tarifspp_ids' => [],
             'detail_pembayaranlain_ids' => [],
+            'total_tagihan' => 0, // Akan dihitung dari items
+            'jumlah_kurang' => 0, // Akan dihitung
             'items' => [],
         ];
     }
@@ -189,6 +189,7 @@ foreach ($results as $row) {
             'jenis_bayar' => 'TS: ' . $row['tarif_spp'],
             'jumlah_bayar' => 'Rp. ' . $row['jmlb_tfs'],
         ];
+        $combinedResults[$riwayatId]['total_tagihan'] += $row['jmlb_tfs'];
     }
     if ($row['detail_pembayaranlain_id']) {
         $combinedResults[$riwayatId]['items'][] = [
@@ -196,7 +197,17 @@ foreach ($results as $row) {
             'jenis_bayar' => 'PL: ' . $row['pembayaran_lainnya'],
             'jumlah_bayar' => 'Rp. ' . $row['jmlb_pyl'],
         ];
+        $combinedResults[$riwayatId]['total_tagihan'] += $row['jmlb_pyl'];
     }
+
+    // Hitung jumlah kurang
+    $combinedResults[$riwayatId]['jumlah_kurang'] =
+        $combinedResults[$riwayatId]['total_tagihan'] - $combinedResults[$riwayatId]['total_bayar'];
+}
+
+// Mengembalikan hasil
+foreach ($combinedResults as &$result) {
+    $result['jumlah_kurang'] = max($result['jumlah_kurang'], 0); // Tidak ada kurang bayar negatif
 }
 
 // echo '<pre>';
@@ -250,7 +261,7 @@ ob_end_flush();
                                         data-bs-toggle="dropdown" aria-expanded="false">?</button>
                                     <ul class="dropdown-menu">
                                         <li class="dropdown-item">
-                                            <i class="bi bi-x me-2"></i>
+                                            <i class="bi bi-dash me-2"></i>
                                             Detail
                                         </li>
                                         <li class="dropdown-item">
@@ -406,7 +417,7 @@ ob_end_flush();
 
                 <!-- Add Data Modal -->
                 <div class="modal fade" id="addDataModal" tabindex="-1" aria-labelledby="addDataLabel"
-                    aria-hidden="true">
+                    aria-hidden="false">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                             <form id="addDataForm" method="POST">
@@ -702,27 +713,28 @@ ob_end_flush();
 
                             let index = 1;
                             response.tarif_spp.forEach(function (item) {
+                                const isDisabled = item.kurang_bayar <= 0 ? 'disabled' : '';
                                 table.row.add([
                                     index++,
                                     item.nama_tarif,
-                                    formatCurrency(item.nominal),
-                                    formatCurrency(item.total_dibayar),
-                                    formatCurrency(item.kurang_bayar),
-                                    `<button class="btn btn-success btn-sm pilihBtn" data-id="${item.item_id}" data-type="${item.type}">+ Pilih</button>`
+                                    formatRupiah(item.nominal),
+                                    formatRupiah(item.total_dibayar),
+                                    formatRupiah(item.kurang_bayar),
+                                    `<button class="btn btn-success btn-sm pilihBtn" data-id="${item.item_id}" data-type="${item.type}" ${isDisabled}>+ Pilih</button>`
                                 ]).draw();
                             });
 
                             response.pembayaran_lainnya.forEach(function (item) {
+                                const isDisabled = item.kurang_bayar <= 0 ? 'disabled' : '';
                                 table.row.add([
                                     index++,
                                     item.nama_pembayaran,
-                                    formatCurrency(item.nominal),
-                                    formatCurrency(item.total_dibayar),
-                                    formatCurrency(item.kurang_bayar),
-                                    `<button class="btn btn-success btn-sm pilihBtn" data-id="${item.item_id}" data-type="${item.type}">+ Pilih</button>`
+                                    formatRupiah(item.nominal),
+                                    formatRupiah(item.total_dibayar),
+                                    formatRupiah(item.kurang_bayar),
+                                    `<button class="btn btn-success btn-sm pilihBtn" data-id="${item.item_id}" data-type="${item.type}" ${isDisabled}>+ Pilih</button>`
                                 ]).draw();
                             });
-
                         }
                     });
                 }
@@ -739,31 +751,36 @@ ob_end_flush();
             $('#jenisPembayaranTable').on('click', '.pilihBtn', function () {
                 var row = $(this).closest('tr');
                 var jenisPembayaran = row.find('td:nth-child(2)').text();
-                var tagihan = row.find('td:nth-child(3)').text();
-                var total_dibayar = row.find('td:nth-child(4)').text();
+                var tagihan = parseRupiah(row.find('td:nth-child(3)').text());
+                var total_dibayar = parseRupiah(row.find('td:nth-child(4)').text());
+                var kurang_bayar = tagihan - total_dibayar; // Menghitung nilai kurang_bayar
                 var itemId = $(this).data('id');
                 var type = $(this).data('type');
 
                 if ($('#selectedPembayaran').find(`[data-jenis="${jenisPembayaran}"]`).length === 0) {
                     $('#selectedPembayaran').append(`
-                <button class="btn btn-outline-success me-2" data-jenis="${jenisPembayaran}">
-                    ${jenisPembayaran} (${type}) <span class="removeItem">&times;</span>
-                </button>
-            `);
+                        <button class="btn btn-outline-success me-2" data-jenis="${jenisPembayaran}">
+                            ${jenisPembayaran} (${type}) <span class="removeItem">&times;</span>
+                        </button>
+                    `);
 
                     $('#tabel-list-item-pengeluaran tbody').append(`
-                <tr class="row-item-bayar">
-                    <td>${$('#tabel-list-item-pengeluaran tbody tr').length + 1}</td>
-                    <td>
-                        <label for="jenis" class="form-label" name="item_id">${jenisPembayaran}</label>
-                        <input type="hidden" name="item_type[]" value="${type}">
-                        <input type="hidden" name="item_id[]" value="${itemId}">
-                    </td>
-                    <td><label for="tagihan" class="form-label">${tagihan}</label></td>
-                    <td><label for="jumlah" class="form-label">${total_dibayar}</label></td>
-                    <td><input type="number" class="form-control jumlah-bayar" name="jumlah_bayar[]" required></td>
-                </tr>
-            `);
+                        <tr class="row-item-bayar">
+                            <td>${$('#tabel-list-item-pengeluaran tbody tr').length + 1}</td>
+                            <td>
+                                <label for="jenis" class="form-label" name="item_id">${jenisPembayaran}</label>
+                                <input type="hidden" name="item_type[]" value="${type}">
+                                <input type="hidden" name="item_id[]" value="${itemId}">
+                            </td>
+                            <td><label for="tagihan" class="form-label">${formatRupiah(tagihan)}</label></td>
+                            <td><label for="jumlah" class="form-label">${formatRupiah(total_dibayar)}</label></td>
+                            <td>
+                                <input type="text" class="form-control jumlah-bayar" name="jumlah_bayar[]" 
+                                    data-max="${kurang_bayar}" required placeholder="Masukkan jumlah">
+                                <small class="text-danger max-info">Maksimal: ${formatRupiah(kurang_bayar)}</small>
+                            </td>
+                        </tr>
+                    `);
 
                     calculateTotal();
                 } else {
@@ -771,6 +788,19 @@ ob_end_flush();
                 }
 
                 toggleSimpanButton();
+            });
+
+            // Event listener untuk memformat input jumlah bayar
+            $('#tabel-list-item-pengeluaran').on('input', '.jumlah-bayar', function () {
+                var maxValue = parseFloat($(this).data('max'));
+                var inputValue = parseRupiah($(this).val());
+
+                if (inputValue > maxValue) {
+                    alert('Jumlah bayar tidak boleh melebihi kurang bayar.');
+                    inputValue = maxValue; // Atur ke nilai maksimal jika melebihi
+                }
+
+                $(this).val(formatRupiah(inputValue)); // Format ulang input sebagai Rupiah
             });
 
             $('#selectedPembayaran').on('click', '.removeItem', function () {
@@ -803,10 +833,13 @@ ob_end_flush();
             function calculateTotal() {
                 var totalBayar = 0;
                 $('.jumlah-bayar').each(function () {
-                    var value = parseFloat($(this).val()) || 0;
+                    var value = parseRupiah($(this).val()) || 0;
                     totalBayar += value;
                 });
-                $('#total-bayar').text(totalBayar.toFixed(2));
+
+                // Menampilkan total dalam format Rupiah
+                var formattedTotal = totalBayar === 0 ? '0' : formatRupiah(totalBayar);
+                $('#total-bayar').text('Rp. ' + formattedTotal);
             }
 
             function toggleSimpanButton() {
@@ -827,18 +860,9 @@ ob_end_flush();
                 }
             }
 
-            function formatCurrency(value) {
-                if (value === undefined || value === null) {
-                    return '-';
-                }
-                return Number(value).toLocaleString('id-ID', {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0
-                });
-            }
         });
 
-
+        // modals Detail
         document.addEventListener('DOMContentLoaded', function () {
             // show record
             const showModal = document.getElementById('showModal');
@@ -891,7 +915,6 @@ ob_end_flush();
                         });
                     } else {
                         const noItemRow = document.createElement('tr');
-
                         const noItemCell = document.createElement('td');
                         noItemCell.colSpan = 4; // Span across all columns
                         noItemCell.className = 'text-center';
@@ -899,18 +922,6 @@ ob_end_flush();
 
                         noItemRow.appendChild(noItemCell);
                         classListContainer.appendChild(noItemRow);
-                    }
-
-
-
-                    // format tanggal 
-                    function formatTanggal(tanggal) {
-                        const bulan = [
-                            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-                        ];
-                        const [tahun, bulanIndex, hari] = tanggal.split('-');
-                        return `${parseInt(hari)} ${bulan[parseInt(bulanIndex) - 1]} ${tahun}`;
                     }
 
                     // Mengisi konten modal dengan data yang didapat
@@ -978,8 +989,6 @@ ob_end_flush();
                 });
             }
         });
-
-
 
         document.addEventListener('DOMContentLoaded', function () {
             const printButton = document.querySelector('.btn-danger'); // Tombol print

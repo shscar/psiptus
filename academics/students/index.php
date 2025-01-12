@@ -80,7 +80,7 @@ ob_end_flush();
                                         Export Sesuai Kelas
                                     </li>
                                     <li class="dropdown-item">
-                                        <i class="bi bi-x me-2"></i>
+                                        <i class="bi bi-check2 me-2"></i>
                                         Import
                                     </li>
                                 </ul>
@@ -142,15 +142,15 @@ ob_end_flush();
                                 </thead>
                                 <tbody>
                                     <?php if (count($results) > 0): ?>
-                                    <?php foreach ($results as $row): ?>
-                                    <tr>
-                                        <td><?= htmlspecialchars($row['nis']) ?: '-'; ?></td>
-                                        <td><?= htmlspecialchars($row['nisn']) ?: '-'; ?></td>
-                                        <td><?= htmlspecialchars($row['nama_lengkap']) ?: '-'; ?></td>
-                                        <td><?= htmlspecialchars($row['jenis_kelamin']) ?: '-'; ?></td>
-                                        <td><?= htmlspecialchars($row['kelas']) ?: '-'; ?></td>
-                                        <td class="project-state">
-                                            <?php
+                                        <?php foreach ($results as $row): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($row['nis']) ?: '-'; ?></td>
+                                                <td><?= htmlspecialchars($row['nisn']) ?: '-'; ?></td>
+                                                <td><?= htmlspecialchars($row['nama_lengkap']) ?: '-'; ?></td>
+                                                <td><?= htmlspecialchars($row['jenis_kelamin']) ?: '-'; ?></td>
+                                                <td><?= htmlspecialchars($row['kelas']) ?: '-'; ?></td>
+                                                <td class="project-state">
+                                                    <?php
                                                     $status = htmlspecialchars($row['status']) ?: '-';
                                                     switch ($status) {
                                                         case 'Aktif':
@@ -166,34 +166,34 @@ ob_end_flush();
                                                             $statusText = 'Unknown';
                                                     }
                                                     ?>
-                                            <span class="<?php echo $badgeClass; ?>"><?php echo $statusText; ?></span>
-                                        </td>
-                                        <td class="project-actions text-right">
-                                            <button class="btn btn-warning btn-sm"
-                                                onclick="window.location.href='/siswa/edit-siswa?<?= htmlspecialchars($row['id']); ?>'">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#deleteModal"
-                                                data-bs-id="<?= htmlspecialchars($row['id']) ?: '-'; ?>"
-                                                data-nis="<?= htmlspecialchars($row['nis']) ?: '-'; ?>"
-                                                data-nisn="<?= htmlspecialchars($row['nisn']) ?: '-'; ?>"
-                                                data-nama="<?= htmlspecialchars($row['nama_lengkap']) ?: '-'; ?>"
-                                                data-kelas="<?= htmlspecialchars($row['kelas']) ?: '-'; ?>">
+                                                    <span class="<?php echo $badgeClass; ?>"><?php echo $statusText; ?></span>
+                                                </td>
+                                                <td class="project-actions text-right">
+                                                    <button class="btn btn-warning btn-sm"
+                                                        onclick="window.location.href='/siswa/edit-siswa?<?= htmlspecialchars($row['id']); ?>'">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                                        data-bs-target="#deleteModal"
+                                                        data-bs-id="<?= htmlspecialchars($row['id']) ?: '-'; ?>"
+                                                        data-nis="<?= htmlspecialchars($row['nis']) ?: '-'; ?>"
+                                                        data-nisn="<?= htmlspecialchars($row['nisn']) ?: '-'; ?>"
+                                                        data-nama="<?= htmlspecialchars($row['nama_lengkap']) ?: '-'; ?>"
+                                                        data-kelas="<?= htmlspecialchars($row['kelas']) ?: '-'; ?>">
 
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                            <!-- <button class="btn btn-danger btn-sm"
-                                                        onclick="window.location.href='/siswa/delete-siswa?<?= htmlspecialchars($row['id']); ?>'">
                                                         <i class="bi bi-trash"></i>
-                                                    </button> -->
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
+                                                    </button>
+                                                    <!-- <button class="btn btn-danger btn-sm"
+                                    onclick="window.location.href='/siswa/delete-siswa?<?= htmlspecialchars($row['id']); ?>'">
+                                        <i class="bi bi-trash"></i>
+                                                </button> -->
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
                                     <?php else: ?>
-                                    <tr>
-                                        <td colspan="7" class="text-center">Tidak ada data siswa</td>
-                                    </tr>
+                                        <tr>
+                                            <td colspan="7" class="text-center">Tidak ada data siswa</td>
+                                        </tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
@@ -288,50 +288,50 @@ ob_end_flush();
 <!--end::App Main-->
 
 <!-- Inisialisasi DataTables -->
-<script>
-$(document).ready(function() {
-    $('#datatable').DataTable({
-        "paging": true,
-        "lengthChange": true,
-        "searching": true,
-        "ordering": true,
-        "info": true,
-        "autoWidth": false,
-        "responsive": true
-    });
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Handling Delete 
-    const deleteModal = document.getElementById('deleteModal');
-    if (deleteModal) {
-        deleteModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-bs-id');
-            const name = button.getAttribute('data-nama');
-            const nis = button.getAttribute('data-nis');
-            const nisn = button.getAttribute('data-nisn');
-            const kelas = button.getAttribute('data-kelas');
-
-            // Update the modal's content.
-            const modalTitle = deleteModal.querySelector('.modal-title');
-            modalTitle.textContent = `Hapus Data: ${name}`;
-
-            // Populate the form with the id
-            const form = deleteModal.querySelector('#deleteForm');
-            form.querySelector('#delete-id').value = id;
-
-            // Mengisi konten modal dengan data yang didapat
-            document.getElementById('nama').textContent = name;
-            document.getElementById('nis').textContent = nis;
-            document.getElementById('nisn').textContent = nisn;
-            document.getElementById('kelas').textContent = kelas;
+    <script>
+     $(document).ready(function() {
+     $('#   datatable').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true
         });
-    }
 });
-
-document.getElementById('exportExcel').addEventListener('click', function() {
-    window.location.href = '/export-data-siswa';
+    
+     document.addEventListener('DOMContentLoaded', function() {
+        // Handling Delete 
+        const deleteModal = document.getElementById('deleteModal');
+    if (    deleteModal) {
+             deleteModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-bs-id');
+                const name = button.getAttribute('data-nama');
+                const nis = button.getAttribute('data-nis');
+                const nisn = button.getAttribute('data-nisn');
+            const kelas = button.getAttribute('data-kelas');
+ 
+                   // Update the modal's content.
+                const modalTitle = deleteModal.querySelector('.modal-title');
+            modalTitle.textContent = `Hapus Data: ${name}`;
+ 
+                   // Populate the form with the id
+                const form = deleteModal.querySelector('#deleteForm');
+            form.querySelector('#delete-id').value = id;
+  
+                  // Mengisi konten modal dengan data yang didapat
+                document.getElementById('nama').textContent = name;
+                document.getElementById('nis').textContent = nis;
+                document.getElementById('nisn').textContent = nisn;
+                document.getElementById('kelas').textContent = kelas;
+            });
+        }
+});
+    
+     document.getElementById('exportExcel').addEventListener('click', function() {
+        window.location.href = '/export-data-siswa';
 });
 </script>
 

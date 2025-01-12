@@ -28,6 +28,7 @@ final class PengeluaranDana extends AbstractMigration
             ->addColumn('jenis_bayar', 'integer', ['null' => false])
             ->addColumn('total', 'decimal', ['precision' => 15, 'scale' => 2, 'default' => 0])
             // ->addColumn('bukti_pengeluaran_id', 'integer', ['null' => true, 'default' => null])
+            ->addColumn('status', 'integer', ['null' => true, 'default' => '0'])
             ->addTimestamps()
             ->create();
     }

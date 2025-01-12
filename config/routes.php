@@ -5,8 +5,8 @@ $routes = [
     '' => '/dashboard/login.php',
     '/dashboard' => '/dashboards/index.php',
     '/test' => '/testing/index.php',
-    '/test2' => '/testing/index3.php',
-    '/test4' => '/testing/test4.php',
+    '/test2' => '/testing/index2.php',
+    '/test3' => '/testing/index3.php',
     '/test5' => '/testing/test5.php',
     // '/login' => '/dashboard/login.php',
 
@@ -19,6 +19,8 @@ $routes = [
     '/siswa' => '/academics/students/index.php',
     '/siswa/tambah-siswa' => '/academics/students/create.php',
     '/siswa/edit-siswa' => '/academics/students/update.php',
+    '/siswa/file-upload' => '/academics/students/file_exc_upload.php',
+    '/siswa/file/example-data-siswa' => '/assets/dummy/example-data-siswa.xlsx',
 
     // export data
     '/export-data-siswa' => '/academics/students/export_siswa.php',
@@ -42,6 +44,7 @@ $routes = [
     // pengeluaran
     '/pengeluaran/kategori-pengeluaran' => '/finances/outlays/expens_category.php',
     '/pengeluaran/detail-pengeluaran' => '/finances/outlays/expends.php',
+    '/pengeluaran/file-pengeluaran' => '/assets/images/dana_pengeluaran/',
     // child
     '/child-expens-category' => '/finances/outlays/child_expens_category.php',
 

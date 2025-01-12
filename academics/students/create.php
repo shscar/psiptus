@@ -1,6 +1,70 @@
 <?php
 include __DIR__ . '/../../layouts/master.php';
+// require 'vendor/autoload.php'; // Autoload PhpSpreadsheet
+// use PhpOffice\PhpSpreadsheet\IOFactory;
+
 $db = Database::getInstance()->getConnection();
+
+// if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file_excel'])) {
+//     // Lokasi file Excel yang diunggah
+//     $uploadDir = 'uploads/';
+//     $fileName = basename($_FILES['file_excel']['name']);
+//     $filePath = $uploadDir . $fileName;
+
+//     // Validasi tipe file
+//     $fileType = pathinfo($filePath, PATHINFO_EXTENSION);
+//     if ($fileType !== 'xlsx' && $fileType !== 'xls') {
+//         echo "File yang diunggah bukan file Excel.";
+//         exit;
+//     }
+
+//     // Pindahkan file yang diunggah ke direktori tujuan
+//     if (move_uploaded_file($_FILES['file_excel']['tmp_name'], $filePath)) {
+//         try {
+//             // Membaca file Excel
+//             $spreadsheet = IOFactory::load($filePath);
+//             $sheet = $spreadsheet->getActiveSheet();
+//             $dataRows = $sheet->toArray(null, true, true, true);
+
+//             // Periksa apakah ada data
+//             if (count($dataRows) < 2) {
+//                 echo "Tidak ada data untuk dimasukkan.";
+//                 exit;
+//             }
+
+//             // Mengabaikan header (baris pertama)
+//             array_shift($dataRows);
+
+//             // Persiapkan query untuk memasukkan data
+//             $stmt = $db->prepare("INSERT INTO siswa (nis, nisn, nama_lengkap, jenis_kelamin, tanggal_lahir, tempat_lahir, alamat, kelas_id, status, created_at, updated_at) 
+//                                    VALUES (:nis, :nisn, :nama_lengkap, :jenis_kelamin, :tanggal_lahir, :tempat_lahir, :alamat, :kelas_id, :status, NOW(), NOW())");
+
+//             // Iterasi data dan masukkan ke database
+//             foreach ($dataRows as $row) {
+//                 $stmt->bindValue(':nis', $row['B']);
+//                 $stmt->bindValue(':nisn', $row['C']);
+//                 $stmt->bindValue(':nama_lengkap', $row['D']);
+//                 $stmt->bindValue(':jenis_kelamin', $row['E']);
+//                 $stmt->bindValue(':tanggal_lahir', $row['F']);
+//                 $stmt->bindValue(':tempat_lahir', $row['G']);
+//                 $stmt->bindValue(':alamat', $row['H']);
+//                 $stmt->bindValue(':kelas_id', $row['I']);
+//                 $stmt->bindValue(':status', $row['J']);
+
+//                 // Eksekusi query
+//                 $stmt->execute();
+//             }
+
+//             echo "Data berhasil dimasukkan ke database.";
+//         } catch (Exception $e) {
+//             echo "Terjadi kesalahan: " . $e->getMessage();
+//         }
+//     } else {
+//         echo "Gagal mengunggah file.";
+//     }
+// }
+
+
 
 $query = "SELECT
             kelas.id,
@@ -177,9 +241,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                 <select class="form-control" id="kelas_id" name="kelas_id">
                                                     <option value="">-- Pilih Kelas --</option>
                                                     <?php foreach ($resultKelas as $kelas): ?>
-                                                    <option value="<?php echo $kelas['id']; ?>">
-                                                        <?php echo "{$kelas['tingkat']} {$kelas['nama_kelas']} - {$kelas['tahun']}"; ?>
-                                                    </option>
+                                                        <option value="<?php echo $kelas['id']; ?>">
+                                                            <?php echo "{$kelas['tingkat']} {$kelas['nama_kelas']} - {$kelas['tahun']}"; ?>
+                                                        </option>
                                                     <?php endforeach; ?>
                                                 </select>
                                             </div>
@@ -216,13 +280,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
-                                        <form>
+                                        <form action="/siswa/file-upload" method="POST" enctype="multipart/form-data">
                                             <div class="mb-3">
-                                                <label for="upload" class="form-label">Upload File Excel</label>
-                                                <input type="file" class="form-control" id="upload"
-                                                    accept=".xlsx, .xls">
+
+                                                <div class="form-group col-md-12 mb-3">
+                                                    <a href="/siswa/file/example-data-siswa"
+                                                        download="example-data-siswa.xls"
+                                                        class="btn btn-info mb-3">Download Template</a>
+                                                </div>
+                                                <label for="file_excel" class="form-label">Import File Excel</label>
+                                                <input type="file" class="form-control" id="file_excel"
+                                                    name="file_excel" accept=".xlsx, .xls" required>
                                             </div>
-                                            <button type="submit" class="btn btn-warning">Upload</button>
+                                            <button type="submit" class="btn btn-primary" name="upload"
+                                                value="upload">Import</button>
                                         </form>
                                     </div>
                                 </div>

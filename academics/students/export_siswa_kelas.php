@@ -23,21 +23,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $sheet = $spreadsheet->getActiveSheet();
 
     // Header kolom
-    $headers = ['NIS', 'NISN', 'Nama Lengkap', 'Jenis Kelamin', 'Tanggal Lahir', 'Tempat Lahir', 'Alamat', 'Kelas ID', 'Status'];
+    $headers = ['No', 'NIS', 'NISN', 'Nama Lengkap', 'Jenis Kelamin', 'Tanggal Lahir', 'Tempat Lahir', 'Alamat', 'Kelas ID', 'Status'];
     $sheet->fromArray($headers, null, 'A1');
 
     // Tambahkan data ke Excel
     $row = 2;
+    $no = 1;
     foreach ($siswaData as $data) {
-        $sheet->setCellValue("A{$row}", $data['nis']);
-        $sheet->setCellValue("B{$row}", $data['nisn']);
-        $sheet->setCellValue("C{$row}", $data['nama_lengkap']);
-        $sheet->setCellValue("D{$row}", $data['jenis_kelamin']);
-        $sheet->setCellValue("E{$row}", $data['tanggal_lahir']);
-        $sheet->setCellValue("F{$row}", $data['tempat_lahir']);
-        $sheet->setCellValue("G{$row}", $data['alamat']);
-        $sheet->setCellValue("H{$row}", $data['kelas_id']);
-        $sheet->setCellValue("I{$row}", $data['status']);
+        $sheet->setCellValue("A{$row}", $no++);
+        $sheet->setCellValue("B{$row}", $data['nis']);
+        $sheet->setCellValue("C{$row}", $data['nisn']);
+        $sheet->setCellValue("D{$row}", $data['nama_lengkap']);
+        $sheet->setCellValue("E{$row}", $data['jenis_kelamin']);
+        $sheet->setCellValue("F{$row}", $data['tanggal_lahir']);
+        $sheet->setCellValue("G{$row}", $data['tempat_lahir']);
+        $sheet->setCellValue("H{$row}", $data['alamat']);
+        $sheet->setCellValue("I{$row}", $data['kelas_id']);
+        $sheet->setCellValue("J{$row}", $data['status']);
         $row++;
     }
 

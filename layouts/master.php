@@ -40,6 +40,48 @@
         <script src="../assets/js/adminlte.js"></script>
         <!--end::Required Plugin(AdminLTE)-->
 
+        <script>
+            // Fungsi untuk format Rupiah
+            function formatRupiah(value) {
+                if (!value) return '';
+                return new Intl.NumberFormat('id-ID', {
+                    // style: 'decimal',
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0,
+                    // maximumFractionDigits: 0
+                }).format(value);
+            }
+
+            // Fungsi untuk menghapus format Rupiah dari string dan mengubahnya menjadi angka
+            function parseRupiah(value) {
+                if (!value) return 0;
+                return parseFloat(value.replace(/[^0-9,-]+/g, '').replace(',', '.')) || 0;
+            }
+
+
+            // Fungsi format mata uang 2
+            function formatCurrency(value) {
+                if (value === undefined || value === null) {
+                    return '-';
+                }
+                return Number(value).toLocaleString('id-ID', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                });
+            }
+
+            // Fungsi untuk memformat tanggal
+            function formatTanggal(tanggal) {
+                const options = {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                };
+                const date = new Date(tanggal);
+                return date.toLocaleDateString('id-ID', options);
+            }
+        </script>
 </body>
 <!--end::Body-->
 

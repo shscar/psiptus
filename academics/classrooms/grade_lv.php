@@ -93,7 +93,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 // Fetch records for display with join
-$stmt = $db->prepare("SELECT tk.id, tk.tingkat, tk.tahun_ajaran_id, tk.keterangan, ta.tahun, ta.status 
+$stmt = $db->prepare("
+    SELECT 
+        tk.id, 
+        tk.tingkat, 
+        tk.tahun_ajaran_id, 
+        CONCAT(tk.keterangan, ' (Tahun: ', ta.tahun, ')') AS keterangan, 
+        ta.tahun, 
+        ta.status 
     FROM tingkat_kelas tk
     JOIN tahun_ajaran ta ON tk.tahun_ajaran_id = ta.id
     ORDER BY tk.id DESC

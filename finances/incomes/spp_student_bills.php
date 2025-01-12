@@ -704,6 +704,18 @@ ob_end_flush();
         });
     });
 
+    // format mata uang rupiah 
+    const nominal = document.getElementById('nominal');
+    nominal.addEventListener('keyup', function (e) {
+        nominal.value = formatRupiah(this.value);
+    });
+    const edit_nominal = document.getElementById('edit_nominal');
+    edit_nominal.addEventListener('keyup', function (e) {
+        // Menghapus karakter non-numeric sebelum memformat
+        const numericValue = parseRupiah(this.value);
+        edit_nominal.value = formatRupiah(numericValue);
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         // Handling Update
         const editModal = document.getElementById('editModal');
@@ -726,7 +738,7 @@ ob_end_flush();
                 // Populate the form in the modal with the data
                 document.getElementById('edit_id').value = id;
                 document.getElementById('edit_nama_tarif').value = nama_tarif;
-                document.getElementById('edit_nominal').value = nominal;
+                document.getElementById('edit_nominal').value = formatRupiah(nominal);
                 document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;
                 document.getElementById('edit_deskripsi').value = deskripsi;
                 document.getElementById('edit_status_aktif').checked = status_aktif;

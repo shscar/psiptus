@@ -32,13 +32,16 @@ class RiwayatTransaksiSiswaSeeder extends AbstractSeed
 
         $this->table('riwayat_transaksi_siswa')->insert($riwayatTransaksi)->saveData();
 
+        // Ambil ID yang baru saja dimasukkan
+        $riwayatTransaksiIds = $this->fetchAll('SELECT id FROM riwayat_transaksi_siswa');
+
         // Data dasar untuk detail tarif spp
         $riwayatDetailTarif = [];
-        for ($i = 1; $i <= 2; $i++) {
+        for ($i = 0; $i < count($riwayatTransaksiIds); $i++) {
             $riwayatDetailTarif[] = [
-                'riwayat_transaksi_id' => ($i % 3) + 1,
-                'tarif_spp_id' => $i,
-                'jumlah_bayar' => 250000.00 + ($i * 50000),
+                'riwayat_transaksi_id' => $riwayatTransaksiIds[$i]['id'],
+                'tarif_spp_id' => $i + 1,
+                'jumlah_bayar' => 250000.00 + (($i + 1) * 50000),
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ];
@@ -48,17 +51,17 @@ class RiwayatTransaksiSiswaSeeder extends AbstractSeed
 
         // Data dasar untuk detail pembayaran lainnya
         $riwayatDetailPembayaranLain = [];
-        for ($i = 1; $i <= 2; $i++) {
+        for ($i = 0; $i < count($riwayatTransaksiIds); $i++) {
             $riwayatDetailPembayaranLain[] = [
-                'riwayat_transaksi_id' => ($i % 3) + 1,
-                'pembayaran_lainnya_id' => $i,
-                'jumlah_bayar' => 150000.00 + ($i * 50000),
+                'riwayat_transaksi_id' => $riwayatTransaksiIds[$i]['id'],
+                'pembayaran_lainnya_id' => $i + 1,
+                'jumlah_bayar' => 150000.00 + (($i + 1) * 50000),
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ];
         }
 
         $this->table('riwayat_transaksi_siswa_detail_pembayaranlain')->insert($riwayatDetailPembayaranLain)->saveData();
-
     }
+
 }

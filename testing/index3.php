@@ -1,83 +1,85 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 $db = Database::getInstance()->getConnection();
 
-// Query untuk mengambil data dari relasi tabel
+$stmt = $db->query("SELECT id, nis, nama_lengkap, kelas_id FROM siswa WHERE status = 'Aktif'");
+$students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $stmt = $db->prepare("SELECT 
-    pd.id AS pengeluaran_id,
-    pd.tanggal_pengeluaran,
-    pd.sumber_dana,
-    pd.pihak_terlibat,
-    pd.ket_pengeluaran,
-    pd.jenis_bayar,
-    pd.total,
-    pdi.id AS item_id,
-    pdi.use_kategori,
-    pdi.nama_pengeluaran,
-    pdi.item,
-    pdi.satuan,
-    pdi.harga,
-    pdi.nominal,
-    pdi.komite,
-    pdi.bosda,
-    pdi.jumlah,
-    pdb.id AS bukti_id,
-    pdb.file_path,
-    dkp.judul AS kategori_judul
-FROM pengeluaran_dana pd
-LEFT JOIN pengeluaran_dana_item pdi ON pd.id = pdi.pengeluaran_dana_id
-LEFT JOIN pengeluaran_dana_bukti pdb ON pd.id = pdb.pengeluaran_id
-LEFT JOIN detail_kategori_pengeluaran dkp ON pdi.nama_pengeluaran = dkp.id AND pdi.use_kategori = true
-ORDER BY pd.tanggal_pengeluaran DESC");
+        rts.id AS riwayat_id,
+        rtt.id AS detail_tarifspp_id,
+        rtp.id AS detail_pembayaranlain_id,
+        s.nis,
+        s.nama_lengkap,
+        k.nama_kelas,
+        rts.tanggal_bayar,
+        rts.no_invoice,
+        rts.jenis_bayar,
+        rts.total_bayar,
+        ts.nama_tarif AS tarif_spp,
+        rtt.tarif_spp_id,
+        rtt.jumlah_bayar AS jmlb_tfs,
+        spl.nama_pembayaran AS pembayaran_lainnya,
+        rtp.pembayaran_lainnya_id,
+        rtp.jumlah_bayar AS jmlb_pyl,
+        ts.nominal AS nominal_spp,
+        spl.nominal AS nominal_lainnya,
+        (ts.nominal - COALESCE(SUM(drt.jumlah_bayar), 0)) AS kurang_bayar_spp,
+        (spl.nominal - COALESCE(SUM(drl.jumlah_bayar), 0)) AS kurang_bayar_lainnya
+    FROM riwayat_transaksi_siswa rts
+    LEFT JOIN siswa s ON rts.siswa_id = s.id
+    LEFT JOIN kelas k ON s.kelas_id = k.id
+    LEFT JOIN riwayat_transaksi_siswa_detail_tarifspp rtt ON rts.id = rtt.riwayat_transaksi_id
+    LEFT JOIN tarif_spp ts ON rtt.tarif_spp_id = ts.id
+    LEFT JOIN riwayat_transaksi_siswa_detail_pembayaranlain rtp ON rts.id = rtp.riwayat_transaksi_id
+    LEFT JOIN siswa_pembayaran_lainnya spl ON rtp.pembayaran_lainnya_id = spl.id
+    LEFT JOIN riwayat_transaksi_siswa_detail_tarifspp drt ON ts.id = drt.tarif_spp_id AND rts.id = drt.riwayat_transaksi_id
+    LEFT JOIN riwayat_transaksi_siswa_detail_pembayaranlain drl ON spl.id = drl.pembayaran_lainnya_id AND rts.id = drl.riwayat_transaksi_id
+    GROUP BY rts.id, rtt.id, rtt.tarif_spp_id, rtp.id, rtp.pembayaran_lainnya_id
+    ORDER BY rts.id DESC
+");
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Mengelompokkan data berdasarkan `pengeluaran_id`
+
+// Mengelompokkan data berdasarkan `riwayat_id`
 $combinedResults = [];
 foreach ($results as $row) {
-    $pengeluaranId = $row['pengeluaran_id'];
-
-    // Jika pengeluaran_id belum ada, tambahkan ke dalam hasil
-    if (!isset($combinedResults[$pengeluaranId])) {
-        $combinedResults[$pengeluaranId] = [
-            'pengeluaran_id' => $row['pengeluaran_id'],
-            'tanggal_pengeluaran' => $row['tanggal_pengeluaran'],
-            'sumber_dana' => $row['sumber_dana'],
-            'pihak_terlibat' => $row['pihak_terlibat'],
-            'ket_pengeluaran' => $row['ket_pengeluaran'],
+    $riwayatId = $row['riwayat_id'];
+    if (!isset($combinedResults[$riwayatId])) {
+        $combinedResults[$riwayatId] = [
+            'riwayat_id' => $row['riwayat_id'],
+            'nis' => $row['nis'],
+            'nama_lengkap' => $row['nama_lengkap'],
+            'nama_kelas' => $row['nama_kelas'],
+            'no_invoice' => $row['no_invoice'],
+            'tanggal_bayar' => $row['tanggal_bayar'],
             'jenis_bayar' => $row['jenis_bayar'],
-            'total' => $row['total'],
+            'total_bayar' => $row['total_bayar'],
+            'detail_tarifspp_ids' => [],
+            'detail_pembayaranlain_ids' => [],
             'items' => [],
-            'bukti_files' => []
         ];
     }
-
-    // Tambahkan item pengeluaran jika ada
-    if ($row['item_id']) {
-        $namaPengeluaran = $row['use_kategori'] && is_numeric($row['nama_pengeluaran'])
-            ? $row['kategori_judul']
-            : $row['nama_pengeluaran'];
-
-        $combinedResults[$pengeluaranId]['items'][] = [
-            'id' => $row['item_id'],
-            'nama_pengeluaran' => $namaPengeluaran,
-            'item' => $row['item'],
-            'satuan' => $row['satuan'],
-            'harga' => $row['harga'],
-            'nominal' => $row['nominal'],
-            'komite' => $row['komite'],
-            'bosda' => $row['bosda'],
-            'jumlah' => $row['jumlah']
+    if ($row['detail_tarifspp_id']) {
+        $combinedResults[$riwayatId]['items'][] = [
+            'id' => $row['detail_tarifspp_id'],
+            'jenis_bayar' => 'TS: ' . $row['tarif_spp'],
+            'jumlah_bayar' => 'Rp. ' . $row['jmlb_tfs'],
+            'kurang_bayar' => 'Rp. ' . $row['kurang_bayar_spp'],
         ];
     }
-
-    // Tambahkan bukti pengeluaran jika ada
-    if ($row['bukti_id']) {
-        $combinedResults[$pengeluaranId]['bukti_files'][] = [
-            'id' => $row['bukti_id'],
-            'file_path' => $row['file_path']
+    if ($row['detail_pembayaranlain_id']) {
+        $combinedResults[$riwayatId]['items'][] = [
+            'id' => $row['detail_pembayaranlain_id'],
+            'jenis_bayar' => 'PL: ' . $row['pembayaran_lainnya'],
+            'jumlah_bayar' => 'Rp. ' . $row['jmlb_pyl'],
+            'kurang_bayar' => 'Rp. ' . $row['kurang_bayar_lainnya'],
         ];
     }
 }
 
-// Menampilkan hasil untuk debug atau penggunaan lebih lanjut
-echo '<pre>' . print_r($combinedResults, true) . '</pre>';
+echo '<pre>';
+print_r($combinedResults);
+echo '</pre>';

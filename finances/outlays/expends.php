@@ -2,6 +2,12 @@
 // Memulai buffering
 ob_start();
 include __DIR__ . '/../../layouts/master.php';
+
+// Aktifkan error reporting
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 $db = Database::getInstance()->getConnection();
 
 // Query untuk mengambil data dari relasi tabel
@@ -13,6 +19,7 @@ $stmt = $db->prepare("SELECT
     pd.ket_pengeluaran,
     pd.jenis_bayar,
     pd.total,
+    pd.status,
     pdi.id AS item_id,
     pdi.use_kategori,
     pdi.nama_pengeluaran,
@@ -49,6 +56,7 @@ foreach ($results as $row) {
             'ket_pengeluaran' => $row['ket_pengeluaran'],
             'jenis_bayar' => $row['jenis_bayar'],
             'total' => $row['total'],
+            'status' => $row['status'],
             'items' => [],
             'bukti_files' => []
         ];
@@ -73,13 +81,30 @@ foreach ($results as $row) {
         ];
     }
 
-    // Tambahkan bukti pengeluaran jika ada
+    // Tambahkan bukti pengeluaran
     if ($row['bukti_id']) {
         $combinedResults[$pengeluaranId]['bukti_files'][] = [
             'id' => $row['bukti_id'],
-            'file_path' => $row['file_path']
+            'file_path' => '../assets/images/dana_pengeluaran/' . basename($row['file_path'])
         ];
     }
+
+    // Tambahkan bukti pengeluaran jika ada
+    // if ($row['bukti_id']) {
+    //     $filePath = '../assets/images/dana_pengeluaran/' . basename($row['file_path']);
+
+    //     // Periksa apakah file ada sebelum menambahkannya
+    //     if (file_exists($filePath)) {
+    //         $combinedResults[$pengeluaranId]['bukti_files'][] = [
+    //             'id' => $row['bukti_id'],
+    //             'file_path' => $filePath
+    //         ];
+    //     } else {
+    //         // Log atau tangani situasi ketika file tidak ada
+    //         error_log("File tidak ditemukan: " . $filePath);
+    //     }
+    // }
+
 }
 
 // Mengubah array terstruktur menjadi array numerik untuk kemudahan iterasi
@@ -270,6 +295,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
+    // Approved Record
+    if ($action == 'approval') {
+        try {
+            // Ambil ID dan status dari POST request
+            $approvalId = $_POST['id'] ?? null;
+            $status = $_POST['status'] ?? null;
+
+            if (!$approvalId || !is_numeric($approvalId)) {
+                throw new Exception('ID tidak valid.');
+            }
+
+            if (!$status || !in_array($status, [1, 2])) {
+                throw new Exception('Status tidak valid.');
+            }
+
+            // Mulai transaksi
+            $db->beginTransaction();
+
+            // Query untuk memperbarui status di database
+            $stmt = $db->prepare("UPDATE pengeluaran_dana SET status = :status WHERE id = :id");
+            $stmt->bindParam(':status', $status, PDO::PARAM_INT);
+            $stmt->bindParam(':id', $approvalId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            // Commit transaksi
+            $db->commit();
+
+            if ($stmt->execute()) {
+                // Redirect atau kirim respons sukses
+                echo "<script>
+                    alert('Status berhasil diperbarui.');
+                    window.location.href = '/test';
+                </script>";
+                exit;
+            } else {
+                // Berikan p
+                echo "<script>
+                    alert('Gagal memperbarui status.');
+                    window.location.href = '/test';
+                </script>";
+                exit;
+            }
+        } catch (Exception $e) {
+            // Rollback jika terjadi kesalahan
+            $db->rollBack();
+            die('Gagal memperbarui status: ' . $e->getMessage());
+        }
+    }
+
 }
 
 // Mengakhiri buffering
@@ -299,7 +373,7 @@ ob_end_flush();
             <div class="row">
                 <div class="col-sm-6">
                     <h3 class="mb-0">
-                        (Keperluan) Pengeluaran Dana Sekolah
+                        Pengeluaran Pembiayaan Sekolah
 
                         <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
                             <div class="btn-group" role="group">
@@ -307,15 +381,11 @@ ob_end_flush();
                                     data-bs-toggle="dropdown" aria-expanded="false">?</button>
                                 <ul class="dropdown-menu">
                                     <li class="dropdown-item">
-                                        <i class="bi bi-dash me-2"></i>
+                                        <i class="bi bi-check2 me-2"></i>
                                         Detail
                                     </li>
                                     <li class="dropdown-item">
-                                        <i class="bi bi-dash me-2"></i>
-                                        Detail Bukti (update, delete)
-                                    </li>
-                                    <li class="dropdown-item">
-                                        <i class="bi bi-dash me-2"></i>
+                                        <i class="bi bi-check2 me-2"></i>
                                         Approval
                                     </li>
                                     <li class="dropdown-item">
@@ -323,7 +393,7 @@ ob_end_flush();
                                         Aksi Create
                                     </li>
                                     <li class="dropdown-item">
-                                        <i class="bi bi-dash me-2"></i>
+                                        <i class="bi bi-x me-2"></i>
                                         Aksi Edit
                                     </li>
                                     <li class="dropdown-item">
@@ -335,7 +405,7 @@ ob_end_flush();
                                         Export
                                     </li>
                                     <li class="dropdown-item">
-                                        <i class="bi bi-dash me-2"></i>
+                                        <i class="bi bi-x me-2"></i>
                                         Import
                                     </li>
                                 </ul>
@@ -388,13 +458,14 @@ ob_end_flush();
                                             <th>Pihak Terlibat</th>
                                             <th>Item Pengeluaran</th>
                                             <th>Total</th>
+                                            <th>Status</th>
                                             <th class="text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach ($combinedResults as $row): ?>
+                                        <?php foreach ($combinedResults as $index => $row): ?>
                                             <tr>
-                                                <td><?= $row['pengeluaran_id'] ?? '-'; ?></td>
+                                                <td><?= $index + 1; ?></td>
                                                 <td>
                                                     <div>
                                                         <?= date('d M Y', strtotime($row['tanggal_pengeluaran'])) ?? '-'; ?>
@@ -414,6 +485,25 @@ ob_end_flush();
                                                         <?= number_format($row['total'], 2) ?? '-'; ?>
                                                     </div>
                                                 </td>
+                                                <td class="project-state">
+                                                    <?php
+                                                    $status = htmlspecialchars($row['status']) ?: '-';
+                                                    switch ($status) {
+                                                        case '1':
+                                                            $badgeClass = 'badge bg-success';
+                                                            $statusText = 'Accept';
+                                                            break;
+                                                        case '2':
+                                                            $badgeClass = 'badge bg-danger';
+                                                            $statusText = 'Decline';
+                                                            break;
+                                                        default:
+                                                            $badgeClass = 'badge bg-warning';
+                                                            $statusText = 'Pending';
+                                                    }
+                                                    ?>
+                                                    <span class="<?php echo $badgeClass; ?>"><?php echo $statusText; ?></span>
+                                                </td>
                                                 <td class="text-center">
                                                     <div class="dropdown">
                                                         <button class="btn btn-link p-0" type="button"
@@ -427,11 +517,13 @@ ob_end_flush();
                                                                 <button class="dropdown-item" data-bs-toggle="modal"
                                                                     data-bs-target="#detailModal"
                                                                     data-bs-id="<?= $row['pengeluaran_id']; ?>"
+                                                                    data-bs-keterangan="<?= $row['ket_pengeluaran']; ?>"
                                                                     data-bs-tanggal_pengeluaran="<?= $row['tanggal_pengeluaran']; ?>"
                                                                     data-bs-pihak_terlibat="<?= $row['pihak_terlibat']; ?>"
                                                                     data-bs-sumber_dana="<?= $row['sumber_dana']; ?>"
                                                                     data-bs-total="<?= $row['total']; ?>"
-                                                                    data-items='<?= json_encode($row['items']); ?>'>
+                                                                    data-items='<?= json_encode($row['items']); ?>'
+                                                                    data-bukti_files='<?= json_encode($row['bukti_files']); ?>'>
                                                                     <i class="bi bi-list-stars me-2"></i>
                                                                     Detail
                                                                 </button>
@@ -445,8 +537,8 @@ ob_end_flush();
                                                                     data-bs-sumber_dana="<?= $row['sumber_dana']; ?>"
                                                                     data-bs-total="<?= $row['total']; ?>"
                                                                     data-items='<?= json_encode($row['items']); ?>'>
-                                                                    <i class="bi bi-pencil me-2"></i>
-                                                                    Edit
+                                                                    <i class="bi bi-filetype-exe me-2"></i>
+                                                                    Export
                                                                 </button>
                                                             </li>
                                                             <li>
@@ -533,133 +625,138 @@ ob_end_flush();
                             </div>
                             <hr>
                             <div class="form-group">
-                                <table class="table table-striped table-bordered" id="tabel-list-item-pengeluaran">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Pengeluaran</th>
-                                            <th>Item</th>
-                                            <th>Satuan</th>
-                                            <th>Harga</th>
-                                            <th>Nominal</th>
-                                            <th>Komite</th>
-                                            <th>Bosda</th>
-                                            <!-- <th>Keterangan</th> -->
-                                            <th style="width:130px">Jumlah</th>
-                                            <th style="width:20px"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="row-item-bayar">
-                                            <td>1</td>
-                                            <td>
-                                                <div class="form-group form-kategori">
-                                                    <!-- Switch Checkbox -->
-                                                    <div class="form-check form-switch mb-2">
-                                                        <input type="checkbox" class="form-check-input toggle-select"
-                                                            id="useselectkategori1" name="use_kategori[]">
-                                                        <label class="form-check-label" for="useselectkategori1">Use
-                                                            Kategori</label>
-                                                    </div>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered" id="tabel-list-item-pengeluaran">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th style="min-width:200px">Pengeluaran</th>
+                                                <th style="min-width:130px">Jumlah Item</th>
+                                                <th style="min-width:130px">Satuan</th>
+                                                <th style="min-width:130px">Harga</th>
+                                                <th style="min-width:130px">Nominal</th>
+                                                <th style="min-width:130px">Komite</th>
+                                                <th style="min-width:130px">Bosda</th>
+                                                <!-- <th>Keterangan</th> -->
+                                                <th style="min-width:130px">Jumlah</th>
+                                                <th style="width:20px"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="row-item-bayar">
+                                                <td>1</td>
+                                                <td>
+                                                    <div class="form-group form-kategori">
+                                                        <!-- Switch Checkbox -->
+                                                        <div class="form-check form-switch mb-2">
+                                                            <input type="checkbox"
+                                                                class="form-check-input toggle-select"
+                                                                id="useselectkategori1" name="use_kategori[]">
+                                                            <label class="form-check-label" for="useselectkategori1">Use
+                                                                Kategori</label>
+                                                        </div>
 
-                                                    <!-- Input Text -->
-                                                    <div class="input-container">
-                                                        <input type="text" class="form-control nama-pengeluaran-input"
-                                                            name="nama_pengeluaran[]" placeholder="Nama Pengeluaran"
-                                                            required>
-                                                    </div>
+                                                        <!-- Input Text -->
+                                                        <div class="input-container">
+                                                            <input type="text"
+                                                                class="form-control nama-pengeluaran-input"
+                                                                name="nama_pengeluaran[]" placeholder="Nama Pengeluaran"
+                                                                required>
+                                                        </div>
 
-                                                    <!-- Select Dropdown -->
-                                                    <div class="select-container" style="display: none;">
-                                                        <select class="form-select detail-kategori-select"
-                                                            name="nama_pengeluaran[]">
-                                                            <option selected disabled value="">Pilih pengeluaran
-                                                            </option>
-                                                            <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
-                                                                <option value="<?php echo $dkp['id']; ?>">
-                                                                    <?php echo $dkp['judul']; ?>
+                                                        <!-- Select Dropdown -->
+                                                        <div class="select-container" style="display: none;">
+                                                            <select class="form-select detail-kategori-select"
+                                                                name="nama_pengeluaran[]">
+                                                                <option selected disabled value="">Pilih pengeluaran
                                                                 </option>
-                                                            <?php endforeach; ?>
+                                                                <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
+                                                                    <option value="<?php echo $dkp['id']; ?>">
+                                                                        <?php echo $dkp['judul']; ?>
+                                                                    </option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control item" name="item[]"
+                                                        placeholder="Item" min="1" required>
+                                                </td>
+                                                <td>
+                                                    <select class="form-select mb-3" name="satuan[]" required>
+                                                        <option selected disabled value="">Pilih</option>
+                                                        <option value="rim">Rim</option>
+                                                        <option value="lembar">Lembar</option>
+                                                        <option value="soal">Soal</option>
+                                                        <option value="ruang">Ruang</option>
+                                                        <option value="kali">Kali</option>
+                                                        <option value="pack">Pack</option>
+                                                        <option value="dus">Dus</option>
+                                                        <option value="box">Box</option>
+                                                        <option value="buah">Buah</option>
+                                                        <option value="bendel">Bendel</option>
+                                                        <option value="siswa">Siswa</option>
+                                                        <option value="orang">orang</option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control harga" name="harga[]"
+                                                        placeholder="harga" min="0" required>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control nominal" name="nominal[]"
+                                                        placeholder="Rp 0.00" min="0" disabled>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control komite" name="komite[]"
+                                                        placeholder="Komite" min="0" required>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control bos" name="bosda[]"
+                                                        placeholder="Bosda" min="0" required>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control jumlah" name="jumlah[]"
+                                                        placeholder="0.00" min="0" disabled>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-outline-success add-row">
+                                                        <i class="bi bi-plus-lg"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr id="row-total-bayar">
+                                                <td></td>
+                                                <td colspan="4">
+                                                    <div class="d-flex justify-content-between">
+                                                        Total
+                                                        <select name="jenis_bayar" class="form-select"
+                                                            style="width:auto">
+                                                            <option value="1">Tunai</option>
+                                                            <option value="2">Transfer</option>
                                                         </select>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control item" name="item[]"
-                                                    placeholder="Item" min="1" required>
-                                            </td>
-                                            <td>
-                                                <select class="form-select mb-3" name="satuan[]" required>
-                                                    <option selected disabled value="">Pilih</option>
-                                                    <option value="rim">Rim</option>
-                                                    <option value="lembar">Lembar</option>
-                                                    <option value="soal">Soal</option>
-                                                    <option value="ruang">Ruang</option>
-                                                    <option value="kali">Kali</option>
-                                                    <option value="pack">Pack</option>
-                                                    <option value="dus">Dus</option>
-                                                    <option value="box">Box</option>
-                                                    <option value="buah">Buah</option>
-                                                    <option value="bendel">Bendel</option>
-                                                    <option value="siswa">Siswa</option>
-                                                    <option value="orang">orang</option>
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control harga" name="harga[]"
-                                                    placeholder="harga" min="0" required>
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control nominal" name="nominal[]"
-                                                    placeholder="Rp 0.00" min="0" disabled>
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control komite" name="komite[]"
-                                                    placeholder="Komite" min="0" required>
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control bos" name="bosda[]"
-                                                    placeholder="Bosda" min="0" required>
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control jumlah" name="jumlah[]"
-                                                    placeholder="0.00" min="0" disabled>
-                                            </td>
-                                            <td>
-                                                <button type="button" class="btn btn-outline-success add-row">
-                                                    <i class="bi bi-plus-lg"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                    <tfoot>
-                                        <tr id="row-total-bayar">
-                                            <td></td>
-                                            <td colspan="4">
-                                                <div class="d-flex justify-content-between">
-                                                    Total
-                                                    <select name="jenis_bayar" class="form-select" style="width:auto">
-                                                        <option value="1">Tunai</option>
-                                                        <option value="2">Transfer</option>
-                                                    </select>
-                                                </div>
-                                            </td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td class="text-end fw-bold" id="total-item-nilai-bayar">0</td>
-                                            <td></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
+                                                </td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td class="text-end fw-bold" id="total-item-nilai-bayar">0</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
                             </div>
 
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                <button type="submit" form="createForm" class="btn btn-primary">Simpan</button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                        <button type="submit" form="createForm" class="btn btn-primary">Simpan</button>
-                    </div>
-                    </form>
                 </div>
             </div>
         </div>
@@ -688,6 +785,90 @@ ob_end_flush();
                 </div>
             </div>
         </div>
+
+        <!-- Modal Detail -->
+        <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="false">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detailModalLabel">Detail Data</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+
+                        <div class="container-fluid">
+                            <div>
+                                <strong>Keterangan:</strong>
+                                <span id="modal-keterangan">-</span>
+                            </div>
+                            <hr>
+                            <div class="row mb-3">
+                                <div class="col-sm-8">
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <p class="fw-bold">Tanggal</p>
+                                            <p class="fw-bold">Sumber Dana</p>
+                                            <p class="fw-bold">Pihak Terlibat</p>
+                                            <p class="fw-bold">Total</p>
+                                        </div>
+                                        <div class="col-9">
+                                            <p>: <span id="modal-sumber-dana">-</span></p>
+                                            <p>: <span id="modal-tanggal">-</span></p>
+                                            <p>: <span id="modal-pihak-terlibat">-</span></p>
+                                            <p>: <span id="modal-total">-</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 mb-3" style="max-height: 180px; overflow-y: auto;">
+                                    <h6>Bukti Pengeluaran:</h6>
+                                    <div class="card">
+                                        <div id="bukti-container" class="d-flex flex-wrap">
+                                            <!-- Evidence files will be dynamically added here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-12">
+                                    <h6>Item Pengeluaran Terkait:</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Nama Pengeluaran</th>
+                                                    <th>Barang/Item</th>
+                                                    <th>Satuan</th>
+                                                    <th>H-Satuan</th>
+                                                    <th>Nilai Bayar</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="item-table-body">
+                                                <tr>
+                                                    <td colspan="4" class="text-center">Tidak ada item terkait</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            </script>
+                        </div>
+                        <div class="modal-footer">
+                            <form id="approvalForm" method="POST">
+                                <input type="hidden" name="action" value="approval">
+                                <input type="hidden" id="approval-id" name="id">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-success" name="status" value="1">Accept</button>
+                                <button type="submit" class="btn btn-danger" name="status" value="2">Decline</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
     </div>
 
@@ -793,9 +974,9 @@ ob_end_flush();
                                 <option selected disabled value="">Pilih pengeluaran
                                 </option>
                                 <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
-                                                                                                                                                                                                                                                        <option value="<?php echo $dkp['id']; ?>">
-                                                                                                                                                                                                                                                            <?php echo $dkp['judul']; ?>
-                                                                                                                                                                                                                                                        </option>
+                                                                                                                                                                                                            <option value="<?php echo $dkp['id']; ?>">
+                                                                                                                                                                                                            <?php echo $dkp['judul']; ?>
+                                                                                                                                                                                                            </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -948,6 +1129,101 @@ ob_end_flush();
         });
     });
 
+    // Detail
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handling Detail Modal
+        const detailModal = document.getElementById('detailModal');
+        if (detailModal) {
+            detailModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+
+                // Fetch attributes from the clicked button
+                const pengeluaranId = button.getAttribute('data-bs-id');
+                const keterangan = button.getAttribute('data-bs-keterangan');
+                const tanggalPengeluaran = button.getAttribute('data-bs-tanggal_pengeluaran');
+                const pihakTerlibat = button.getAttribute('data-bs-pihak_terlibat');
+                const sumberDana = button.getAttribute('data-bs-sumber_dana');
+                const total = button.getAttribute('data-bs-total');
+                const items = JSON.parse(button.getAttribute('data-items'));
+                const buktiFiles = JSON.parse(button.getAttribute('data-bukti_files'));
+
+                // Update modal title
+                const modalTitle = detailModal.querySelector('.modal-title');
+                modalTitle.textContent = `Detail Data Pengeluaran: ${keterangan}`;
+
+                // Format tanggal menjadi "01 Desember 2001"
+                const formattedDate = formatTanggal(tanggalPengeluaran);
+
+                // Update modal content
+                detailModal.querySelector('#modal-keterangan').textContent = keterangan || '-';
+                detailModal.querySelector('#modal-tanggal').textContent = formattedDate || '-';
+                detailModal.querySelector('#modal-pihak-terlibat').textContent = pihakTerlibat || '-';
+                detailModal.querySelector('#modal-sumber-dana').textContent = sumberDana || '-';
+                detailModal.querySelector('#modal-total').textContent = total || '-';
+
+                // Populate item list
+                const itemTableBody = detailModal.querySelector('#item-table-body');
+                itemTableBody.innerHTML = '';
+                if (items && items.length > 0) {
+                    items.forEach((item, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${item.nama_pengeluaran}</td>
+                            <td>${item.item}</td>
+                            <td>${item.satuan}</td>
+                            <td>${item.harga}</td>
+                            <td>${item.jumlah}</td>
+                        `;
+                        itemTableBody.appendChild(row);
+                    });
+                } else {
+                    itemTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center">Tidak ada item terkait</td>
+                        </tr>
+                    `;
+                }
+
+                // Populate evidence files image of bukti pengeluaran
+                const buktiContainer = detailModal.querySelector('#bukti-container');
+                buktiContainer.innerHTML = '';
+                if (buktiFiles && buktiFiles.length > 0) {
+                    buktiFiles.forEach((bukti) => {
+                        const img = document.createElement('img');
+                        img.src = bukti.file_path;
+                        img.alt = `Bukti ${bukti.file_path}`;
+                        img.classList.add('img-thumbnail');
+                        img.style.maxWidth = '45%';
+                        img.style.height = 'auto';
+                        img.style.objectFit = 'cover';
+                        img.style.margin = '5px';
+                        buktiContainer.appendChild(img);
+                    });
+                } else {
+                    buktiContainer.innerHTML =
+                        '<p class="text-muted p-2">Tidak ada bukti pengeluaran tersedia</p>';
+                }
+
+                // Update hidden input in the form
+                const approvalForm = detailModal.querySelector('#approvalForm');
+                approvalForm.querySelector('#approval-id').value = pengeluaranId;
+
+                // Debugging output
+                // console.log(
+                //     `ID: ${pengeluaranId}, 
+                // Keterangan: ${keterangan}, 
+                // Tanggal Pengeluaran: ${tanggalPengeluaran}, 
+                // Pihak Terlibat: ${pihakTerlibat}, 
+                // Sumber Dana: ${sumberDana}, 
+                // Total: ${total}, 
+                // Items: ${items ? items.length : 0}`
+                // );
+
+            });
+        }
+    });
+
     // delete
     document.addEventListener('DOMContentLoaded', function () {
         // Handling Delete
@@ -958,7 +1234,6 @@ ob_end_flush();
                 const pengeluaranId = button.getAttribute('data-bs-id');
                 const keterangan = button.getAttribute('data-bs-keterangan');
                 const items = JSON.parse(button.getAttribute('data-items'));
-
                 const modalTitle = deleteModal.querySelector('.modal-title');
                 modalTitle.textContent = `Hapus Data Pengeluaran: ${keterangan}`;
 
@@ -974,11 +1249,6 @@ ob_end_flush();
 
                 const deleteForm = deleteModal.querySelector('#deleteForm');
                 deleteForm.querySelector('#delete-id').value = pengeluaranId;
-
-                // Debugging output
-                // console.log(
-                //     `ID: ${pengeluaranId}, Keterangan: ${keterangan}, Item: ${items.length > 0 ? items.map(item => item.id).join(', ') : 'No items'}`
-                // );
 
             });
         }

@@ -1,6 +1,6 @@
 {
     "require": {
         "robmorgan/phinx": "^0.16.3",
-        "phpoffice/phpspreadsheet": "^3.6"
+        "phpoffice/phpspreadsheet": "^3.7"
     }
 }
