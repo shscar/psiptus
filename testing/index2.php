@@ -191,16 +191,16 @@ foreach ($results as $row) {
         $combinedResults[$riwayatId]['items'][] = [
             'id' => $row['detail_tarifspp_id'],
             'jenis_bayar' => 'TS: ' . $row['tarif_spp'],
-            'jumlah_bayar' => 'Rp. ' . $row['jmlb_tfs'],
-            'kurang_bayar' => 'Rp. ' . $row['kurang_bayar_spp'],
+            'jumlah_bayar' => 'Rp. ' . number_format($row['jmlb_tfs'], 0, ',', '.'),
+            'kurang_bayar' => 'Rp. ' . number_format($row['kurang_bayar_spp'], 0, ',', '.'),
         ];
     }
     if ($row['detail_pembayaranlain_id']) {
         $combinedResults[$riwayatId]['items'][] = [
             'id' => $row['detail_pembayaranlain_id'],
             'jenis_bayar' => 'PL: ' . $row['pembayaran_lainnya'],
-            'jumlah_bayar' => 'Rp. ' . $row['jmlb_pyl'],
-            'kurang_bayar' => 'Rp. ' . $row['kurang_bayar_lainnya'],
+            'jumlah_bayar' => 'Rp. ' . number_format($row['jmlb_pyl'], 0, ',', '.'),
+            'kurang_bayar' => 'Rp. ' . number_format($row['kurang_bayar_lainnya'], 0, ',', '.'),
         ];
     }
 }
@@ -856,28 +856,6 @@ ob_end_flush();
             }
         });
 
-        function cleanCurrencyString(value) {
-            if (typeof value === 'string') {
-                // Hapus simbol mata uang "Rp.", spasi, dan pemisah ribuan (titik)
-                value = value.replace(/Rp\.?\s?|,|\./g, '');
-            }
-            // Konversi ke angka
-            return parseFloat(value) || 0;
-        }
-
-
-        function formattRupiah(angka) {
-            // Cek jika angka tidak valid, default ke 0
-            if (isNaN(angka) || angka === null || angka === undefined) {
-                angka = 0;
-            }
-            return new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR'
-            }).format(angka);
-        }
-
-
         // modals Detail
         document.addEventListener('DOMContentLoaded', function () {
             // show record
@@ -917,39 +895,17 @@ ob_end_flush();
                             nameCell.textContent = item.jenis_bayar || 'N/A'; // Nama Pembayaran
                             row.appendChild(nameCell);
 
-                            // const paidCell = document.createElement('td');
-                            // const jumlahBayar = item.jumlah_bayar;
-                            // paidCell.textContent = jumlahBayar ||
-                            //     '0'; // Jumlah yang dibayarkan
-                            // row.appendChild(paidCell);
-
-                            // const remainingCell = document.createElement('td');
-                            // const kurangBayar = item.kurang_bayar;
-                            // remainingCell.textContent = kurangBayar ||
-                            //     '0'; // Jumlah kurang
-                            // row.appendChild(remainingCell);
-
-                            // Kolom jumlah bayar
                             const paidCell = document.createElement('td');
-                            const jumlahBayar = cleanCurrencyString(item
-                                .jumlah_bayar); // Bersihkan string
-                            paidCell.textContent = formattRupiah(jumlahBayar);
+                            const jumlahBayar = item.jumlah_bayar;
+                            paidCell.textContent = jumlahBayar ||
+                                '0'; // Jumlah yang dibayarkan
                             row.appendChild(paidCell);
 
-                            // Kolom jumlah kurang
                             const remainingCell = document.createElement('td');
-                            const kurangBayar = cleanCurrencyString(item
-                                .kurang_bayar); // Bersihkan string
-                            remainingCell.textContent = formattRupiah(kurangBayar);
+                            const kurangBayar = item.kurang_bayar;
+                            remainingCell.textContent = kurangBayar ||
+                                '0'; // Jumlah kurang
                             row.appendChild(remainingCell);
-
-                            console.log('Jumlah Bayar (original):', item.jumlah_bayar);
-                            console.log('Jumlah Bayar (cleaned):', cleanCurrencyString(item
-                                .jumlah_bayar));
-                            console.log('Kurang Bayar (original):', item.kurang_bayar);
-                            console.log('Kurang Bayar (cleaned):', cleanCurrencyString(item
-                                .kurang_bayar));
-
 
                             // Append the row to the table body
                             classListContainer.appendChild(row);
@@ -993,48 +949,51 @@ ob_end_flush();
             }
         });
 
+        // Delete Modal
+        document.addEventListener('DOMContentLoaded', function () {
+            // delete record
+            const deleteModal = document.getElementById('deleteModal');
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const id = button.getAttribute('data-bs-id');
+                    const tanggalBayar = button.getAttribute('data-bs-tanggal');
 
-        // delete record
-        const deleteModal = document.getElementById('deleteModal');
-        if (deleteModal) {
-            deleteModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-                const id = button.getAttribute('data-bs-id');
-                const tanggalBayar = button.getAttribute('data-bs-tanggal');
+                    // Update the modal title
+                    const modalTitle = deleteModal.querySelector('.modal-title');
+                    modalTitle.textContent = `Hapus Data Tagihan: ${tanggalBayar}`;
 
-                // Update the modal title
-                const modalTitle = deleteModal.querySelector('.modal-title');
-                modalTitle.textContent = `Hapus Data Tagihan: ${tanggalBayar}`;
+                    // Populate the form with the id
+                    const form = deleteModal.querySelector('#deleteForm');
+                    form.querySelector('#delete-id').value = id;
 
-                // Populate the form with the id
-                const form = deleteModal.querySelector('#deleteForm');
-                form.querySelector('#delete-id').value = id;
+                    // Get the list of payment items for the selected transaction
+                    const classListContainer = deleteModal.querySelector('.class-list');
+                    classListContainer.innerHTML = ''; // Clear previous content
 
-                // Get the list of payment items for the selected transaction
-                const classListContainer = deleteModal.querySelector('.class-list');
-                classListContainer.innerHTML = ''; // Clear previous content
+                    // Retrieve and display associated items
+                    const transaction = combinedResults[parseInt(id)];
+                    if (transaction && transaction.items.length > 0) {
+                        transaction.items.forEach(item => {
+                            const listItem = document.createElement('li');
+                            listItem.textContent = item.jenis_bayar;
+                            classListContainer.appendChild(listItem);
+                        });
+                    } else {
+                        const noItem = document.createElement('li');
+                        noItem.textContent = 'Tidak ada item terkait';
+                        classListContainer.appendChild(noItem);
+                    }
 
-                // Retrieve and display associated items
-                const transaction = combinedResults[parseInt(id)];
-                if (transaction && transaction.items.length > 0) {
-                    transaction.items.forEach(item => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = item.jenis_bayar;
-                        classListContainer.appendChild(listItem);
-                    });
-                } else {
-                    const noItem = document.createElement('li');
-                    noItem.textContent = 'Tidak ada item terkait';
-                    classListContainer.appendChild(noItem);
-                }
+                    // Debugging output
+                    // console.log(
+                    //     `ID: ${id}, Tanggal Bayar: ${tanggalBayar}, Item: ${transaction ? transaction.items.map(item => item.id).join(', ') : 'No items'}`
+                    // );
+                });
+            }
+        });
 
-                // Debugging output
-                // console.log(
-                //     `ID: ${id}, Tanggal Bayar: ${tanggalBayar}, Item: ${transaction ? transaction.items.map(item => item.id).join(', ') : 'No items'}`
-                // );
-            });
-        }
-
+        // Konten print
         document.addEventListener('DOMContentLoaded', function () {
             const printButton = document.querySelector('.btn-danger'); // Tombol print
             const modalBody = document.querySelector('#showModal .modal-body'); // Konten modal-body

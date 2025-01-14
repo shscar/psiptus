@@ -143,13 +143,20 @@ $stmt = $db->prepare("SELECT
         rts.no_invoice,
         rts.jenis_bayar,
         rts.total_bayar,
-        -- rts.jumlah_bayar,
+        
+        COUNT(*) AS total_transaksi, 
+        SUM(rts.total_bayar) AS total_dana_masuk,
+
         ts.nama_tarif AS tarif_spp,
         rtt.tarif_spp_id,
         rtt.jumlah_bayar AS jmlb_tfs,
         spl.nama_pembayaran AS pembayaran_lainnya,
         rtp.pembayaran_lainnya_id,
-        rtp.jumlah_bayar AS jmlb_pyl
+        rtp.jumlah_bayar AS jmlb_pyl,
+        ts.nominal AS nominal_spp,
+        spl.nominal AS nominal_lainnya,
+        (ts.nominal - COALESCE(SUM(drt.jumlah_bayar), 0)) AS kurang_bayar_spp,
+        (spl.nominal - COALESCE(SUM(drl.jumlah_bayar), 0)) AS kurang_bayar_lainnya
     FROM riwayat_transaksi_siswa rts
     LEFT JOIN siswa s ON rts.siswa_id = s.id
     LEFT JOIN kelas k ON s.kelas_id = k.id
@@ -157,6 +164,9 @@ $stmt = $db->prepare("SELECT
     LEFT JOIN tarif_spp ts ON rtt.tarif_spp_id = ts.id
     LEFT JOIN riwayat_transaksi_siswa_detail_pembayaranlain rtp ON rts.id = rtp.riwayat_transaksi_id
     LEFT JOIN siswa_pembayaran_lainnya spl ON rtp.pembayaran_lainnya_id = spl.id
+    LEFT JOIN riwayat_transaksi_siswa_detail_tarifspp drt ON ts.id = drt.tarif_spp_id AND rts.id = drt.riwayat_transaksi_id
+    LEFT JOIN riwayat_transaksi_siswa_detail_pembayaranlain drl ON spl.id = drl.pembayaran_lainnya_id AND rts.id = drl.riwayat_transaksi_id
+    GROUP BY rts.id, rtt.id, rtt.tarif_spp_id, rtp.id, rtp.pembayaran_lainnya_id
     ORDER BY rts.id DESC
 ");
 $stmt->execute();
@@ -176,10 +186,10 @@ foreach ($results as $row) {
             'tanggal_bayar' => $row['tanggal_bayar'],
             'jenis_bayar' => $row['jenis_bayar'],
             'total_bayar' => $row['total_bayar'],
+            'total_transaksi' => $row['total_transaksi'],
+            'total_dana_masuk' => $row['total_dana_masuk'],
             'detail_tarifspp_ids' => [],
             'detail_pembayaranlain_ids' => [],
-            'total_tagihan' => 0, // Akan dihitung dari items
-            'jumlah_kurang' => 0, // Akan dihitung
             'items' => [],
         ];
     }
@@ -187,32 +197,65 @@ foreach ($results as $row) {
         $combinedResults[$riwayatId]['items'][] = [
             'id' => $row['detail_tarifspp_id'],
             'jenis_bayar' => 'TS: ' . $row['tarif_spp'],
-            'jumlah_bayar' => 'Rp. ' . $row['jmlb_tfs'],
+            'jumlah_bayar' => number_format($row['jmlb_tfs'], 0, ',', '.'),
+            'kurang_bayar' => number_format($row['kurang_bayar_spp'], 0, ',', '.'),
         ];
-        $combinedResults[$riwayatId]['total_tagihan'] += $row['jmlb_tfs'];
     }
     if ($row['detail_pembayaranlain_id']) {
         $combinedResults[$riwayatId]['items'][] = [
             'id' => $row['detail_pembayaranlain_id'],
             'jenis_bayar' => 'PL: ' . $row['pembayaran_lainnya'],
-            'jumlah_bayar' => 'Rp. ' . $row['jmlb_pyl'],
+            'jumlah_bayar' => number_format($row['jmlb_pyl'], 0, ',', '.'),
+            'kurang_bayar' => number_format($row['kurang_bayar_lainnya'], 0, ',', '.'),
         ];
-        $combinedResults[$riwayatId]['total_tagihan'] += $row['jmlb_pyl'];
     }
 
-    // Hitung jumlah kurang
-    $combinedResults[$riwayatId]['jumlah_kurang'] =
-        $combinedResults[$riwayatId]['total_tagihan'] - $combinedResults[$riwayatId]['total_bayar'];
-}
+    // Menghitung total transaksi dengan memeriksa apakah $results tidak kosong
+    $totalTransaksi = 0; // Inisialisasi variabel totalTransaksi
+    if (!empty($results)) {
+        foreach ($results as $row) {
+            $totalTransaksi += $row['total_transaksi']; // Menjumlahkan total transaksi
+        }
+    }
 
-// Mengembalikan hasil
-foreach ($combinedResults as &$result) {
-    $result['jumlah_kurang'] = max($result['jumlah_kurang'], 0); // Tidak ada kurang bayar negatif
+    $totaldanamasuk = 0; // Inisialisasi variabel totalTransaksi
+    if (!empty($results)) {
+        foreach ($results as $row) {
+            $totaldanamasuk += $row['total_dana_masuk']; // Menjumlahkan total transaksi
+        }
+    }
+
 }
 
 // echo '<pre>';
 // print_r($combinedResults);
 // echo '</pre>';
+
+// Menghitung total siswa dan siswa aktif
+$stmt = $db->prepare("
+    SELECT 
+        COUNT(*) AS total_siswa,
+        COUNT(CASE WHEN status = 'Aktif' THEN 1 END) AS total_siswa_aktif
+    FROM siswa
+");
+$stmt->execute();
+$menghitungsiswa = $stmt->fetch(PDO::FETCH_ASSOC);
+// Menyimpan hasil ke dalam variabel
+$totalSiswa = $menghitungsiswa['total_siswa'];
+$totalSiswaAktif = $menghitungsiswa['total_siswa_aktif'];
+
+// Menghitung total child dari tabel kelas
+$stmtChild = $db->prepare("SELECT COUNT(*) AS total_child FROM kelas");
+$stmtChild->execute();
+$resultChild = $stmtChild->fetch(PDO::FETCH_ASSOC);
+$totalChild = $resultChild['total_child'];
+
+// Menghitung total grub dari tabel tingkat_kelas
+$stmtGrub = $db->prepare("SELECT COUNT(*) AS total_grub FROM tingkat_kelas");
+$stmtGrub->execute();
+$resultGrub = $stmtGrub->fetch(PDO::FETCH_ASSOC);
+$totalGrub = $resultGrub['total_grub'];
+
 
 // Mengakhiri output buffering
 ob_end_flush();
@@ -251,6 +294,7 @@ ob_end_flush();
         <!--begin::App Content Header-->
         <div class="app-content-header">
             <div class="container-fluid">
+
                 <div class="row">
                     <div class="col-sm-6">
                         <h3 class="mb-0">Pembayaran Siswa
@@ -311,14 +355,76 @@ ob_end_flush();
         <div class="app-content">
             <div class="container-fluid">
 
+                <!-- card -->
+                <div class="row">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon text-bg-primary shadow-sm">
+                                <i class="bi bi-book-fill"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Kelas Child/Grub</span>
+                                <span class="info-box-number">
+                                    <?= $totalChild; ?> / <?= $totalGrub; ?>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon text-bg-success shadow-sm">
+                                <i class="bi bi-people-fill"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Siswa Aktiv/NonAktiv</span>
+                                <span class="info-box-number">
+                                    <?= $totalSiswaAktif; ?> / <?= $totalSiswa; ?>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon text-bg-danger shadow-sm">
+                                <i class="bi bi-wallet-fill"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total Transaksi</span>
+                                <span class="info-box-number">
+                                    <?= $totalTransaksi; ?>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon text-bg-warning shadow-sm">
+                                <i class="bi bi-cash"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total Dana Masuk</span>
+                                <span class="info-box-number">
+                                    Rp. <?= number_format($totaldanamasuk); ?>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Layouts Table -->
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h3 class="card-title">Grade Level </h3>
-                        <button type="button" class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal"
-                            data-bs-target="#addDataModal">
-                            <i class="bi bi-plus-lg pe-1"></i> Tambah Data
-                        </button>
+                        <div class="ms-auto">
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#addDataModal">
+                                <i class="bi bi-plus-lg pe-1"></i> Tambah Data
+                            </button>
+                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#addDataModal">
+                                <i class="bi bi-file-earmark-arrow-down pe-1"></i> Export Tags perKelas
+                            </button>
+                        </div>
                     </div>
 
                     <div class="card-body">
@@ -839,7 +945,7 @@ ob_end_flush();
 
                 // Menampilkan total dalam format Rupiah
                 var formattedTotal = totalBayar === 0 ? '0' : formatRupiah(totalBayar);
-                $('#total-bayar').text('Rp. ' + formattedTotal);
+                $('#total-bayar').text(formattedTotal);
             }
 
             function toggleSimpanButton() {
@@ -859,7 +965,6 @@ ob_end_flush();
                     $('#addDataForm button[type="submit"]').prop('disabled', true);
                 }
             }
-
         });
 
         // modals Detail
@@ -876,7 +981,7 @@ ob_end_flush();
                     const no_invoice = button.getAttribute('data-bs-no_invoice');
                     const tanggal = button.getAttribute('data-bs-tanggal');
                     const jenis_bayar = button.getAttribute('data-bs-jenis_bayar');
-                    const total_bayar = button.getAttribute('data-bs-total_bayar');
+                    const total_bayar = parseFloat(button.getAttribute('data-bs-total_bayar'));
 
                     // Update the modal title
                     const modalTitle = showModal.querySelector('.modal-title');
@@ -902,12 +1007,15 @@ ob_end_flush();
                             row.appendChild(nameCell);
 
                             const paidCell = document.createElement('td');
-                            paidCell.textContent = item.jumlah_bayar ||
+                            const jumlahBayar = item.jumlah_bayar;
+                            paidCell.textContent = jumlahBayar ||
                                 '0'; // Jumlah yang dibayarkan
                             row.appendChild(paidCell);
 
                             const remainingCell = document.createElement('td');
-                            remainingCell.textContent = item.jumlah_kurang || '0'; // Jumlah kurang
+                            const kurangBayar = item.kurang_bayar;
+                            remainingCell.textContent = kurangBayar ||
+                                '0'; // Jumlah kurang
                             row.appendChild(remainingCell);
 
                             // Append the row to the table body
@@ -927,11 +1035,14 @@ ob_end_flush();
                     // Mengisi konten modal dengan data yang didapat
                     document.getElementById('nama_lengkap').textContent = nama_lengkap;
                     document.getElementById('nis').textContent = nis;
-                    // document.getElementById('nama_kelas').textContent = nama_kelas;
                     document.getElementById('no_invoice').textContent = no_invoice;
                     document.getElementById('tanggal').textContent = formatTanggal(tanggal);
-                    document.getElementById('jenis_bayar').textContent = jenis_bayar;
-                    document.getElementById('total_bayar').textContent = total_bayar;
+                    // document.getElementById('jenis_bayar').textContent = jenis_bayar;
+                    // Modifikasi untuk menampilkan jenis pembayaran
+                    const jenisBayarText = jenis_bayar == 1 ? "Tunai" : jenis_bayar == 2 ? "Transfer" :
+                        "Tidak Diketahui";
+                    document.getElementById('jenis_bayar').textContent = jenisBayarText;
+                    document.getElementById('total_bayar').textContent = formatRupiah(total_bayar);
 
                     // // Debugging output
                     // console.log(
@@ -947,7 +1058,10 @@ ob_end_flush();
                     // );
                 });
             }
+        });
 
+        // Delete Modal
+        document.addEventListener('DOMContentLoaded', function () {
             // delete record
             const deleteModal = document.getElementById('deleteModal');
             if (deleteModal) {
@@ -990,6 +1104,7 @@ ob_end_flush();
             }
         });
 
+        // Konten print
         document.addEventListener('DOMContentLoaded', function () {
             const printButton = document.querySelector('.btn-danger'); // Tombol print
             const modalBody = document.querySelector('#showModal .modal-body'); // Konten modal-body

@@ -569,7 +569,7 @@ ob_end_flush();
         </div>
 
         <!-- Modal Create -->
-        <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+        <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="false">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -974,9 +974,9 @@ ob_end_flush();
                                 <option selected disabled value="">Pilih pengeluaran
                                 </option>
                                 <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
-                                                                                                                                                                                                            <option value="<?php echo $dkp['id']; ?>">
-                                                                                                                                                                                                            <?php echo $dkp['judul']; ?>
-                                                                                                                                                                                                            </option>
+                                                                                                                                                                                                                <option value="<?php echo $dkp['id']; ?>">
+                                                                                                                                                                                                                <?php echo $dkp['judul']; ?>
+                                                                                                                                                                                                                </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>

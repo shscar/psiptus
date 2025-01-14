@@ -270,9 +270,8 @@ ob_end_flush();
                                 <div class="input-group mb-3">
                                     <label for="nominal" class="form-label">Nominal</label>
                                     <div class="input-group">
-                                        <span class="input-group-text">Rp.</span>
                                         <input type="text" class="form-control" id="nominal" name="nominal" required
-                                            aria-label="Jumlah (ke rupiah)" placeholder="5000000" />
+                                            aria-label="Jumlah (ke rupiah)" placeholder="jumlah dana" />
                                         <span class="input-group-text">.00</span>
                                     </div>
                                 </div>
@@ -421,8 +420,21 @@ ob_end_flush();
         });
     });
 
-    document.addEventListener('DOMContentLoaded', function () {
+    // format mata uang rupiah 
+    const nominal = document.getElementById('nominal');
+    nominal.addEventListener('keyup', function (e) {
+        // nominal.value = formatRupiah(this.value);
+        const numValue = parseRupiah(this.value);
+        nominal.value = formatRupiah(numValue);
+    });
+    const edit_nominal = document.getElementById('edit_nominal');
+    edit_nominal.addEventListener('keyup', function (e) {
+        // Menghapus karakter non-numeric sebelum memformat
+        const numericValue = parseRupiah(this.value);
+        edit_nominal.value = formatRupiah(numericValue);
+    });
 
+    document.addEventListener('DOMContentLoaded', function () {
         // Handling Update
         const editModal = document.getElementById('editModal');
         if (editModal) {
@@ -446,7 +458,7 @@ ob_end_flush();
                 document.getElementById('edit_id').value = id;
                 document.getElementById('edit_tanggal').value = tanggal;
                 document.getElementById('edit_deskripsi').value = deskripsi;
-                document.getElementById('edit_nominal').value = nominal;
+                document.getElementById('edit_nominal').value = formatRupiah(nominal);
                 document.getElementById('edit_sumber_dana').value = sumber_dana;
                 document.getElementById('edit_keterangan').value = keterangan;
                 document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;

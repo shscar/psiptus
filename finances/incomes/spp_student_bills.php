@@ -707,7 +707,9 @@ ob_end_flush();
     // format mata uang rupiah 
     const nominal = document.getElementById('nominal');
     nominal.addEventListener('keyup', function (e) {
-        nominal.value = formatRupiah(this.value);
+        // nominal.value = formatRupiah(this.value);
+        const numValue = parseRupiah(this.value);
+        nominal.value = formatRupiah(numValue);
     });
     const edit_nominal = document.getElementById('edit_nominal');
     edit_nominal.addEventListener('keyup', function (e) {
