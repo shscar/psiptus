@@ -64,8 +64,6 @@ $db = Database::getInstance()->getConnection();
 //     }
 // }
 
-
-
 $query = "SELECT
             kelas.id,
             kelas.nama_kelas,

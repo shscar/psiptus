@@ -1,54 +1,115 @@
 <?php
-
+// Memulai buffering
+ob_start();
 // include __DIR__ . '/../layouts/master.php';
-// $db = Database::getInstance()->getConnection();
+$db = Database::getInstance()->getConnection();
+
+// Mengakhiri buffering
+ob_end_flush();
 ?>
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap demo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-    <!--  <link rel="stylesheet" id="picostrap-styles-css" href="https://cdn.livecanvas.com/media/css/library/bundle.css" media="all"> -->
-    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/livecanvas-team/ninjabootstrap/dist/css/bootstrap.min.css"
-        media="all"> -->
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
+    <div class="container mt-5 py-4 py-md-6">
+        <div class="row mb-5">
+            <div class="col-md-6 align-self-center">
+                <div class="lc-block text-center">
+                    <img class="img-fluid mb-4" src="https://cdn.livecanvas.com/media/svg/undraw/analytics.svg" style=""
+                        loading="lazy" width="350" height="350">
+                </div><!-- /lc-block -->
+            </div><!-- /col -->
+            <div class="col-md-6">
+                <div class="lc-block">
+                    <div editable="rich">
+                        <h2>The quick brown fox jumps over the lazy cat</h2>
+                        <form>
+                            <div class="form-floating mb-3">
+                                <input type="email" class="form-control" id="floatingInput"
+                                    placeholder="name@example.com">
+                                <label for="floatingInput">Email address</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="password" class="form-control" id="floatingPassword"
+                                    placeholder="Password">
+                                <label for="floatingPassword">Password</label>
+                            </div>
+                            <div class="d-grid gap-2 col-6 mx-auto mt-4">
+                                <button class="btn btn-primary" type="button">Button</button>
+                            </div>
+                        </form>
 
-    <div class="container-fluid px-4 py-5 my-5 text-center">
-        <div class="lc-block mb-4">
-            <div editable="rich">
-                <h2 class="display-2 fw-bold">Level up your <span class="text-primary">Page!</span></h2>
+                        <p><br></p>
+                    </div>
+                </div><!-- /lc-block -->
+            </div><!-- /col -->
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-3 col-sm-6 text-center">
+                <div class="lc-block">
+                    <img class="img-fluid mb-3" src="https://cdn.livecanvas.com/media/svg/undraw/tweetstorm.svg"
+                        loading="lazy" width="92" height="92" style="height:10vh">
+                </div>
+                <div class="lc-block">
+                    <div editable="rich">
+
+                        <h4>The quick brown</h4>
+
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.&nbsp;</p>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="lc-block col-lg-6 mx-auto mb-5">
-            <div editable="rich">
+            <div class="col-md-3 col-sm-6 text-center">
+                <div class="lc-block"><img class="img-fluid mb-3"
+                        src="https://cdn.livecanvas.com/media/svg/undraw/playful-cat.svg" loading="lazy" width="92"
+                        height="92" style="height:10vh"></div>
+                <div class="lc-block">
+                    <div editable="rich">
 
-                <p class="lead">Quickly design and customize responsive mobile-first sites with Bootstrap</p>
+                        <h4>The quick brown</h4>
+
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.&nbsp;</p>
+                    </div>
+                </div>
             </div>
-        </div>
+            <div class="col-md-3 col-sm-6 text-center">
+                <div class="lc-block"><img class="img-fluid mb-3"
+                        src="https://cdn.livecanvas.com/media/svg/undraw/broadcast.svg" loading="lazy" width="92"
+                        height="92" style="height:10vh"></div>
+                <div class="lc-block">
+                    <div editable="rich">
 
-        <div class="lc-block d-grid gap-2 d-sm-flex justify-content-sm-center mb-5"> <a
-                class="btn btn-primary btn-lg px-4 gap-3" href="#" role="button">Try it free</a>
-            <a class="btn btn-outline-secondary btn-lg px-4" href="#" role="button">Learn more</a>
-        </div>
-        <div class="lc-block d-grid gap-2 d-sm-flex justify-content-sm-center">
-            <img class="img-fluid"
-                src="https://lclibrary.b-cdn.net/starters/wp-content/uploads/sites/15/2021/10/undraw_going_up_ttm5.svg"
-                width="" height="783" srcset="" sizes="" alt="">
+                        <h4>The quick brown</h4>
+
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.&nbsp;</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 text-center">
+                <div class="lc-block"><img class="img-fluid mb-3"
+                        src="https://cdn.livecanvas.com/media/svg/undraw/android.svg" loading="lazy" width="92"
+                        height="92" style="height:10vh"></div>
+                <div class="lc-block">
+                    <div editable="rich">
+
+                        <h4>The quick brown</h4>
+
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.&nbsp;</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-
-    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous">
-        </script>
-
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

@@ -256,6 +256,29 @@ $stmtGrub->execute();
 $resultGrub = $stmtGrub->fetch(PDO::FETCH_ASSOC);
 $totalGrub = $resultGrub['total_grub'];
 
+// query for export data tagihan perkelas
+$stmt = $db->prepare("
+    SELECT 
+        k.id,
+        k.nama_kelas,
+        k.jurusan,
+        k.tingkat_kelas_id,
+        k.wali_kelas_id,
+        k.jumlah_siswa,
+        k.gedung,
+        k.keterangan,
+        k.created_at AS kelas_created_at,
+        k.updated_at AS kelas_updated_at,
+        ta.tahun,
+        ta.status,
+        ta.created_at AS tahun_ajaran_created_at,
+        ta.updated_at AS tahun_ajaran_updated_at
+    FROM kelas k
+    LEFT JOIN tahun_ajaran ta ON k.tingkat_kelas_id = ta.id
+    ORDER BY k.nama_kelas ASC, ta.tahun DESC
+");
+$stmt->execute();
+$exportdtkelas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Mengakhiri output buffering
 ob_end_flush();
@@ -309,6 +332,10 @@ ob_end_flush();
                                             Detail
                                         </li>
                                         <li class="dropdown-item">
+                                            <i class="bi bi-dash me-2"></i>
+                                            Print
+                                        </li>
+                                        <li class="dropdown-item">
                                             <i class="bi bi-check2 me-2"></i>
                                             Aksi Create
                                         </li>
@@ -325,12 +352,12 @@ ob_end_flush();
                                             Export
                                         </li>
                                         <li class="dropdown-item">
-                                            <i class="bi bi-x me-2"></i>
-                                            Import
+                                            <i class="bi bi-dash me-2"></i>
+                                            Export by kelas
                                         </li>
                                         <li class="dropdown-item">
-                                            <i class="bi bi-dash me-2"></i>
-                                            Print
+                                            <i class="bi bi-x me-2"></i>
+                                            Import
                                         </li>
                                     </ul>
                                 </div>
@@ -421,8 +448,8 @@ ob_end_flush();
                                 <i class="bi bi-plus-lg pe-1"></i> Tambah Data
                             </button>
                             <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#addDataModal">
-                                <i class="bi bi-file-earmark-arrow-down pe-1"></i> Export Tags perKelas
+                                data-bs-target="#exp_data_tagkelas">
+                                <i class="bi bi-file-earmark-arrow-down pe-1"></i> Taglist Kelas
                             </button>
                         </div>
                     </div>
@@ -770,6 +797,86 @@ ob_end_flush();
                         </div>
                     </div>
                 </div>
+
+                <!-- Modal Export Data Tagihan per Kelas -->
+                <!-- <div class="modal fade" id="exp_data_tagkelas" tabindex="-1" aria-labelledby="exp_data_tagkelasLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exp_data_tagkelasLabel">Export Data Tagihan</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <form id="form_export_data" method="POST">
+                                <div class="modal-body">
+                                    <div class="card card-outline card-info">
+                                        <div class="card-body">
+                                            <div class="form-group">
+                                                <label for="kelas" class="col-sm-3 col-form-label">Kelas</label>
+                                                <select class="form-select" id="kelas" name="kelas" required>
+                                                    <option value="">Pilih Kelas</option>
+                                                    <?php foreach ($exportdtkelas as $edt): ?>
+                                                        <option value="<?php echo $edt['id']; ?>">
+                                                            <?php echo $edt['nama_kelas'] . " - " . $edt['tahun']; ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" id="export_button" class="btn btn-success">Export</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div> -->
+
+                <!-- Modal Export Data Tagihan per Kelas -->
+                <div class="modal fade" id="exp_data_tagkelas" tabindex="-1" aria-labelledby="exp_data_tagkelasLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exp_data_tagkelasLabel">Export Data Tagihan</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <!-- Ubah Form agar dapat membuka tab baru -->
+                            <form id="form_export_data" method="GET" action="/pendapatan/taglist-data-kelas"
+                                target="_blank">
+                                <div class="modal-body">
+                                    <div class="card card-outline card-info">
+                                        <div class="card-body">
+                                            <div class="form-group">
+                                                <label for="kelas" class="col-sm-3 col-form-label">Kelas</label>
+                                                <select class="form-select" id="kelas" name="kelas" required>
+                                                    <option value="">Pilih Kelas</option>
+                                                    <?php foreach ($exportdtkelas as $edt): ?>
+                                                        <option value="<?php echo $edt['id']; ?>">
+                                                            <?php echo $edt['nama_kelas'] . " - " . $edt['tahun']; ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-success">Export</button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+
 
             </div>
         </div>
@@ -1140,6 +1247,24 @@ ob_end_flush();
 
                 // Tutup jendela setelah cetak
                 printWindow.close();
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $("#form_export_data").submit(function (event) {
+                event.preventDefault(); // Mencegah pengiriman form default
+
+                let kelas_id = $("#kelas").val();
+                if (kelas_id === "") {
+                    alert("Silakan pilih kelas terlebih dahulu.");
+                    return;
+                }
+
+                // Mengarahkan ke halaman baru dengan parameter yang benar
+                let actionUrl = "/pendapatan/taglist-data-kelas?kelas_id=" + encodeURIComponent(kelas_id);
+                window.open(actionUrl, "_blank");
             });
         });
     </script>

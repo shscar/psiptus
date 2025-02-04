@@ -385,6 +385,10 @@ ob_end_flush();
                                         Detail
                                     </li>
                                     <li class="dropdown-item">
+                                        <i class="bi bi-x me-2"></i>
+                                        Print
+                                    </li>
+                                    <li class="dropdown-item">
                                         <i class="bi bi-check2 me-2"></i>
                                         Approval
                                     </li>
@@ -862,6 +866,7 @@ ob_end_flush();
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                                 <button type="submit" class="btn btn-success" name="status" value="1">Accept</button>
                                 <button type="submit" class="btn btn-danger" name="status" value="2">Decline</button>
+                                <button type="submit" class="btn btn-info" name="print" value="2">Print</button>
                             </form>
                         </div>
                     </div>
@@ -974,9 +979,9 @@ ob_end_flush();
                                 <option selected disabled value="">Pilih pengeluaran
                                 </option>
                                 <?php foreach ($detail_kategori_pengeluaran as $dkp): ?>
-                                                                                                                                                                                                                <option value="<?php echo $dkp['id']; ?>">
-                                                                                                                                                                                                                <?php echo $dkp['judul']; ?>
-                                                                                                                                                                                                                </option>
+    <option value="<?php echo $dkp['id']; ?>">
+    <?php echo $dkp['judul']; ?>
+    </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>

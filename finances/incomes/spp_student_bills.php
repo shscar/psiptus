@@ -13,8 +13,9 @@ $stmt = $db->prepare("
         t.nominal,
         t.deskripsi,
         t.status_aktif,
-        ta.tahun AS tahun_ajaran,
         t.tahun_ajaran_id,
+        t.semester,
+        ta.tahun AS tahun_ajaran,
         ts_k.id AS tarif_spp_kelas_id,
         k.nama_kelas
     FROM tarif_spp t
@@ -38,6 +39,7 @@ foreach ($results as $row) {
             'deskripsi' => $row['deskripsi'],
             'status_aktif' => $row['status_aktif'],
             'tahun_ajaran' => $row['tahun_ajaran'],
+            'semester' => $row['semester'],
             'tahun_ajaran_id' => $row['tahun_ajaran_id'],
             'tarif_spp_kelas_ids' => [],
             'kelas' => [],
@@ -65,9 +67,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $nama_tarif = $_POST['nama_tarif'];
         $nominal = $_POST['nominal'];
         $tahun_ajaran_id = $_POST['tahun_ajaran_id'];
+        $semester = $_POST['semester'];
         $deskripsi = $_POST['deskripsi'];
         $status_aktif = isset($_POST['status_aktif']) ? 1 : 0; // Checkbox default to checked
         $kelas = $_POST['kelas']; // Array of selected classes
+
+        // Hapus semua karakter non-angka menggunakan regex
+        $nominal = preg_replace('/[^\d]/', '', $nominal);
+        // var_dump($nominal);
+        if (ctype_digit($nominal)) {
+            $nominal = intval($nominal); // Konversi ke integer hanya jika valid
+        } else {
+            $nominal = 0; // Default jika nilai tidak valid
+        }
 
         // Validate input
         if (!empty($nama_tarif) && !empty($nominal) && !empty($tahun_ajaran_id) && !empty($kelas)) {
@@ -76,13 +88,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             try {
                 // Prepare SQL query to insert into tarif_spp table
-                $sql = "INSERT INTO tarif_spp (nama_tarif, nominal, tahun_ajaran_id, deskripsi, status_aktif) 
-                        VALUES (:nama_tarif, :nominal, :tahun_ajaran_id, :deskripsi, :status_aktif)";
+                $sql = "INSERT INTO tarif_spp (nama_tarif, nominal, tahun_ajaran_id, semester, deskripsi, status_aktif) 
+                        VALUES (:nama_tarif, :nominal, :tahun_ajaran_id, :semester, :deskripsi, :status_aktif)";
                 $stmt = $conn->prepare($sql);
                 $stmt->execute([
                     'nama_tarif' => $nama_tarif,
                     'nominal' => $nominal,
                     'tahun_ajaran_id' => $tahun_ajaran_id,
+                    'semester' => $semester,
                     'deskripsi' => $deskripsi,
                     'status_aktif' => $status_aktif
                 ]);
@@ -123,14 +136,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $nama_tarif = $_POST['nama_tarif'];
         $nominal = $_POST['nominal'];
         $tahun_ajaran_id = $_POST['tahun_ajaran_id'];
+        $semester = $_POST['semester'];
         $deskripsi = $_POST['deskripsi'];
         $status_aktif = isset($_POST['status_aktif']) ? 1 : 0; // Checkbox default to checked
 
+        // Hapus semua karakter non-angka menggunakan regex
+        $nominal = preg_replace('/[^\d]/', '', $nominal);
+        // var_dump($nominal);
+        if (ctype_digit($nominal)) {
+            $nominal = intval($nominal); // Konversi ke integer hanya jika valid
+        } else {
+            $nominal = 0; // Default jika nilai tidak valid
+        }
+
         // Validate input
         if (!empty($id) && !empty($nama_tarif) && !empty($nominal) && !empty($tahun_ajaran_id)) {
+
             // Prepare SQL query
             $sql = "UPDATE tarif_spp 
-                    SET nama_tarif = :nama_tarif, nominal = :nominal, tahun_ajaran_id = :tahun_ajaran_id, deskripsi = :deskripsi, status_aktif = :status_aktif
+                    SET nama_tarif = :nama_tarif, nominal = :nominal, tahun_ajaran_id = :tahun_ajaran_id, semester = :semester, deskripsi = :deskripsi, status_aktif = :status_aktif
                     WHERE id = :id";
             $stmt = $db->prepare($sql);
 
@@ -141,6 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     'nama_tarif' => $nama_tarif,
                     'nominal' => $nominal,
                     'tahun_ajaran_id' => $tahun_ajaran_id,
+                    'semester' => $semester,
                     'deskripsi' => $deskripsi,
                     'status_aktif' => $status_aktif
                 ])
@@ -154,6 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } else {
                 echo "Gagal memperbarui Data Tagihan!";
             }
+
         } else {
             echo "Silakan isi semua bidang yang wajib diisi!";
         }
@@ -403,6 +429,7 @@ ob_end_flush();
                                             <th>Nama Tarif</th>
                                             <th>Nominal</th>
                                             <th>Tahun Ajaran</th>
+                                            <th>Semester</th>
                                             <th>Kelas</th>
                                             <th>Status</th>
                                             <th>Aksi</th>
@@ -418,6 +445,7 @@ ob_end_flush();
                                                 <td><?= $tarif['nama_tarif']; ?></td>
                                                 <td>Rp. <?= number_format($tarif['nominal'], 2, ',', '.'); ?></td>
                                                 <td><?= $tarif['tahun_ajaran']; ?></td>
+                                                <td><?= $tarif['semester']; ?></td>
                                                 <td>
                                                     <?php if (!empty($tarif['kelas'])): ?>
                                                         <ul class="list-circle m-0">
@@ -457,6 +485,7 @@ ob_end_flush();
                                                                     data-nama_tarif="<?= $tarif['nama_tarif']; ?>"
                                                                     data-nominal="<?= $tarif['nominal']; ?>"
                                                                     data-tahun_ajaran_id="<?= $tarif['tahun_ajaran_id']; ?>"
+                                                                    data-semester="<?= $tarif['semester']; ?>"
                                                                     data-deskripsi="<?= $tarif['deskripsi']; ?>"
                                                                     data-status_aktif="<?= $tarif['status_aktif']; ?>"
                                                                     data-kelas='<?= json_encode($tarif['kelas']); ?>'>
@@ -509,7 +538,6 @@ ob_end_flush();
                                 <div class="form-group mb-3">
                                     <label for="nominal" class="form-label">Nominal</label>
                                     <div class="input-group">
-                                        <span class="input-group-text">Rp.</span>
                                         <input type="text" class="form-control" id="nominal" name="nominal" required
                                             aria-label="Jumlah (ke rupiah)" />
                                         <span class="input-group-text">.00</span>
@@ -522,6 +550,14 @@ ob_end_flush();
                                         <?php foreach ($tahun_ajaran as $ta): ?>
                                             <option value="<?php echo $ta['id']; ?>"><?php echo $ta['tahun']; ?></option>
                                         <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="semester" class="form-label">Semester</label>
+                                    <select class="form-select" id="semester" name="semester" required>
+                                        <option value="none">None</option>
+                                        <option value="gasal">Gasal</option>
+                                        <option value="genap">Genap</option>
                                     </select>
                                 </div>
                                 <div class="form-group mb-3">
@@ -571,7 +607,6 @@ ob_end_flush();
                                 <div class="input-group mb-3">
                                     <label for="edit_nominal" class="form-label">Nominal</label>
                                     <div class="input-group">
-                                        <span class="input-group-text">Rp.</span>
                                         <input type="text" class="form-control" id="edit_nominal" name="nominal"
                                             required aria-label="Jumlah (ke rupiah)" />
                                         <span class="input-group-text">.00</span>
@@ -587,6 +622,14 @@ ob_end_flush();
                                                 <?php echo $ta['tahun']; ?>
                                             </option>
                                         <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="edit_semester" class="form-label">Semester</label>
+                                    <select class="form-select" id="edit_semester" name="semester" required>
+                                        <option value="none">None</option>
+                                        <option value="gasal">Gasal</option>
+                                        <option value="genap">Genap</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">
@@ -730,6 +773,7 @@ ob_end_flush();
                 const nama_tarif = button.getAttribute('data-nama_tarif');
                 const nominal = button.getAttribute('data-nominal');
                 const tahun_ajaran_id = button.getAttribute('data-tahun_ajaran_id');
+                const semester = button.getAttribute('data-semester');
                 const deskripsi = button.getAttribute('data-deskripsi');
                 const status_aktif = button.getAttribute('data-status_aktif') === '1';
 
@@ -742,13 +786,14 @@ ob_end_flush();
                 document.getElementById('edit_nama_tarif').value = nama_tarif;
                 document.getElementById('edit_nominal').value = formatRupiah(nominal);
                 document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;
+                document.getElementById('edit_semester').value = semester;
                 document.getElementById('edit_deskripsi').value = deskripsi;
                 document.getElementById('edit_status_aktif').checked = status_aktif;
 
                 // Men-debug untuk memastikan nilai diambil dengan benar
-                // console.log(
-                //     `ID: ${id}, A: ${tahun_ajaran_id}`
-                // );
+                console.log(
+                    `ID: ${id}, A: ${semester}`
+                );
 
             });
         }

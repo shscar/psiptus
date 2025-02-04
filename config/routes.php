@@ -2,13 +2,14 @@
 // config/router.php
 
 $routes = [
-    '' => '/dashboard/login.php',
     '/dashboard' => '/dashboards/index.php',
+    '/' => '/dashboards/login.php',
     '/test' => '/testing/index.php',
     '/test2' => '/testing/index2.php',
     '/test3' => '/testing/index3.php',
+    '/test4' => '/testing/test4.php',
     '/test5' => '/testing/test5.php',
-    // '/login' => '/dashboard/login.php',
+    // '' => '/dashboard/login.php',
 
     '/guru-staff' => '/teachers_employees/index.php',
     // '/user' => '/users/administrator/index.php',
@@ -39,6 +40,7 @@ $routes = [
     '/pendapatan/pemasukan' => '/finances/incomes/revenues.php',
     // child
     '/child-update-tarif' => '/finances/incomes/child_tarif_spp_kelas_realtime.php',
+    '/pendapatan/taglist-data-kelas' => '/finances/incomes/taglist_data_kelas.php',
     '/pendapatan/student_paid_fees_child' => '/finances/incomes/student_paid_fees_child.php',
 
     // pengeluaran
