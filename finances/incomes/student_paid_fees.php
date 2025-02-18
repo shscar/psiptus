@@ -447,10 +447,10 @@ ob_end_flush();
                                 data-bs-target="#addDataModal">
                                 <i class="bi bi-plus-lg pe-1"></i> Tambah Data
                             </button>
-                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
+                            <!-- <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
                                 data-bs-target="#exp_data_tagkelas">
                                 <i class="bi bi-file-earmark-arrow-down pe-1"></i> Taglist Kelas
-                            </button>
+                            </button> -->
                         </div>
                     </div>
 

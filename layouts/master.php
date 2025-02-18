@@ -1,3 +1,19 @@
+<?php
+
+ob_start();
+ini_set('session.cookie_lifetime', 86400); // 1 hari
+ini_set('session.gc_maxlifetime', 86400);
+session_set_cookie_params(86400);
+session_start();
+
+if ($_SESSION['role'] !== 'super_admin') {
+    header("Location: /");
+    exit();
+}
+
+ob_end_flush();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
