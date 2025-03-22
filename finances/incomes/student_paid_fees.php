@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Hitung total bayar dari jumlah_bayar[]
             if (isset($_POST['jumlah_bayar']) && is_array($_POST['jumlah_bayar'])) {
                 foreach ($_POST['jumlah_bayar'] as $jumlah) {
+                    $jumlah = str_replace(['.', ','], '', $jumlah); // Hilangkan pemisah ribuan
                     $total_bayar += floatval($jumlah);
                 }
             }
@@ -47,6 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 foreach ($_POST['item_type'] as $key => $type) {
                     $item_id = $_POST['item_id'][$key];
                     $jumlah_bayar = floatval($_POST['jumlah_bayar'][$key]);
+
+                    // Pastikan jumlah_bayar dalam format float
+                    $jumlah_bayar = str_replace(['.', ','], '', $jumlah_bayar);
+                    $jumlah_bayar = floatval($jumlah_bayar);
 
                     if ($type === 'tarif_spp') {
                         $stmt = $db->prepare("INSERT INTO riwayat_transaksi_siswa_detail_tarifspp 
@@ -311,495 +316,482 @@ ob_end_flush();
 <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
 
-<body>
-    <!--begin::App Main-->
-    <main class="app-main">
-        <!--begin::App Content Header-->
-        <div class="app-content-header">
-            <div class="container-fluid">
+<!--begin::App Main-->
+<main class="app-main">
+    <!--begin::App Content Header-->
+    <div class="app-content-header">
+        <div class="container-fluid">
 
-                <div class="row">
-                    <div class="col-sm-6">
-                        <h3 class="mb-0">Pembayaran Siswa
+            <div class="row">
+                <div class="col-sm-6">
+                    <h3 class="mb-0">Pembayaran Siswa
 
-                            <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-sm btn-info dropdown-toggle rounded-5"
-                                        data-bs-toggle="dropdown" aria-expanded="false">?</button>
-                                    <ul class="dropdown-menu">
-                                        <li class="dropdown-item">
-                                            <i class="bi bi-dash me-2"></i>
-                                            Detail
-                                        </li>
-                                        <li class="dropdown-item">
-                                            <i class="bi bi-dash me-2"></i>
-                                            Print
-                                        </li>
-                                        <li class="dropdown-item">
-                                            <i class="bi bi-check2 me-2"></i>
-                                            Aksi Create
-                                        </li>
-                                        <li class="dropdown-item">
-                                            <i class="bi bi-x me-2"></i>
-                                            Aksi Edit
-                                        </li>
-                                        <li class="dropdown-item">
-                                            <i class="bi bi-check2 me-2"></i>
-                                            Aksi Delete
-                                        </li>
-                                        <li class="dropdown-item">
-                                            <i class="bi bi-x me-2"></i>
-                                            Export
-                                        </li>
-                                        <li class="dropdown-item">
-                                            <i class="bi bi-dash me-2"></i>
-                                            Export by kelas
-                                        </li>
-                                        <li class="dropdown-item">
-                                            <i class="bi bi-x me-2"></i>
-                                            Import
-                                        </li>
-                                    </ul>
-                                </div>
+                        <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-info dropdown-toggle rounded-5"
+                                    data-bs-toggle="dropdown" aria-expanded="false">?</button>
+                                <ul class="dropdown-menu">
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Detail
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Print
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-check2 me-2"></i>
+                                        Aksi Create
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-x me-2"></i>
+                                        Aksi Edit
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-check2 me-2"></i>
+                                        Aksi Delete
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-x me-2"></i>
+                                        Export
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-dash me-2"></i>
+                                        Export by kelas
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <i class="bi bi-x me-2"></i>
+                                        Import
+                                    </li>
+                                </ul>
                             </div>
+                        </div>
 
-                        </h3>
-                    </div>
-                    <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-end">
-                            <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">
-                                student paid fee
-                            </li>
-                        </ol>
-                    </div>
+                    </h3>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-end">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            student paid fee
+                        </li>
+                    </ol>
                 </div>
             </div>
         </div>
-        <!--end::App Content Header-->
+    </div>
+    <!--end::App Content Header-->
 
-        <!--begin::App Content-->
-        <div class="app-content">
-            <div class="container-fluid">
+    <!--begin::App Content-->
+    <div class="app-content">
+        <div class="container-fluid">
 
-                <!-- card -->
-                <div class="row">
-                    <div class="col-12 col-sm-6 col-md-3">
-                        <div class="info-box">
-                            <span class="info-box-icon text-bg-primary shadow-sm">
-                                <i class="bi bi-book-fill"></i>
+            <!-- card -->
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon text-bg-primary shadow-sm">
+                            <i class="bi bi-book-fill"></i>
+                        </span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Kelas Child/Grub</span>
+                            <span class="info-box-number">
+                                <?= $totalChild; ?> / <?= $totalGrub; ?>
                             </span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Kelas Child/Grub</span>
-                                <span class="info-box-number">
-                                    <?= $totalChild; ?> / <?= $totalGrub; ?>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-sm-6 col-md-3">
-                        <div class="info-box">
-                            <span class="info-box-icon text-bg-success shadow-sm">
-                                <i class="bi bi-people-fill"></i>
-                            </span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Siswa Aktiv/NonAktiv</span>
-                                <span class="info-box-number">
-                                    <?= $totalSiswaAktif; ?> / <?= $totalSiswa; ?>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-sm-6 col-md-3">
-                        <div class="info-box">
-                            <span class="info-box-icon text-bg-danger shadow-sm">
-                                <i class="bi bi-wallet-fill"></i>
-                            </span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Total Transaksi</span>
-                                <span class="info-box-number">
-                                    <?= $totalTransaksi; ?>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-sm-6 col-md-3">
-                        <div class="info-box">
-                            <span class="info-box-icon text-bg-warning shadow-sm">
-                                <i class="bi bi-cash"></i>
-                            </span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Total Dana Masuk</span>
-                                <span class="info-box-number">
-                                    Rp. <?= number_format($totaldanamasuk); ?>
-                                </span>
-                            </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Layouts Table -->
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="card-title">Grade Level </h3>
-                        <div class="ms-auto">
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#addDataModal">
-                                <i class="bi bi-plus-lg pe-1"></i> Tambah Data
-                            </button>
-                            <!-- <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#exp_data_tagkelas">
-                                <i class="bi bi-file-earmark-arrow-down pe-1"></i> Taglist Kelas
-                            </button> -->
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon text-bg-success shadow-sm">
+                            <i class="bi bi-people-fill"></i>
+                        </span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Siswa Aktif/NonAktif</span>
+                            <span class="info-box-number">
+                                <?= $totalSiswaAktif; ?> / <?= $totalSiswa; ?>
+                            </span>
                         </div>
                     </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon text-bg-danger shadow-sm">
+                            <i class="bi bi-wallet-fill"></i>
+                        </span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Transaksi</span>
+                            <span class="info-box-number">
+                                <?= $totalTransaksi; ?>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon text-bg-warning shadow-sm">
+                            <i class="bi bi-cash"></i>
+                        </span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Dana Masuk</span>
+                            <span class="info-box-number">
+                                Rp. <?= number_format($totaldanamasuk); ?>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                    <div class="card-body">
-                        <!-- DataTables -->
-                        <table id="DataPembayaranSiswa" class="table table-bordered table-striped">
-                            <thead>
-                                <tr class="text-center">
-                                    <th>No</th>
-                                    <th>Tanggal</th>
-                                    <th>Nama</th>
-                                    <th>Kelas</th>
-                                    <th>Jenis Pembayaran</th>
-                                    <th>Total</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <?php if (!empty($combinedResults)): ?>
-                                <tbody>
-                                    <?php $no = 1; ?>
-                                    <?php foreach ($combinedResults as $row): ?>
-                                        <tr>
-                                            <td class="text-center"><?= $no++; ?></td>
-                                            <td>
-                                                <div>
-                                                    <?= date('d M Y', strtotime($row['tanggal_bayar'])) ?? '-'; ?>
-                                                </div>
-                                            </td>
-                                            <td><?= $row['nama_lengkap'] ?? '-'; ?></td>
-                                            <td><?= $row['nama_kelas'] ?? '-'; ?></td>
-                                            </td>
-                                            <td>
-                                                <ul class="list-circle m-0">
-                                                    <?php foreach ($row['items'] as $item): ?>
-                                                        <li><?= $item['jenis_bayar'] ?? '-'; ?></li>
-                                                    <?php endforeach; ?>
-                                                </ul>
-                                            </td>
-                                            <td>
-                                                <div class="text-start">Rp.
-                                                    <?= number_format($row['total_bayar'], 2) ?? '-'; ?>
-                                                </div>
-                                            </td>
-                                            <td class="text-center">
-                                                <div class="dropdown">
-                                                    <button class="btn btn-link p-0" type="button"
-                                                        id="settings-<?= $kat['id'] ?>" data-bs-toggle="dropdown"
-                                                        aria-expanded="false">
-                                                        <i class="bi bi-three-dots-vertical"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu dropdown-menu-end"
-                                                        aria-labelledby="settings-<?= $kat['id'] ?>">
-                                                        <li>
-                                                            <button class="dropdown-item" data-bs-toggle="modal"
-                                                                data-bs-target="#showModal"
-                                                                data-bs-id="<?= $row['riwayat_id']; ?>"
-                                                                data-bs-nama_lengkap="<?= $row['nama_lengkap']; ?>"
-                                                                data-bs-nis="<?= $row['nis']; ?>"
-                                                                data-bs-nama_kelas="<?= $row['nama_kelas']; ?>"
-                                                                data-bs-no_invoice="<?= $row['no_invoice']; ?>"
-                                                                data-bs-tanggal="<?= $row['tanggal_bayar']; ?>"
-                                                                data-bs-jenis_bayar="<?= $row['jenis_bayar']; ?>"
-                                                                data-bs-total_bayar="<?= $row['total_bayar']; ?>"
-                                                                data-bs-items='<?= json_encode($row['items']); ?>'>
-                                                                <i class="bi bi-list-stars me-2"></i>
-                                                                Detail
-                                                            </button>
-                                                        </li>
-                                                        <li>
-                                                            <button class="dropdown-item" data-bs-toggle="modal">
-                                                                <i class="bi bi-pencil me-2"></i>
-                                                                Edit
-                                                            </button>
-                                                        </li>
-                                                        <li>
-                                                            <button class="dropdown-item" data-bs-toggle="modal"
-                                                                data-bs-target="#deleteModal"
-                                                                data-bs-id="<?= $row['riwayat_id']; ?>"
-                                                                data-bs-tanggal="<?= $row['tanggal_bayar']; ?>">
-                                                                <i class="bi bi-trash me-2"></i>
-                                                                Delete
-                                                            </button>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            <?php else: ?>
-                                <p>No data available.</p>
-                            <?php endif; ?>
-
-                        </table>
+            <!-- Layouts Table -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Grade Level </h3>
+                    <div class="ms-auto">
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#addDataModal">
+                            <i class="bi bi-plus-lg pe-1"></i> Tambah Data
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#exp_data_tagkelas">
+                            <i class="bi bi-file-earmark-arrow-down pe-1"></i> Taglist Kelas
+                        </button>
                     </div>
                 </div>
 
-                <!-- Add Data Modal -->
-                <div class="modal fade" id="addDataModal" tabindex="-1" aria-labelledby="addDataLabel"
-                    aria-hidden="false">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <form id="addDataForm" method="POST">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="addDataLabel">Tambah Data Siswa</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <input type="hidden" name="action" value="create">
-                                    <div class="mb-3 row">
-                                        <label for="student_name" class="form-label col-sm-3">Nama Siswa</label>
-                                        <div class="col-sm-9">
-                                            <select id="student_name" class="form-control select2" name="student_id"
-                                                style="width:100%">
-                                                <option value="">Pilih Nama Siswa</option>
-                                                <?php foreach ($students as $student): ?>
-                                                    <option value="<?= $student['id']; ?>"
-                                                        data-nis="<?= $student['nis']; ?>"
-                                                        data-kelas-id=" <?= $student['kelas_id']; ?>">
-                                                        <?= $student['nama_lengkap']; ?>
-                                                    </option>
+                <div class="card-body">
+                    <!-- DataTables -->
+                    <table id="DataPembayaranSiswa" class="table table-bordered table-striped">
+                        <thead>
+                            <tr class="text-center">
+                                <th>No</th>
+                                <th>Tanggal</th>
+                                <th>Nama</th>
+                                <th>Kelas</th>
+                                <th>Jenis Pembayaran</th>
+                                <th>Total</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <?php if (!empty($combinedResults)): ?>
+                            <tbody>
+                                <?php $no = 1; ?>
+                                <?php foreach ($combinedResults as $row): ?>
+                                    <tr>
+                                        <td class="text-center"><?= $no++; ?></td>
+                                        <td>
+                                            <div>
+                                                <?= date('d M Y', strtotime($row['tanggal_bayar'])) ?? '-'; ?>
+                                            </div>
+                                        </td>
+                                        <td><?= $row['nama_lengkap'] ?? '-'; ?></td>
+                                        <td><?= $row['nama_kelas'] ?? '-'; ?></td>
+                                        </td>
+                                        <td>
+                                            <ul class="list-circle m-0">
+                                                <?php foreach ($row['items'] as $item): ?>
+                                                    <li><?= $item['jenis_bayar'] ?? '-'; ?></li>
                                                 <?php endforeach; ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3 row">
-                                        <label for="nis_siswa" class="col-sm-3 col-form-label">NIS Siswa</label>
-                                        <div class="col-sm-9">
-                                            <input type="text" class="form-control" id="nis_siswa" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3 row">
-                                        <label for="noInvoice" class="col-sm-3 col-form-label">No. Invoice</label>
-                                        <div class="col-sm-9">
-                                            <input type="text" class="form-control" id="noInvoice"
-                                                placeholder="Digenerate otomatis oleh sistem" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3 row">
-                                        <label for="tanggalBayar" class="col-sm-3 col-form-label">Tanggal Bayar</label>
-                                        <div class="col-sm-9">
-                                            <input type="date" class="form-control" id="tanggalBayar"
-                                                name="tanggal_bayar" required>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3 row">
-                                        <label for="pembayaran" class="col-sm-3 col-form-label">Pembayaran</label>
-                                        <div class="col-sm-9">
-                                            <button id="modalspilihtagihan" type="button" class="btn btn-primary"
-                                                data-bs-toggle="modal" data-bs-target="#jenisPembayaranModal">
-                                                Pilih Jenis Pembayaran
-                                            </button>
-                                        </div>
-                                    </div>
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <div class="text-start">Rp.
+                                                <?= number_format($row['total_bayar'], 2) ?? '-'; ?>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="dropdown">
+                                                <button class="btn btn-link p-0" type="button" id="settings-<?= $kat['id'] ?>"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="bi bi-three-dots-vertical"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end"
+                                                    aria-labelledby="settings-<?= $kat['id'] ?>">
+                                                    <li>
+                                                        <button class="dropdown-item" data-bs-toggle="modal"
+                                                            data-bs-target="#showModal" data-bs-id="<?= $row['riwayat_id']; ?>"
+                                                            data-bs-nama_lengkap="<?= $row['nama_lengkap']; ?>"
+                                                            data-bs-nis="<?= $row['nis']; ?>"
+                                                            data-bs-nama_kelas="<?= $row['nama_kelas']; ?>"
+                                                            data-bs-no_invoice="<?= $row['no_invoice']; ?>"
+                                                            data-bs-tanggal="<?= $row['tanggal_bayar']; ?>"
+                                                            data-bs-jenis_bayar="<?= $row['jenis_bayar']; ?>"
+                                                            data-bs-total_bayar="<?= $row['total_bayar']; ?>"
+                                                            data-bs-items='<?= json_encode($row['items']); ?>'>
+                                                            <i class="bi bi-list-stars me-2"></i>
+                                                            Detail
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button class="dropdown-item" data-bs-toggle="modal">
+                                                            <i class="bi bi-pencil me-2"></i>
+                                                            Edit
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button class="dropdown-item" data-bs-toggle="modal"
+                                                            data-bs-target="#deleteModal"
+                                                            data-bs-id="<?= $row['riwayat_id']; ?>"
+                                                            data-bs-tanggal="<?= $row['tanggal_bayar']; ?>">
+                                                            <i class="bi bi-trash me-2"></i>
+                                                            Delete
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        <?php else: ?>
+                            <p>No data available.</p>
+                        <?php endif; ?>
 
-                                    <!-- ... other fields ... -->
-                                    <hr>
-                                    <!-- Tabel List Item Pengeluaran -->
-                                    <div class="form-group">
-                                        <table class="table table-striped table-bordered"
-                                            id="tabel-list-item-pengeluaran">
-                                            <thead>
-                                                <tr>
-                                                    <th>No</th>
-                                                    <th>Nama Pembayaran</th>
-                                                    <th>Tagihan</th>
-                                                    <th>Sudah dibayar</th>
-                                                    <th>Jumlah Bayar</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <!-- Row akan ditambahkan secara dinamis oleh JavaScript -->
-                                            </tbody>
-                                            <tfoot>
-                                                <tr id="row-total-bayar">
-                                                    <td></td>
-                                                    <td colspan="2">
-                                                        <div class="d-flex justify-content-between">
-                                                            Total
-                                                            <select name="jenis_bayar" class="form-select"
-                                                                style="width:auto">
-                                                                <option value="1">Tunai</option>
-                                                                <option value="2">Transfer</option>
-                                                            </select>
-                                                        </div>
-                                                    </td>
-                                                    <td></td>
-                                                    <td class="text-end fw-bold" style="padding-right:17px"
-                                                        id="total-bayar">
-                                                        0
-                                                    </td>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
+                    </table>
+                </div>
+            </div>
 
+            <!-- Add Data Modal -->
+            <div class="modal fade" id="addDataModal" tabindex="-1" aria-labelledby="addDataLabel" aria-hidden="false">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <form id="addDataForm" method="POST">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addDataLabel">Tambah Data Siswa</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="action" value="create">
+                                <div class="mb-3 row">
+                                    <label for="student_name" class="form-label col-sm-3">Nama Siswa</label>
+                                    <div class="col-sm-9">
+                                        <select id="student_name" class="form-control select2" name="student_id"
+                                            style="width:100%">
+                                            <option value="">Pilih Nama Siswa</option>
+                                            <?php foreach ($students as $student): ?>
+                                                <option value="<?= $student['id']; ?>" data-nis="<?= $student['nis']; ?>"
+                                                    data-kelas-id=" <?= $student['kelas_id']; ?>">
+                                                    <?= $student['nama_lengkap']; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">Tutup</button>
-                                    <button type="submit" form="addDataForm" class="btn btn-primary">Simpan</button>
+                                <div class="mb-3 row">
+                                    <label for="nis_siswa" class="col-sm-3 col-form-label">NIS Siswa</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" id="nis_siswa" readonly>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="noInvoice" class="col-sm-3 col-form-label">No. Invoice</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" id="noInvoice"
+                                            placeholder="Digenerate otomatis oleh sistem" readonly>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="tanggalBayar" class="col-sm-3 col-form-label">Tanggal Bayar</label>
+                                    <div class="col-sm-9">
+                                        <input type="date" class="form-control" id="tanggalBayar" name="tanggal_bayar"
+                                            required>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="pembayaran" class="col-sm-3 col-form-label">Pembayaran</label>
+                                    <div class="col-sm-9">
+                                        <button id="modalspilihtagihan" type="button" class="btn btn-primary"
+                                            data-bs-toggle="modal" data-bs-target="#jenisPembayaranModal">
+                                            Pilih Jenis Pembayaran
+                                        </button>
+                                    </div>
                                 </div>
 
+                                <!-- ... other fields ... -->
+                                <hr>
+                                <!-- Tabel List Item Pengeluaran -->
+                                <div class="form-group">
+                                    <table class="table table-striped table-bordered" id="tabel-list-item-pengeluaran">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Nama Pembayaran</th>
+                                                <th>Tagihan</th>
+                                                <th>Sudah dibayar</th>
+                                                <th>Jumlah Bayar</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Row akan ditambahkan secara dinamis oleh JavaScript -->
+                                        </tbody>
+                                        <tfoot>
+                                            <tr id="row-total-bayar">
+                                                <td></td>
+                                                <td colspan="2">
+                                                    <div class="d-flex justify-content-between">
+                                                        Total
+                                                        <select name="jenis_bayar" class="form-select"
+                                                            style="width:auto">
+                                                            <option value="1">Tunai</option>
+                                                            <option value="2">Transfer</option>
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                                <td></td>
+                                                <td class="text-end fw-bold" style="padding-right:17px"
+                                                    id="total-bayar">
+                                                    0
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                <button type="submit" form="addDataForm" class="btn btn-primary">Simpan</button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Item Modal (Jenis Pembayaran) -->
+            <div class="modal fade" id="jenisPembayaranModal" tabindex="-1" aria-labelledby="jenisPembayaranLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="jenisPembayaranLabel">Pilih Jenis Pembayaran</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="selectedPembayaran" class="d-flex mb-3">
+                                <!-- Selected items will be added here dynamically -->
+                            </div>
+                            <!-- Tabel Jenis Pembayaran -->
+                            <table id="jenisPembayaranTable" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Jenis Pembayaran</th>
+                                        <th>Nilai Tagihan</th>
+                                        <th>Dibayar</th>
+                                        <th>Kurang</th>
+                                        <th>Pilih</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- /.modal-dialog Show/Detail -->
+            <div class="modal fade" id="showModal" tabindex="-1" aria-labelledby="showModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="showModalLabel">Hapus Pembayaran</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <h3 class="text-center">Bukti Pembayaran</h3>
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <p>Nama : <span id="nama_lengkap"></span></p>
+                                    <p>NIS : <span id="nis"></span></p>
+                                </div>
+                                <div class="col-md-6 ms-auto">
+                                    <p>No. Invoice : <span id="no_invoice"></span></p>
+                                    <p>Tgl. Invoice : <span id="tanggal"></span></p>
+                                </div>
+                            </div>
+                            <!-- <p>Berikut bukti pemayaran siswa.</p> -->
+                            <!-- <p class="fw-bold mt-3">Daftar Item:</p> -->
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Nama Pembayaran</th>
+                                        <th>Jumlah</th>
+                                        <th>Kurang</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td></td>
+                                        <td class="fw-bold">Total</td>
+                                        <td id="total_bayar"></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td class="fw-bold" id="jenis_bayar">Jenis Pembayaran()</td>
+                                        <td id="total_bayar">0</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td class="fw-bold">Kembali</td>
+                                        <td>0</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td class="fw-bold">Total kurang bayar</td>
+                                        <td></td>
+                                        <td>0</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <form method="">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-danger">Print</button>
                             </form>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Add Item Modal (Jenis Pembayaran) -->
-                <div class="modal fade" id="jenisPembayaranModal" tabindex="-1" aria-labelledby="jenisPembayaranLabel"
-                    aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="jenisPembayaranLabel">Pilih Jenis Pembayaran</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="selectedPembayaran" class="d-flex mb-3">
-                                    <!-- Selected items will be added here dynamically -->
-                                </div>
-                                <!-- Tabel Jenis Pembayaran -->
-                                <table id="jenisPembayaranTable" class="table table-bordered table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Jenis Pembayaran</th>
-                                            <th>Nilai Tagihan</th>
-                                            <th>Dibayar</th>
-                                            <th>Kurang</th>
-                                            <th>Pilih</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
+            <!-- /.modal-dialog delete -->
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel">Hapus Pembayaran</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dikembalikan.
+                            </p>
+                            <p>Daftar Item:</p>
+                            <ul class="class-list"></ul>
+                        </div>
+                        <div class="modal-footer">
+                            <form id="deleteForm" method="POST">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" id="delete-id" name="id">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-danger">Hapus</button>
+                            </form>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- /.modal-dialog Show/Detail -->
-                <div class="modal fade" id="showModal" tabindex="-1" aria-labelledby="showModalLabel"
-                    aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="showModalLabel">Hapus Pembayaran</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <h3 class="text-center">Bukti Pembayaran</h3>
-                                <div class="row mt-4">
-                                    <div class="col-md-6">
-                                        <p>Nama : <span id="nama_lengkap"></span></p>
-                                        <p>NIS : <span id="nis"></span></p>
-                                    </div>
-                                    <div class="col-md-6 ms-auto">
-                                        <p>No. Invoice : <span id="no_invoice"></span></p>
-                                        <p>Tgl. Invoice : <span id="tanggal"></span></p>
-                                    </div>
-                                </div>
-                                <!-- <p>Berikut bukti pemayaran siswa.</p> -->
-                                <!-- <p class="fw-bold mt-3">Daftar Item:</p> -->
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Nama Pembayaran</th>
-                                            <th>Jumlah</th>
-                                            <th>Kurang</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <td></td>
-                                            <td class="fw-bold">Total</td>
-                                            <td id="total_bayar"></td>
-                                            <td></td>
-                                        </tr>
-                                        <tr>
-                                            <td></td>
-                                            <td class="fw-bold" id="jenis_bayar">Jenis Pembayaran()</td>
-                                            <td id="total_bayar">0</td>
-                                            <td></td>
-                                        </tr>
-                                        <tr>
-                                            <td></td>
-                                            <td class="fw-bold">Kembali</td>
-                                            <td>0</td>
-                                            <td></td>
-                                        </tr>
-                                        <tr>
-                                            <td></td>
-                                            <td class="fw-bold">Total kurang bayar</td>
-                                            <td></td>
-                                            <td>0</td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                            <div class="modal-footer">
-                                <form method="">
-                                    <button type="button" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn btn-danger">Print</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- /.modal-dialog delete -->
-                <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
-                    aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="deleteModalLabel">Hapus Pembayaran</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p>Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dikembalikan.
-                                </p>
-                                <p>Daftar Item:</p>
-                                <ul class="class-list"></ul>
-                            </div>
-                            <div class="modal-footer">
-                                <form id="deleteForm" method="POST">
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" id="delete-id" name="id">
-                                    <button type="button" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn btn-danger">Hapus</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Modal Export Data Tagihan per Kelas -->
-                <!-- <div class="modal fade" id="exp_data_tagkelas" tabindex="-1" aria-labelledby="exp_data_tagkelasLabel"
+            <!-- Modal Export Data Tagihan per Kelas -->
+            <!-- <div class="modal fade" id="exp_data_tagkelas" tabindex="-1" aria-labelledby="exp_data_tagkelasLabel"
                     aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -836,148 +828,159 @@ ob_end_flush();
                     </div>
                 </div> -->
 
-                <!-- Modal Export Data Tagihan per Kelas -->
-                <div class="modal fade" id="exp_data_tagkelas" tabindex="-1" aria-labelledby="exp_data_tagkelasLabel"
-                    aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="exp_data_tagkelasLabel">Export Data Tagihan</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-                            <!-- Ubah Form agar dapat membuka tab baru -->
-                            <form id="form_export_data" method="GET" action="/pendapatan/taglist-data-kelas"
-                                target="_blank">
-                                <div class="modal-body">
-                                    <div class="card card-outline card-info">
-                                        <div class="card-body">
-                                            <div class="form-group">
-                                                <label for="kelas" class="col-sm-3 col-form-label">Kelas</label>
-                                                <select class="form-select" id="kelas" name="kelas" required>
-                                                    <option value="">Pilih Kelas</option>
-                                                    <?php foreach ($exportdtkelas as $edt): ?>
-                                                        <option value="<?php echo $edt['id']; ?>">
-                                                            <?php echo $edt['nama_kelas'] . " - " . $edt['tahun']; ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                            </div>
+            <!-- Modal Export Data Tagihan per Kelas -->
+            <div class="modal fade" id="exp_data_tagkelas" tabindex="-1" aria-labelledby="exp_data_tagkelasLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exp_data_tagkelasLabel">Export Data Tagihan</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <!-- Ubah Form agar dapat membuka tab baru -->
+                        <form id="form_export_data" method="GET" action="/pendapatan/taglist-data-kelas"
+                            target="_blank">
+                            <div class="modal-body">
+                                <div class="card card-outline card-info">
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label for="kelas" class="col-sm-3 col-form-label">Kelas</label>
+                                            <select class="form-select" id="kelas" name="kelas" required>
+                                                <option value="">Pilih Kelas</option>
+                                                <?php foreach ($exportdtkelas as $edt): ?>
+                                                    <option value="<?php echo $edt['id']; ?>">
+                                                        <?php echo $edt['nama_kelas'] . " - " . $edt['tahun']; ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn btn-success">Export</button>
-                                </div>
-                            </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-success">Export</button>
+                            </div>
+                        </form>
 
-                        </div>
                     </div>
                 </div>
-
-
             </div>
+
         </div>
-    </main>
+    </div>
+</main>
 
-    <script>
-        $(document).ready(function () {
-            $('#DataPembayaranSiswa').DataTable();
+<script>
+    $(document).ready(function () {
+        $('#DataPembayaranSiswa').DataTable();
 
-            // Nonaktifkan tombol Simpan saat pertama kali dimuat
-            toggleSimpanButton();
+        // Nonaktifkan tombol Simpan saat pertama kali dimuat
+        toggleSimpanButton();
 
-            // Initialize Select2 with dropdownParent option
-            $('#student_name').select2({
-                placeholder: 'Pilih Nama Siswa',
-                dropdownParent: $('#addDataModal')
-            });
+        // // format mata uang rupiah 
+        // const total_bayar = document.getElementById('total_bayar');
+        // total_bayar.addEventListener('keyup', function (e) {
+        //     // v.value = formatRupiah(this.value);
+        //     const numValue = parseRupiah(this.value);
+        //     total_bayar.value = formatRupiah(numValue);
+        // });
+        // const edit_nominal = document.getElementById('edit_nominal');
+        // edit_nominal.addEventListener('keyup', function (e) {
+        //     // Menghapus karakter non-numeric sebelum memformat
+        //     const numericValue = parseRupiah(this.value);
+        //     edit_nominal.value = formatRupiah(numericValue);
+        // });
 
-            $('#student_name').on('change', function () {
-                var selectedValue = $(this).val();
-                $('#modalspilihtagihan').prop('disabled', !selectedValue);
+        // Initialize Select2 with dropdownParent option
+        $('#student_name').select2({
+            placeholder: 'Pilih Nama Siswa',
+            dropdownParent: $('#addDataModal')
+        });
 
-                var nis = $('#student_name option:selected').data('nis');
-                $('#nis_siswa').val(nis);
+        $('#student_name').on('change', function () {
+            var selectedValue = $(this).val();
+            $('#modalspilihtagihan').prop('disabled', !selectedValue);
 
-                resetSelectedItems(); // Reset items pembayaran jika siswa diganti
+            var nis = $('#student_name option:selected').data('nis');
+            $('#nis_siswa').val(nis);
 
-                if (selectedValue) {
-                    loadJenisPembayaran(selectedValue);
-                }
-            }).trigger('change');
+            resetSelectedItems(); // Reset items pembayaran jika siswa diganti
 
-            $('#jenisPembayaranTable').DataTable();
-
-            function loadJenisPembayaran(id) {
-                if (id) {
-                    $.ajax({
-                        url: 'student_paid_fees_child',
-                        type: 'POST',
-                        data: {
-                            id: id
-                        },
-                        dataType: 'json',
-                        success: function (response) {
-                            const table = $('#jenisPembayaranTable').DataTable();
-                            table.clear();
-
-                            let index = 1;
-                            response.tarif_spp.forEach(function (item) {
-                                const isDisabled = item.kurang_bayar <= 0 ? 'disabled' : '';
-                                table.row.add([
-                                    index++,
-                                    item.nama_tarif,
-                                    formatRupiah(item.nominal),
-                                    formatRupiah(item.total_dibayar),
-                                    formatRupiah(item.kurang_bayar),
-                                    `<button class="btn btn-success btn-sm pilihBtn" data-id="${item.item_id}" data-type="${item.type}" ${isDisabled}>+ Pilih</button>`
-                                ]).draw();
-                            });
-
-                            response.pembayaran_lainnya.forEach(function (item) {
-                                const isDisabled = item.kurang_bayar <= 0 ? 'disabled' : '';
-                                table.row.add([
-                                    index++,
-                                    item.nama_pembayaran,
-                                    formatRupiah(item.nominal),
-                                    formatRupiah(item.total_dibayar),
-                                    formatRupiah(item.kurang_bayar),
-                                    `<button class="btn btn-success btn-sm pilihBtn" data-id="${item.item_id}" data-type="${item.type}" ${isDisabled}>+ Pilih</button>`
-                                ]).draw();
-                            });
-                        }
-                    });
-                }
+            if (selectedValue) {
+                loadJenisPembayaran(selectedValue);
             }
+        }).trigger('change');
 
-            $('#jenisPembayaranModal').on('hidden.bs.modal', function () {
-                $('#addDataModal').modal('show');
-            });
+        $('#jenisPembayaranTable').DataTable();
 
-            $('#jenisPembayaranModal').on('show.bs.modal', function () {
-                $('#addDataModal').modal('hide');
-            });
+        function loadJenisPembayaran(id) {
+            if (id) {
+                $.ajax({
+                    url: 'student_paid_fees_child',
+                    type: 'POST',
+                    data: {
+                        id: id
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        const table = $('#jenisPembayaranTable').DataTable();
+                        table.clear();
 
-            $('#jenisPembayaranTable').on('click', '.pilihBtn', function () {
-                var row = $(this).closest('tr');
-                var jenisPembayaran = row.find('td:nth-child(2)').text();
-                var tagihan = parseRupiah(row.find('td:nth-child(3)').text());
-                var total_dibayar = parseRupiah(row.find('td:nth-child(4)').text());
-                var kurang_bayar = tagihan - total_dibayar; // Menghitung nilai kurang_bayar
-                var itemId = $(this).data('id');
-                var type = $(this).data('type');
+                        let index = 1;
+                        response.tarif_spp.forEach(function (item) {
+                            const isDisabled = item.kurang_bayar <= 0 ? 'disabled' : '';
+                            table.row.add([
+                                index++,
+                                item.nama_tarif,
+                                formatRupiah(item.nominal),
+                                formatRupiah(item.total_dibayar),
+                                formatRupiah(item.kurang_bayar),
+                                `<button class="btn btn-success btn-sm pilihBtn" data-id="${item.item_id}" data-type="${item.type}" ${isDisabled}>+ Pilih</button>`
+                            ]).draw();
+                        });
 
-                if ($('#selectedPembayaran').find(`[data-jenis="${jenisPembayaran}"]`).length === 0) {
-                    $('#selectedPembayaran').append(`
+                        response.pembayaran_lainnya.forEach(function (item) {
+                            const isDisabled = item.kurang_bayar <= 0 ? 'disabled' : '';
+                            table.row.add([
+                                index++,
+                                item.nama_pembayaran,
+                                formatRupiah(item.nominal),
+                                formatRupiah(item.total_dibayar),
+                                formatRupiah(item.kurang_bayar),
+                                `<button class="btn btn-success btn-sm pilihBtn" data-id="${item.item_id}" data-type="${item.type}" ${isDisabled}>+ Pilih</button>`
+                            ]).draw();
+                        });
+                    }
+                });
+            }
+        }
+
+        $('#jenisPembayaranModal').on('hidden.bs.modal', function () {
+            $('#addDataModal').modal('show');
+        });
+
+        $('#jenisPembayaranModal').on('show.bs.modal', function () {
+            $('#addDataModal').modal('hide');
+        });
+
+        $('#jenisPembayaranTable').on('click', '.pilihBtn', function () {
+            var row = $(this).closest('tr');
+            var jenisPembayaran = row.find('td:nth-child(2)').text();
+            var tagihan = parseRupiah(row.find('td:nth-child(3)').text());
+            var total_dibayar = parseRupiah(row.find('td:nth-child(4)').text());
+            var kurang_bayar = tagihan - total_dibayar; // Menghitung nilai kurang_bayar
+            var itemId = $(this).data('id');
+            var type = $(this).data('type');
+
+            if ($('#selectedPembayaran').find(`[data-jenis="${jenisPembayaran}"]`).length === 0) {
+                $('#selectedPembayaran').append(`
                         <button class="btn btn-outline-success me-2" data-jenis="${jenisPembayaran}">
                             ${jenisPembayaran} (${type}) <span class="removeItem">&times;</span>
                         </button>
                     `);
 
-                    $('#tabel-list-item-pengeluaran tbody').append(`
+                $('#tabel-list-item-pengeluaran tbody').append(`
                         <tr class="row-item-bayar">
                             <td>${$('#tabel-list-item-pengeluaran tbody tr').length + 1}</td>
                             <td>
@@ -995,236 +998,244 @@ ob_end_flush();
                         </tr>
                     `);
 
-                    calculateTotal();
+                calculateTotal();
+            } else {
+                alert('Item ini sudah dipilih.');
+            }
+
+            toggleSimpanButton();
+        });
+
+        // Event listener untuk memformat input jumlah bayar
+        $('#tabel-list-item-pengeluaran').on('input', '.jumlah-bayar', function () {
+            var maxValue = parseFloat($(this).data('max'));
+            var inputValue = parseRupiah($(this).val());
+
+            if (inputValue > maxValue) {
+                alert('Jumlah bayar tidak boleh melebihi kurang bayar.');
+                inputValue = maxValue; // Atur ke nilai maksimal jika melebihi
+            }
+
+            $(this).val(formatRupiah(inputValue)); // Format ulang input sebagai Rupiah
+        });
+
+        // Pastikan form submit kirim angka murni
+        $('#addDataForm').on('submit', function () {
+            $('.jumlah-bayar').each(function () {
+                var cleanValue = parseRupiah($(this).val());
+                $(this).val(cleanValue); // Kirim angka bersih ke server
+            });
+        });
+
+        $('#selectedPembayaran').on('click', '.removeItem', function () {
+            var jenisPembayaran = $(this).closest('button').data('jenis');
+            $(this).closest('button').remove();
+            $('#tabel-list-item-pengeluaran tbody .row-item-bayar').filter(function () {
+                return $(this).find('td:nth-child(2) label').text() === jenisPembayaran;
+            }).remove();
+            $('#tabel-list-item-pengeluaran tbody .row-item-bayar').each(function (index) {
+                $(this).find('td:first-child').text(index + 1);
+            });
+
+            calculateTotal();
+            toggleSimpanButton();
+        });
+
+        $(document).on('input', '.jumlah-bayar', function () {
+            calculateTotal();
+            toggleSimpanButton();
+        });
+
+        function resetSelectedItems() {
+            // Clear selected items and table rows
+            $('#selectedPembayaran').empty();
+            $('#tabel-list-item-pengeluaran tbody').empty();
+            calculateTotal();
+            toggleSimpanButton();
+        }
+
+        function calculateTotal() {
+            var totalBayar = 0;
+            $('.jumlah-bayar').each(function () {
+                var value = parseRupiah($(this).val()) || 0;
+                totalBayar += value;
+            });
+
+            // Menampilkan total dalam format Rupiah
+            var formattedTotal = totalBayar === 0 ? '0' : formatRupiah(totalBayar);
+            $('#total-bayar').text(formattedTotal);
+        }
+
+        function toggleSimpanButton() {
+            var hasItems = $('#tabel-list-item-pengeluaran tbody .row-item-bayar').length > 0;
+            var allAmountsFilled = true;
+
+            $('.jumlah-bayar').each(function () {
+                if (!$(this).val()) {
+                    allAmountsFilled = false;
+                    return false;
+                }
+            });
+
+            if (hasItems && allAmountsFilled) {
+                $('#addDataForm button[type="submit"]').prop('disabled', false);
+            } else {
+                $('#addDataForm button[type="submit"]').prop('disabled', true);
+            }
+        }
+    });
+
+    // modals Detail
+    document.addEventListener('DOMContentLoaded', function () {
+        // show record
+        const showModal = document.getElementById('showModal');
+        if (showModal) {
+            showModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-bs-id');
+                const nama_lengkap = button.getAttribute('data-bs-nama_lengkap');
+                const nis = button.getAttribute('data-bs-nis');
+                const nama_kelas = button.getAttribute('data-bs-nama_kelas');
+                const no_invoice = button.getAttribute('data-bs-no_invoice');
+                const tanggal = button.getAttribute('data-bs-tanggal');
+                const jenis_bayar = button.getAttribute('data-bs-jenis_bayar');
+                const total_bayar = parseFloat(button.getAttribute('data-bs-total_bayar'));
+
+                // Update the modal title
+                const modalTitle = showModal.querySelector('.modal-title');
+                modalTitle.textContent = `Data Pembayaran: ${nama_lengkap} ${nama_kelas}`;
+
+                const classListContainer = showModal.querySelector('.table tbody');
+                classListContainer.innerHTML = ''; // Clear previous content
+
+                // Retrieve and display associated items
+                const transaction = combinedResults[parseInt(id)];
+                if (transaction && transaction.items.length > 0) {
+                    transaction.items.forEach((item, index) => {
+                        const row = document.createElement('tr');
+
+                        // Create and append cells
+                        const indexCell = document.createElement('th');
+                        indexCell.scope = 'row';
+                        indexCell.textContent = index + 1;
+                        row.appendChild(indexCell);
+
+                        const nameCell = document.createElement('td');
+                        nameCell.textContent = item.jenis_bayar || 'N/A'; // Nama Pembayaran
+                        row.appendChild(nameCell);
+
+                        const paidCell = document.createElement('td');
+                        const jumlahBayar = item.jumlah_bayar;
+                        paidCell.textContent = jumlahBayar ||
+                            '0'; // Jumlah yang dibayarkan
+                        row.appendChild(paidCell);
+
+                        const remainingCell = document.createElement('td');
+                        const kurangBayar = item.kurang_bayar;
+                        remainingCell.textContent = kurangBayar ||
+                            '0'; // Jumlah kurang
+                        row.appendChild(remainingCell);
+
+                        // Append the row to the table body
+                        classListContainer.appendChild(row);
+                    });
                 } else {
-                    alert('Item ini sudah dipilih.');
+                    const noItemRow = document.createElement('tr');
+                    const noItemCell = document.createElement('td');
+                    noItemCell.colSpan = 4; // Span across all columns
+                    noItemCell.className = 'text-center';
+                    noItemCell.textContent = 'Tidak ada item terkait';
+
+                    noItemRow.appendChild(noItemCell);
+                    classListContainer.appendChild(noItemRow);
                 }
 
-                toggleSimpanButton();
+                // Mengisi konten modal dengan data yang didapat
+                document.getElementById('nama_lengkap').textContent = nama_lengkap;
+                document.getElementById('nis').textContent = nis;
+                document.getElementById('no_invoice').textContent = no_invoice;
+                document.getElementById('tanggal').textContent = formatTanggal(tanggal);
+                // document.getElementById('jenis_bayar').textContent = jenis_bayar;
+                // Modifikasi untuk menampilkan jenis pembayaran
+                const jenisBayarText = jenis_bayar == 1 ? "Tunai" : jenis_bayar == 2 ? "Transfer" :
+                    "Tidak Diketahui";
+                document.getElementById('jenis_bayar').textContent = jenisBayarText;
+                document.getElementById('total_bayar').textContent = formatRupiah(total_bayar);
+
+                // // Debugging output
+                // console.log(
+                //     `ID: ${id}, 
+                //         nama lengkap: ${nama_lengkap}, 
+                //         NIS: ${nis}, 
+                //         nama kelas: ${nama_kelas}, 
+                //         no invoice: ${no_invoice}, 
+                //         Tanggal: ${tanggal}, 
+                //         jenis bayar: ${jenis_bayar}, 
+                //         total bayar: ${total_bayar}, 
+                //         Item: ${transaction ? transaction.items.map(item => item.id).join(', ') : 'No items'}`
+                // );
             });
+        }
+    });
 
-            // Event listener untuk memformat input jumlah bayar
-            $('#tabel-list-item-pengeluaran').on('input', '.jumlah-bayar', function () {
-                var maxValue = parseFloat($(this).data('max'));
-                var inputValue = parseRupiah($(this).val());
+    // Delete Modal
+    document.addEventListener('DOMContentLoaded', function () {
+        // delete record
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-bs-id');
+                const tanggalBayar = button.getAttribute('data-bs-tanggal');
 
-                if (inputValue > maxValue) {
-                    alert('Jumlah bayar tidak boleh melebihi kurang bayar.');
-                    inputValue = maxValue; // Atur ke nilai maksimal jika melebihi
-                }
+                // Update the modal title
+                const modalTitle = deleteModal.querySelector('.modal-title');
+                modalTitle.textContent = `Hapus Data Tagihan: ${tanggalBayar}`;
 
-                $(this).val(formatRupiah(inputValue)); // Format ulang input sebagai Rupiah
-            });
+                // Populate the form with the id
+                const form = deleteModal.querySelector('#deleteForm');
+                form.querySelector('#delete-id').value = id;
 
-            $('#selectedPembayaran').on('click', '.removeItem', function () {
-                var jenisPembayaran = $(this).closest('button').data('jenis');
-                $(this).closest('button').remove();
-                $('#tabel-list-item-pengeluaran tbody .row-item-bayar').filter(function () {
-                    return $(this).find('td:nth-child(2) label').text() === jenisPembayaran;
-                }).remove();
-                $('#tabel-list-item-pengeluaran tbody .row-item-bayar').each(function (index) {
-                    $(this).find('td:first-child').text(index + 1);
-                });
+                // Get the list of payment items for the selected transaction
+                const classListContainer = deleteModal.querySelector('.class-list');
+                classListContainer.innerHTML = ''; // Clear previous content
 
-                calculateTotal();
-                toggleSimpanButton();
-            });
-
-            $(document).on('input', '.jumlah-bayar', function () {
-                calculateTotal();
-                toggleSimpanButton();
-            });
-
-            function resetSelectedItems() {
-                // Clear selected items and table rows
-                $('#selectedPembayaran').empty();
-                $('#tabel-list-item-pengeluaran tbody').empty();
-                calculateTotal();
-                toggleSimpanButton();
-            }
-
-            function calculateTotal() {
-                var totalBayar = 0;
-                $('.jumlah-bayar').each(function () {
-                    var value = parseRupiah($(this).val()) || 0;
-                    totalBayar += value;
-                });
-
-                // Menampilkan total dalam format Rupiah
-                var formattedTotal = totalBayar === 0 ? '0' : formatRupiah(totalBayar);
-                $('#total-bayar').text(formattedTotal);
-            }
-
-            function toggleSimpanButton() {
-                var hasItems = $('#tabel-list-item-pengeluaran tbody .row-item-bayar').length > 0;
-                var allAmountsFilled = true;
-
-                $('.jumlah-bayar').each(function () {
-                    if (!$(this).val()) {
-                        allAmountsFilled = false;
-                        return false;
-                    }
-                });
-
-                if (hasItems && allAmountsFilled) {
-                    $('#addDataForm button[type="submit"]').prop('disabled', false);
+                // Retrieve and display associated items
+                const transaction = combinedResults[parseInt(id)];
+                if (transaction && transaction.items.length > 0) {
+                    transaction.items.forEach(item => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = item.jenis_bayar;
+                        classListContainer.appendChild(listItem);
+                    });
                 } else {
-                    $('#addDataForm button[type="submit"]').prop('disabled', true);
+                    const noItem = document.createElement('li');
+                    noItem.textContent = 'Tidak ada item terkait';
+                    classListContainer.appendChild(noItem);
                 }
-            }
-        });
 
-        // modals Detail
-        document.addEventListener('DOMContentLoaded', function () {
-            // show record
-            const showModal = document.getElementById('showModal');
-            if (showModal) {
-                showModal.addEventListener('show.bs.modal', function (event) {
-                    const button = event.relatedTarget;
-                    const id = button.getAttribute('data-bs-id');
-                    const nama_lengkap = button.getAttribute('data-bs-nama_lengkap');
-                    const nis = button.getAttribute('data-bs-nis');
-                    const nama_kelas = button.getAttribute('data-bs-nama_kelas');
-                    const no_invoice = button.getAttribute('data-bs-no_invoice');
-                    const tanggal = button.getAttribute('data-bs-tanggal');
-                    const jenis_bayar = button.getAttribute('data-bs-jenis_bayar');
-                    const total_bayar = parseFloat(button.getAttribute('data-bs-total_bayar'));
+                // Debugging output
+                // console.log(
+                //     `ID: ${id}, Tanggal Bayar: ${tanggalBayar}, Item: ${transaction ? transaction.items.map(item => item.id).join(', ') : 'No items'}`
+                // );
+            });
+        }
+    });
 
-                    // Update the modal title
-                    const modalTitle = showModal.querySelector('.modal-title');
-                    modalTitle.textContent = `Data Pembayaran: ${nama_lengkap} ${nama_kelas}`;
+    // Konten print
+    document.addEventListener('DOMContentLoaded', function () {
+        const printButton = document.querySelector('.btn-danger'); // Tombol print
+        const modalBody = document.querySelector('#showModal .modal-body'); // Konten modal-body
 
-                    const classListContainer = showModal.querySelector('.table tbody');
-                    classListContainer.innerHTML = ''; // Clear previous content
+        printButton.addEventListener('click', function () {
+            // Ambil konten dari modal-body
+            const printContent = modalBody.innerHTML;
 
-                    // Retrieve and display associated items
-                    const transaction = combinedResults[parseInt(id)];
-                    if (transaction && transaction.items.length > 0) {
-                        transaction.items.forEach((item, index) => {
-                            const row = document.createElement('tr');
+            // Buat jendela baru untuk mencetak
+            const printWindow = window.open('', '', 'height=600,width=800');
 
-                            // Create and append cells
-                            const indexCell = document.createElement('th');
-                            indexCell.scope = 'row';
-                            indexCell.textContent = index + 1;
-                            row.appendChild(indexCell);
-
-                            const nameCell = document.createElement('td');
-                            nameCell.textContent = item.jenis_bayar || 'N/A'; // Nama Pembayaran
-                            row.appendChild(nameCell);
-
-                            const paidCell = document.createElement('td');
-                            const jumlahBayar = item.jumlah_bayar;
-                            paidCell.textContent = jumlahBayar ||
-                                '0'; // Jumlah yang dibayarkan
-                            row.appendChild(paidCell);
-
-                            const remainingCell = document.createElement('td');
-                            const kurangBayar = item.kurang_bayar;
-                            remainingCell.textContent = kurangBayar ||
-                                '0'; // Jumlah kurang
-                            row.appendChild(remainingCell);
-
-                            // Append the row to the table body
-                            classListContainer.appendChild(row);
-                        });
-                    } else {
-                        const noItemRow = document.createElement('tr');
-                        const noItemCell = document.createElement('td');
-                        noItemCell.colSpan = 4; // Span across all columns
-                        noItemCell.className = 'text-center';
-                        noItemCell.textContent = 'Tidak ada item terkait';
-
-                        noItemRow.appendChild(noItemCell);
-                        classListContainer.appendChild(noItemRow);
-                    }
-
-                    // Mengisi konten modal dengan data yang didapat
-                    document.getElementById('nama_lengkap').textContent = nama_lengkap;
-                    document.getElementById('nis').textContent = nis;
-                    document.getElementById('no_invoice').textContent = no_invoice;
-                    document.getElementById('tanggal').textContent = formatTanggal(tanggal);
-                    // document.getElementById('jenis_bayar').textContent = jenis_bayar;
-                    // Modifikasi untuk menampilkan jenis pembayaran
-                    const jenisBayarText = jenis_bayar == 1 ? "Tunai" : jenis_bayar == 2 ? "Transfer" :
-                        "Tidak Diketahui";
-                    document.getElementById('jenis_bayar').textContent = jenisBayarText;
-                    document.getElementById('total_bayar').textContent = formatRupiah(total_bayar);
-
-                    // // Debugging output
-                    // console.log(
-                    //     `ID: ${id}, 
-                    //         nama lengkap: ${nama_lengkap}, 
-                    //         NIS: ${nis}, 
-                    //         nama kelas: ${nama_kelas}, 
-                    //         no invoice: ${no_invoice}, 
-                    //         Tanggal: ${tanggal}, 
-                    //         jenis bayar: ${jenis_bayar}, 
-                    //         total bayar: ${total_bayar}, 
-                    //         Item: ${transaction ? transaction.items.map(item => item.id).join(', ') : 'No items'}`
-                    // );
-                });
-            }
-        });
-
-        // Delete Modal
-        document.addEventListener('DOMContentLoaded', function () {
-            // delete record
-            const deleteModal = document.getElementById('deleteModal');
-            if (deleteModal) {
-                deleteModal.addEventListener('show.bs.modal', function (event) {
-                    const button = event.relatedTarget;
-                    const id = button.getAttribute('data-bs-id');
-                    const tanggalBayar = button.getAttribute('data-bs-tanggal');
-
-                    // Update the modal title
-                    const modalTitle = deleteModal.querySelector('.modal-title');
-                    modalTitle.textContent = `Hapus Data Tagihan: ${tanggalBayar}`;
-
-                    // Populate the form with the id
-                    const form = deleteModal.querySelector('#deleteForm');
-                    form.querySelector('#delete-id').value = id;
-
-                    // Get the list of payment items for the selected transaction
-                    const classListContainer = deleteModal.querySelector('.class-list');
-                    classListContainer.innerHTML = ''; // Clear previous content
-
-                    // Retrieve and display associated items
-                    const transaction = combinedResults[parseInt(id)];
-                    if (transaction && transaction.items.length > 0) {
-                        transaction.items.forEach(item => {
-                            const listItem = document.createElement('li');
-                            listItem.textContent = item.jenis_bayar;
-                            classListContainer.appendChild(listItem);
-                        });
-                    } else {
-                        const noItem = document.createElement('li');
-                        noItem.textContent = 'Tidak ada item terkait';
-                        classListContainer.appendChild(noItem);
-                    }
-
-                    // Debugging output
-                    // console.log(
-                    //     `ID: ${id}, Tanggal Bayar: ${tanggalBayar}, Item: ${transaction ? transaction.items.map(item => item.id).join(', ') : 'No items'}`
-                    // );
-                });
-            }
-        });
-
-        // Konten print
-        document.addEventListener('DOMContentLoaded', function () {
-            const printButton = document.querySelector('.btn-danger'); // Tombol print
-            const modalBody = document.querySelector('#showModal .modal-body'); // Konten modal-body
-
-            printButton.addEventListener('click', function () {
-                // Ambil konten dari modal-body
-                const printContent = modalBody.innerHTML;
-
-                // Buat jendela baru untuk mencetak
-                const printWindow = window.open('', '', 'height=600,width=800');
-
-                // Tambahkan konten ke jendela baru
-                printWindow.document.write(`
+            // Tambahkan konten ke jendela baru
+            printWindow.document.write(`
                     <html>
                     <head>
                         <title>Cetak Bukti Pembayaran</title>
@@ -1238,37 +1249,33 @@ ob_end_flush();
                     </html>
                 `);
 
-                // Tunggu hingga konten dimuat
-                printWindow.document.close();
-                printWindow.focus();
+            // Tunggu hingga konten dimuat
+            printWindow.document.close();
+            printWindow.focus();
 
-                // Cetak halaman
-                printWindow.print();
+            // Cetak halaman
+            printWindow.print();
 
-                // Tutup jendela setelah cetak
-                printWindow.close();
-            });
+            // Tutup jendela setelah cetak
+            printWindow.close();
         });
-    </script>
+    });
+</script>
 
-    <script>
-        $(document).ready(function () {
-            $("#form_export_data").submit(function (event) {
-                event.preventDefault(); // Mencegah pengiriman form default
+<script>
+    $(document).ready(function () {
+        $("#form_export_data").submit(function (event) {
+            event.preventDefault(); // Mencegah pengiriman form default
 
-                let kelas_id = $("#kelas").val();
-                if (kelas_id === "") {
-                    alert("Silakan pilih kelas terlebih dahulu.");
-                    return;
-                }
+            let kelas_id = $("#kelas").val();
+            if (kelas_id === "") {
+                alert("Silakan pilih kelas terlebih dahulu.");
+                return;
+            }
 
-                // Mengarahkan ke halaman baru dengan parameter yang benar
-                let actionUrl = "/pendapatan/taglist-data-kelas?kelas_id=" + encodeURIComponent(kelas_id);
-                window.open(actionUrl, "_blank");
-            });
+            // Mengarahkan ke halaman baru dengan parameter yang benar
+            let actionUrl = "/pendapatan/taglist-data-kelas?kelas_id=" + encodeURIComponent(kelas_id);
+            window.open(actionUrl, "_blank");
         });
-    </script>
-
-</body>
-
-</html>
+    });
+</script>

@@ -15,6 +15,8 @@ $stmt = $db->prepare("
         t.status_aktif,
         t.tahun_ajaran_id,
         t.semester,
+        t.priode_awal,
+        t.priode_akhir,
         ta.tahun AS tahun_ajaran,
         ts_k.id AS tarif_spp_kelas_id,
         k.nama_kelas
@@ -40,6 +42,8 @@ foreach ($results as $row) {
             'status_aktif' => $row['status_aktif'],
             'tahun_ajaran' => $row['tahun_ajaran'],
             'semester' => $row['semester'],
+            'priode_awal' => $row['priode_awal'],
+            'priode_akhir' => $row['priode_akhir'],
             'tahun_ajaran_id' => $row['tahun_ajaran_id'],
             'tarif_spp_kelas_ids' => [],
             'kelas' => [],
@@ -68,6 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $nominal = $_POST['nominal'];
         $tahun_ajaran_id = $_POST['tahun_ajaran_id'];
         $semester = $_POST['semester'];
+        $priode_awal = $_POST['priode_awal'];
+        $priode_akhir = $_POST['priode_akhir'];
         $deskripsi = $_POST['deskripsi'];
         $status_aktif = isset($_POST['status_aktif']) ? 1 : 0; // Checkbox default to checked
         $kelas = $_POST['kelas']; // Array of selected classes
@@ -88,14 +94,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             try {
                 // Prepare SQL query to insert into tarif_spp table
-                $sql = "INSERT INTO tarif_spp (nama_tarif, nominal, tahun_ajaran_id, semester, deskripsi, status_aktif) 
-                        VALUES (:nama_tarif, :nominal, :tahun_ajaran_id, :semester, :deskripsi, :status_aktif)";
+                $sql = "INSERT INTO tarif_spp (nama_tarif, nominal, tahun_ajaran_id, semester, priode_awal, priode_akhir, deskripsi, status_aktif) 
+                        VALUES (:nama_tarif, :nominal, :tahun_ajaran_id, :semester, :priode_awal, :priode_akhir, :deskripsi, :status_aktif)";
                 $stmt = $conn->prepare($sql);
                 $stmt->execute([
                     'nama_tarif' => $nama_tarif,
                     'nominal' => $nominal,
                     'tahun_ajaran_id' => $tahun_ajaran_id,
                     'semester' => $semester,
+                    'priode_awal' => $priode_awal,
+                    'priode_akhir' => $priode_akhir,
                     'deskripsi' => $deskripsi,
                     'status_aktif' => $status_aktif
                 ]);
@@ -137,6 +145,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $nominal = $_POST['nominal'];
         $tahun_ajaran_id = $_POST['tahun_ajaran_id'];
         $semester = $_POST['semester'];
+        $priode_awal = $_POST['priode_awal'];
+        $priode_akhir = $_POST['priode_akhir'];
         $deskripsi = $_POST['deskripsi'];
         $status_aktif = isset($_POST['status_aktif']) ? 1 : 0; // Checkbox default to checked
 
@@ -154,7 +164,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Prepare SQL query
             $sql = "UPDATE tarif_spp 
-                    SET nama_tarif = :nama_tarif, nominal = :nominal, tahun_ajaran_id = :tahun_ajaran_id, semester = :semester, deskripsi = :deskripsi, status_aktif = :status_aktif
+                    SET nama_tarif = :nama_tarif, 
+                        nominal = :nominal, 
+                        tahun_ajaran_id = :tahun_ajaran_id, 
+                        semester = :semester, 
+                        priode_awal = :priode_awal, 
+                        priode_akhir = :priode_akhir, 
+                        deskripsi = :deskripsi, 
+                        status_aktif = :status_aktif
                     WHERE id = :id";
             $stmt = $db->prepare($sql);
 
@@ -166,6 +183,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     'nominal' => $nominal,
                     'tahun_ajaran_id' => $tahun_ajaran_id,
                     'semester' => $semester,
+                    'priode_awal' => $priode_awal,
+                    'priode_akhir' => $priode_akhir,
                     'deskripsi' => $deskripsi,
                     'status_aktif' => $status_aktif
                 ])
@@ -430,6 +449,7 @@ ob_end_flush();
                                             <th>Nominal</th>
                                             <th>Tahun Ajaran</th>
                                             <th>Semester</th>
+                                            <th>Priode</th>
                                             <th>Kelas</th>
                                             <th>Status</th>
                                             <th>Aksi</th>
@@ -446,6 +466,9 @@ ob_end_flush();
                                                 <td>Rp. <?= number_format($tarif['nominal'], 2, ',', '.'); ?></td>
                                                 <td><?= $tarif['tahun_ajaran']; ?></td>
                                                 <td><?= $tarif['semester']; ?></td>
+                                                <td>
+                                                    <?= date('M Y', strtotime($tarif['priode_awal'])) ?? '-'; ?> -
+                                                    <?= date('M Y', strtotime($tarif['priode_akhir'])) ?? '-'; ?>
                                                 <td>
                                                     <?php if (!empty($tarif['kelas'])): ?>
                                                         <ul class="list-circle m-0">
@@ -486,6 +509,8 @@ ob_end_flush();
                                                                     data-nominal="<?= $tarif['nominal']; ?>"
                                                                     data-tahun_ajaran_id="<?= $tarif['tahun_ajaran_id']; ?>"
                                                                     data-semester="<?= $tarif['semester']; ?>"
+                                                                    data-priode_awal="<?= $tarif['priode_awal']; ?>"
+                                                                    data-priode_akhir="<?= $tarif['priode_akhir']; ?>"
                                                                     data-deskripsi="<?= $tarif['deskripsi']; ?>"
                                                                     data-status_aktif="<?= $tarif['status_aktif']; ?>"
                                                                     data-kelas='<?= json_encode($tarif['kelas']); ?>'>
@@ -543,22 +568,36 @@ ob_end_flush();
                                         <span class="input-group-text">.00</span>
                                     </div>
                                 </div>
-                                <div class="form-group mb-3">
-                                    <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
-                                    <select class="form-select" id="tahun_ajaran_id" name="tahun_ajaran_id" required>
-                                        <option value="">Pilih Tahun Ajaran</option>
-                                        <?php foreach ($tahun_ajaran as $ta): ?>
-                                            <option value="<?php echo $ta['id']; ?>"><?php echo $ta['tahun']; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="semester" class="form-label">Semester</label>
-                                    <select class="form-select" id="semester" name="semester" required>
-                                        <option value="none">None</option>
-                                        <option value="gasal">Gasal</option>
-                                        <option value="genap">Genap</option>
-                                    </select>
+                                <div class="row">
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
+                                        <select class="form-select" id="tahun_ajaran_id" name="tahun_ajaran_id"
+                                            required>
+                                            <option value="">Pilih Tahun Ajaran</option>
+                                            <?php foreach ($tahun_ajaran as $ta): ?>
+                                                <option value="<?php echo $ta['id']; ?>"><?php echo $ta['tahun']; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="semester" class="form-label">Semester</label>
+                                        <select class="form-select" id="semester" name="semester" required>
+                                            <option value="none">None</option>
+                                            <option value="gasal">Gasal</option>
+                                            <option value="genap">Genap</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="priode_awal">Priode Awal</label>
+                                        <input type="date" class="form-control" id="priode_awal" name="priode_awal"
+                                            required>
+                                    </div>
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="priode_akhir">Priode Akhir</label>
+                                        <input type="date" class="form-control" id="priode_akhir" name="priode_akhir"
+                                            required>
+                                    </div>
                                 </div>
                                 <div class="form-group mb-3">
                                     <label for="kelas_tags" class="form-label">Kelas</label>
@@ -572,10 +611,13 @@ ob_end_flush();
                                     <textarea class="form-control" id="deskripsi" name="deskripsi" rows="3"
                                         placeholder="Masukkan Deskripsi (opsional)"></textarea>
                                 </div>
-                                <div class="form-group mb-3 form-check">
-                                    <input type="checkbox" class="form-check-input" id="status_aktif"
-                                        name="status_aktif" checked>
-                                    <label class="form-check-label" for="status_aktif">Aktif</label>
+                                <div class="form-group mb-3">
+                                    <label class="mb-2" for="">Status</label>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="status_aktif"
+                                            name="status_aktif" checked>
+                                        <label class="form-check-label" for="status_aktif">Aktif</label>
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -599,12 +641,12 @@ ob_end_flush();
                             <form id="editForm" method="POST">
                                 <input type="hidden" name="action" value="update">
                                 <input type="hidden" id="edit_id" name="id">
-                                <div class="mb-3">
+                                <div class="form-group mb-3">
                                     <label for="edit_nama_tarif" class="form-label">Nama Tarif</label>
                                     <input type="text" class="form-control" id="edit_nama_tarif" name="nama_tarif"
                                         required placeholder="SPP Bulan September">
                                 </div>
-                                <div class="input-group mb-3">
+                                <div class="form-group mb-3">
                                     <label for="edit_nominal" class="form-label">Nominal</label>
                                     <div class="input-group">
                                         <input type="text" class="form-control" id="edit_nominal" name="nominal"
@@ -612,27 +654,39 @@ ob_end_flush();
                                         <span class="input-group-text">.00</span>
                                     </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="edit_tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
-                                    <select class="form-select" id="edit_tahun_ajaran_id" name="tahun_ajaran_id"
-                                        required>
-                                        <option value="">Pilih Tahun Ajaran</option>
-                                        <?php foreach ($tahun_ajaran as $ta): ?>
-                                            <option value="<?php echo $ta['id']; ?>">
-                                                <?php echo $ta['tahun']; ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
+                                <div class="row">
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="edit_tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
+                                        <select class="form-select" id="edit_tahun_ajaran_id" name="tahun_ajaran_id"
+                                            required>
+                                            <option value="">Pilih Tahun Ajaran</option>
+                                            <?php foreach ($tahun_ajaran as $ta): ?>
+                                                <option value="<?php echo $ta['id']; ?>">
+                                                    <?php echo $ta['tahun']; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="edit_semester" class="form-label">Semester</label>
+                                        <select class="form-select" id="edit_semester" name="semester" required>
+                                            <option value="none">None</option>
+                                            <option value="gasal">Gasal</option>
+                                            <option value="genap">Genap</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="edit_priode_awal">Priode Awal</label>
+                                        <input type="date" class="form-control" id="edit_priode_awal" name="priode_awal"
+                                            required>
+                                    </div>
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="edit_priode_akhir">Priode Akhir</label>
+                                        <input type="date" class="form-control" id="edit_priode_akhir"
+                                            name="priode_akhir" required>
+                                    </div>
                                 </div>
                                 <div class="form-group mb-3">
-                                    <label for="edit_semester" class="form-label">Semester</label>
-                                    <select class="form-select" id="edit_semester" name="semester" required>
-                                        <option value="none">None</option>
-                                        <option value="gasal">Gasal</option>
-                                        <option value="genap">Genap</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
                                     <label for="edit_deskripsi" class="form-label">Deskripsi</label>
                                     <textarea class="form-control" id="edit_deskripsi" name="deskripsi" rows="3"
                                         placeholder="Masukkan Deskripsi (opsional)"></textarea>
@@ -774,6 +828,8 @@ ob_end_flush();
                 const nominal = button.getAttribute('data-nominal');
                 const tahun_ajaran_id = button.getAttribute('data-tahun_ajaran_id');
                 const semester = button.getAttribute('data-semester');
+                const priode_awal = button.getAttribute('data-priode_awal');
+                const priode_akhir = button.getAttribute('data-priode_akhir');
                 const deskripsi = button.getAttribute('data-deskripsi');
                 const status_aktif = button.getAttribute('data-status_aktif') === '1';
 
@@ -787,13 +843,15 @@ ob_end_flush();
                 document.getElementById('edit_nominal').value = formatRupiah(nominal);
                 document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;
                 document.getElementById('edit_semester').value = semester;
+                document.getElementById('edit_priode_awal').value = priode_awal;
+                document.getElementById('edit_priode_akhir').value = priode_akhir;
                 document.getElementById('edit_deskripsi').value = deskripsi;
                 document.getElementById('edit_status_aktif').checked = status_aktif;
 
                 // Men-debug untuk memastikan nilai diambil dengan benar
-                console.log(
-                    `ID: ${id}, A: ${semester}`
-                );
+                // console.log(
+                //     `ID: ${id}, A: ${semester}`
+                // );
 
             });
         }

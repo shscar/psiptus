@@ -11,8 +11,10 @@ $stmt = $db->prepare("SELECT
     pl.nama_pembayaran,
     pl.bisa_diangsur,
     pl.nominal,
-    pl.keterangan,
     pl.semester,
+    pl.priode_awal,
+    pl.priode_akhir,
+    pl.keterangan,
     pl.status_aktif,
     ta.tahun AS tahun_ajaran,
     pl.tahun_ajaran_id,
@@ -37,8 +39,10 @@ foreach ($results as $row) {
             'nama_pembayaran' => $row['nama_pembayaran'],
             'bisa_diangsur' => $row['bisa_diangsur'],
             'nominal' => $row['nominal'],
-            'keterangan' => $row['keterangan'],
             'semester' => $row['semester'],
+            'priode_awal' => $row['priode_awal'],
+            'priode_akhir' => $row['priode_akhir'],
+            'keterangan' => $row['keterangan'],
             'status_aktif' => $row['status_aktif'],
             'tahun_ajaran' => $row['tahun_ajaran'],
             'tahun_ajaran_id' => $row['tahun_ajaran_id'],
@@ -72,8 +76,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $nama_pembayaran = $_POST['nama_pembayaran'];
         $nominal = $_POST['nominal'];
         $tahun_ajaran_id = $_POST['tahun_ajaran_id'] ?: null;
-        $keterangan = $_POST['keterangan'] ?: null;
         $semester = $_POST['semester'] ?: null;
+        $priode_awal = $_POST['priode_awal'] ?: null;
+        $priode_akhir = $_POST['priode_akhir'] ?: null;
+        $keterangan = $_POST['keterangan'] ?: null;
         $bisa_diangsur = isset($_POST['bisa_diangsur']) ? 1 : 0;
         $status_aktif = isset($_POST['status_aktif']) ? 1 : 0;
         $kelas = $_POST['kelas']; // Array of selected classes
@@ -94,16 +100,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $db->beginTransaction();
 
                 // Prepare SQL query to insert into tarif_spp table
-                $sql = "INSERT INTO siswa_pembayaran_lainnya (nama_pembayaran, bisa_diangsur, nominal, tahun_ajaran_id, keterangan, semester, status_aktif) 
-                    VALUES (:nama_pembayaran, :bisa_diangsur, :nominal, :tahun_ajaran_id, :keterangan, :semester, :status_aktif)";
+                $sql = "INSERT INTO siswa_pembayaran_lainnya (nama_pembayaran, bisa_diangsur, nominal, tahun_ajaran_id, semester, priode_awal, priode_akhir, keterangan, status_aktif) 
+                    VALUES (:nama_pembayaran, :bisa_diangsur, :nominal, :tahun_ajaran_id, :semester, :priode_awal, :priode_akhir, :keterangan, :status_aktif)";
                 $stmt = $db->prepare($sql);
                 $stmt->execute([
                     'nama_pembayaran' => $nama_pembayaran,
                     'bisa_diangsur' => $bisa_diangsur,
                     'nominal' => $nominal,
                     'tahun_ajaran_id' => $tahun_ajaran_id,
-                    'keterangan' => $keterangan,
                     'semester' => $semester,
+                    'priode_awal' => $priode_awal,
+                    'priode_akhir' => $priode_akhir,
+                    'keterangan' => $keterangan,
                     'status_aktif' => $status_aktif
                 ]);
                 $siswa_pembayaran_lainnya_id = $db->lastInsertId(); // Get the inserted siswa_pembayaran_lainnya_id
@@ -143,8 +151,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $nama_pembayaran = $_POST['nama_pembayaran'];
         $nominal = $_POST['nominal'];
         $tahun_ajaran_id = $_POST['tahun_ajaran_id'] ?: null;
-        $keterangan = $_POST['keterangan'] ?: null;
         $semester = $_POST['semester'] ?: null;
+        $priode_awal = $_POST['priode_awal'] ?: null;
+        $priode_akhir = $_POST['priode_akhir'] ?: null;
+        $keterangan = $_POST['keterangan'] ?: null;
         $bisa_diangsur = isset($_POST['bisa_diangsur']) ? 1 : 0;
         $status_aktif = isset($_POST['status_aktif']) ? 1 : 0;
 
@@ -164,8 +174,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 SET nama_pembayaran = :nama_pembayaran,
                     nominal = :nominal,
                     tahun_ajaran_id = :tahun_ajaran_id,
-                    keterangan = :keterangan,
                     semester = :semester,
+                    priode_awal = :priode_awal, 
+                    priode_akhir = :priode_akhir, 
+                    keterangan = :keterangan,
                     bisa_diangsur = :bisa_diangsur,
                     status_aktif = :status_aktif
                 WHERE id = :id";
@@ -178,8 +190,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     'nama_pembayaran' => $nama_pembayaran,
                     'nominal' => $nominal,
                     'tahun_ajaran_id' => $tahun_ajaran_id,
-                    'keterangan' => $keterangan,
                     'semester' => $semester,
+                    'priode_awal' => $priode_awal,
+                    'priode_akhir' => $priode_akhir,
+                    'keterangan' => $keterangan,
                     'bisa_diangsur' => $bisa_diangsur,
                     'status_aktif' => $status_aktif
                 ])
@@ -440,10 +454,10 @@ ob_end_flush();
                                         <tr>
                                             <th>No</th>
                                             <th>Nama Pembayaran</th>
-                                            <th>Diangsur</th>
                                             <th>Nominal</th>
-                                            <th>Ajaran</th>
-                                            <th>Semester</th>
+                                            <th>Diangsur</th>
+                                            <th>Th-Ajaran (smst)</th>
+                                            <th>Priode</th>
                                             <th>Status</th>
                                             <th>Kelas</th>
                                             <th>Aksi</th>
@@ -455,10 +469,15 @@ ob_end_flush();
                                             <tr>
                                                 <td><?= $no++; ?></td>
                                                 <td><?= $row['nama_pembayaran'] ?? '-'; ?></td>
-                                                <td><?= $row['bisa_diangsur'] ? 'Ya' : 'Tidak'; ?></td>
                                                 <td>Rp. <?= number_format($row['nominal'], 2, ',', '.'); ?></td>
-                                                <td><?= $row['tahun_ajaran'] ?? '-'; ?></td>
-                                                <td><?= $row['semester'] ?? '-'; ?></td>
+                                                <td><?= $row['bisa_diangsur'] ? 'Ya' : 'Tidak'; ?></td>
+                                                <td>
+                                                    <?= $row['tahun_ajaran'] ?? '-'; ?>
+                                                    (<?= $row['semester'] ?? '-'; ?>)
+                                                </td>
+                                                <td>
+                                                    <?= date('M Y', strtotime($row['priode_awal'])) ?? '-'; ?> -
+                                                    <?= date('M Y', strtotime($row['priode_akhir'])) ?? '-'; ?>
                                                 </td>
                                                 <td class="text-center">
                                                     <?= $row['status_aktif'] ? 'Aktif' : 'Tidak Aktif'; ?>
@@ -501,8 +520,10 @@ ob_end_flush();
                                                                     data-nama_pembayaran="<?= $row['nama_pembayaran'] ?? '-'; ?>"
                                                                     data-nominal="<?= $row['nominal'] ?? '-'; ?>"
                                                                     data-tahun_ajaran_id="<?= $row['tahun_ajaran_id'] ?? '-'; ?>"
-                                                                    data-keterangan="<?= $row['keterangan'] ?? '-'; ?>"
                                                                     data-semester="<?= $row['semester'] ?? '-'; ?>"
+                                                                    data-priode_awal="<?= $row['priode_awal']; ?>"
+                                                                    data-priode_akhir="<?= $row['priode_akhir']; ?>"
+                                                                    data-keterangan="<?= $row['keterangan'] ?? '-'; ?>"
                                                                     data-bisa_diangsur="<?= $row['bisa_diangsur'] ?? '-'; ?>"
                                                                     data-status_aktif="<?= $row['status_aktif'] ?? '-'; ?>">
                                                                     <i class="bi bi-pencil"></i>
@@ -545,12 +566,12 @@ ob_end_flush();
                         <div class="modal-body">
                             <form id="createForm" method="POST">
                                 <input type="hidden" name="action" value="create">
-                                <div class="mb-3">
+                                <div class="form-group mb-3">
                                     <label for="nama_pembayaran" class="form-label">Nama Pembayaran</label>
                                     <input type="text" class="form-control" id="nama_pembayaran" name="nama_pembayaran"
                                         required placeholder="Contoh: Buku Pelajaran">
                                 </div>
-                                <div class="input-group mb-3">
+                                <div class="form-group mb-3">
                                     <label for="nominal" class="form-label">Nominal</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp.</span>
@@ -559,24 +580,36 @@ ob_end_flush();
                                         <span class="input-group-text">.00</span>
                                     </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran (Opsional)</label>
-                                    <select class="form-select" id="tahun_ajaran_id" name="tahun_ajaran_id">
-                                        <option value="">Pilih Tahun Ajaran</option>
-                                        <?php foreach ($tahun_ajaran as $ta): ?>
-                                            <option value="<?php echo $ta['id']; ?>">
-                                                <?php echo $ta['tahun']; ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="semester" class="form-label">Semester</label>
-                                    <select class="form-select" id="semester" name="semester" required>
-                                        <option value="none">None</option>
-                                        <option value="gasal">Gasal</option>
-                                        <option value="genap">Genap</option>
-                                    </select>
+                                <div class="row">
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="tahun_ajaran_id" class="form-label">Tahun Ajaran (Opsional)</label>
+                                        <select class="form-select" id="tahun_ajaran_id" name="tahun_ajaran_id">
+                                            <option value="">Pilih Tahun Ajaran</option>
+                                            <?php foreach ($tahun_ajaran as $ta): ?>
+                                                <option value="<?php echo $ta['id']; ?>">
+                                                    <?php echo $ta['tahun']; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="semester" class="form-label">Semester</label>
+                                        <select class="form-select" id="semester" name="semester" required>
+                                            <option value="none">None</option>
+                                            <option value="gasal">Gasal</option>
+                                            <option value="genap">Genap</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="priode_awal">Priode Awal</label>
+                                        <input type="date" class="form-control" id="priode_awal" name="priode_awal"
+                                            required>
+                                    </div>
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="priode_akhir">Priode Akhir</label>
+                                        <input type="date" class="form-control" id="priode_akhir" name="priode_akhir"
+                                            required>
+                                    </div>
                                 </div>
                                 <div class="form-group mb-3">
                                     <label for="kelas_tags" class="form-label">Kelas</label>
@@ -585,17 +618,17 @@ ob_end_flush();
                                         <!-- Options will be dynamically added here by JavaScript -->
                                     </select>
                                 </div>
-                                <div class="mb-3">
+                                <div class="form-group mb-3">
                                     <label for="keterangan" class="form-label">Keterangan</label>
                                     <textarea class="form-control" id="keterangan" name="keterangan" rows="3"
                                         placeholder="Masukkan Keterangan (opsional)"></textarea>
                                 </div>
-                                <div class="mb-3 form-check">
+                                <div class="form-group mb-3 form-check">
                                     <input type="checkbox" class="form-check-input" id="bisa_diangsur"
                                         name="bisa_diangsur">
                                     <label class="form-check-label" for="bisa_diangsur">Bisa Diangsur</label>
                                 </div>
-                                <div class="mb-3 form-check">
+                                <div class="form-group mb-3 form-check">
                                     <input type="checkbox" class="form-check-input" id="status_aktif"
                                         name="status_aktif" checked>
                                     <label class="form-check-label" for="status_aktif">Aktif</label>
@@ -622,12 +655,12 @@ ob_end_flush();
                             <form id="editForm" method="POST">
                                 <input type="hidden" name="action" value="update">
                                 <input type="hidden" id="edit_id" name="id">
-                                <div class="mb-3">
+                                <div class="form-group mb-3">
                                     <label for="edit_nama_pembayaran" class="form-label">Nama Tarif</label>
                                     <input type="text" class="form-control" id="edit_nama_pembayaran"
                                         name="nama_pembayaran" required placeholder="Contoh: Buku Pelajaran">
                                 </div>
-                                <div class="input-group mb-3">
+                                <div class="form-group mb-3">
                                     <label for="edit_nominal" class="form-label">Nominal</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp.</span>
@@ -636,36 +669,48 @@ ob_end_flush();
                                         <span class="input-group-text">.00</span>
                                     </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="edit_tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
-                                    <select class="form-select" id="edit_tahun_ajaran_id" name="tahun_ajaran_id">
-                                        <option value="">Pilih Tahun Ajaran</option>
-                                        <?php foreach ($tahun_ajaran as $ta): ?>
-                                            <option value="<?php echo $ta['id']; ?>">
-                                                <?php echo $ta['tahun']; ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
+                                <div class="row">
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="edit_tahun_ajaran_id" class="form-label">Tahun Ajaran</label>
+                                        <select class="form-select" id="edit_tahun_ajaran_id" name="tahun_ajaran_id">
+                                            <option value="">Pilih Tahun Ajaran</option>
+                                            <?php foreach ($tahun_ajaran as $ta): ?>
+                                                <option value="<?php echo $ta['id']; ?>">
+                                                    <?php echo $ta['tahun']; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="edit_semester" class="form-label">Semester</label>
+                                        <select class="form-select" id="edit_semester" name="semester" required>
+                                            <option value="none">None</option>
+                                            <option value="gasal">Gasal</option>
+                                            <option value="genap">Genap</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="edit_priode_awal">Priode Awal</label>
+                                        <input type="date" class="form-control" id="edit_priode_awal" name="priode_awal"
+                                            required>
+                                    </div>
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="edit_priode_akhir">Priode Akhir</label>
+                                        <input type="date" class="form-control" id="edit_priode_akhir"
+                                            name="priode_akhir" required>
+                                    </div>
                                 </div>
                                 <div class="form-group mb-3">
-                                    <label for="edit_semester" class="form-label">Semester</label>
-                                    <select class="form-select" id="edit_semester" name="semester" required>
-                                        <option value="none">None</option>
-                                        <option value="gasal">Gasal</option>
-                                        <option value="genap">Genap</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
                                     <label for="edit_keterangan" class="form-label">Deskripsi</label>
                                     <textarea class="form-control" id="edit_keterangan" name="keterangan" rows="3"
                                         placeholder="Masukkan Keterangan (opsional)"></textarea>
                                 </div>
-                                <div class="mb-3 form-check">
+                                <div class="form-group mb-3 form-check">
                                     <input type="checkbox" class="form-check-input" id="edit_bisa_diangsur"
                                         name="bisa_diangsur">
                                     <label class="form-check-label" for="edit_bisa_diangsur">Bisa Diangsur</label>
                                 </div>
-                                <div class="mb-3 form-check">
+                                <div class="form-group mb-3 form-check">
                                     <input type="checkbox" class="form-check-input" id="edit_status_aktif"
                                         name="status_aktif">
                                     <label class="form-check-label" for="edit_status_aktif">Aktif</label>
@@ -801,8 +846,10 @@ ob_end_flush();
                 const nama_pembayaran = button.getAttribute('data-nama_pembayaran');
                 const nominal = button.getAttribute('data-nominal');
                 const tahun_ajaran_id = button.getAttribute('data-tahun_ajaran_id');
-                const keterangan = button.getAttribute('data-keterangan');
                 const semester = button.getAttribute('data-semester');
+                const priode_awal = button.getAttribute('data-priode_awal');
+                const priode_akhir = button.getAttribute('data-priode_akhir');
+                const keterangan = button.getAttribute('data-keterangan');
                 const bisa_diangsur = button.getAttribute('data-bisa_diangsur') === '1';
                 const status_aktif = button.getAttribute('data-status_aktif') === '1';
 
@@ -815,11 +862,17 @@ ob_end_flush();
                 document.getElementById('edit_nama_pembayaran').value = nama_pembayaran;
                 document.getElementById('edit_nominal').value = formatRupiah(nominal);
                 document.getElementById('edit_tahun_ajaran_id').value = tahun_ajaran_id;
-                document.getElementById('edit_keterangan').value = keterangan;
                 document.getElementById('edit_semester').value = semester;
+                document.getElementById('edit_priode_awal').value = priode_awal;
+                document.getElementById('edit_priode_akhir').value = priode_akhir;
+                document.getElementById('edit_keterangan').value = keterangan;
                 document.getElementById('edit_bisa_diangsur').checked = bisa_diangsur;
                 document.getElementById('edit_status_aktif').checked = status_aktif;
             });
+
+            // console.log(
+            //     `ID: ${edit_id}, A: ${priode_awal}, B: ${priode_akhir}`
+            // );
         }
 
         // Handling Delete

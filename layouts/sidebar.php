@@ -174,7 +174,7 @@ foreach ($dropdownRoutes as $key => $routes) {
                         </li>
                         <li class="nav-item">
                             <a href="/pengeluaran/detail-pengeluaran"
-                                class="nav-link ms-3 <?php echo isActive('/pengeluaran/detail-pengeluaran', $requestUri); ?>">
+                                class="nav-link ms-3 <?php echo (isActive('/pengeluaran/detail-pengeluaran', $requestUri) || isActive('/pengeluaran/kategori-pengeluaran', $requestUri)) ? 'active' : ''; ?>">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Pengeluaran</p>
                             </a>
@@ -206,26 +206,26 @@ foreach ($dropdownRoutes as $key => $routes) {
 
 <!--begin::OverlayScrollbars Configure-->
 <script>
-const SELECTOR_SIDEBAR_WRAPPER = ".sidebar-wrapper";
-const Default = {
-    scrollbarTheme: "os-theme-light",
-    scrollbarAutoHide: "leave",
-    scrollbarClickScroll: true,
-};
-document.addEventListener("DOMContentLoaded", function() {
-    const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
-    if (
-        sidebarWrapper &&
-        typeof OverlayScrollbarsGlobal?.OverlayScrollbars !== "undefined"
-    ) {
-        OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
-            scrollbars: {
-                theme: Default.scrollbarTheme,
-                autoHide: Default.scrollbarAutoHide,
-                clickScroll: Default.scrollbarClickScroll,
-            },
-        });
-    }
-});
+    const SELECTOR_SIDEBAR_WRAPPER = ".sidebar-wrapper";
+    const Default = {
+        scrollbarTheme: "os-theme-light",
+        scrollbarAutoHide: "leave",
+        scrollbarClickScroll: true,
+    };
+    document.addEventListener("DOMContentLoaded", function () {
+        const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+        if (
+            sidebarWrapper &&
+            typeof OverlayScrollbarsGlobal?.OverlayScrollbars !== "undefined"
+        ) {
+            OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+                scrollbars: {
+                    theme: Default.scrollbarTheme,
+                    autoHide: Default.scrollbarAutoHide,
+                    clickScroll: Default.scrollbarClickScroll,
+                },
+            });
+        }
+    });
 </script>
 <!--end::OverlayScrollbars Configure-->

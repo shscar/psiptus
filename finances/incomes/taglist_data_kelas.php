@@ -107,15 +107,18 @@ function getDataByKelas($kelas_id)
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3>Data Tagihan Siswa</h3>
-            <button id="exportBtn" class="btn btn-success">Export to Excel</button>
+            <div class="end">
+                <button id="exportBtn" class="btn btn-success">Export to Excel</button>
+                <button id="exportBtn" class="btn btn-info">Export to csv</button>
+            </div>
         </div>
         <table id="dataTable" class="table table-bordered">
             <thead>
                 <tr>
-                    <th>A. Kelas</th>
-                    <th>B. Nama</th>
-                    <th>C. Tagihan SPP</th>
-                    <th>D. Pembayaran Lainnya</th>
+                    <th>Kelas</th>
+                    <th>Nama</th>
+                    <th>Tagihan SPP</th>
+                    <th>Pembayaran Lainnya</th>
                 </tr>
             </thead>
             <tbody>
@@ -163,6 +166,95 @@ function getDataByKelas($kelas_id)
                 <?php endif; ?>
             </tbody>
         </table>
+        <table id="dataTable" class="table table-bordered">
+            <thead>
+                <tr>
+                    <th rowspan="2">Kelas</th>
+                    <th rowspan="2">Nama</th>
+                    <th colspan="2">Tagihan SPP</th>
+                    <th colspan="2">Pembayaran Lainnya</th>
+                </tr>
+                <tr>
+                    <th>Semester 1</th>
+                    <th>Semester 2</th>
+                    <th>Seragam</th>
+                    <th>Buku</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (!empty($data_by_kelas)): ?>
+                    <?php foreach ($data_by_kelas as $kelas => $tagihan): ?>
+                        <?php foreach ($tagihan['siswa'] as $siswa): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($kelas) ?></td>
+                                <td><?= htmlspecialchars($siswa) ?></td>
+
+                                <!-- Tagihan SPP - Semester 1 -->
+                                <td>
+                                    <?php
+                                    $semester1 = 0;
+                                    foreach ($tagihan['spp'] as $item) {
+                                        if (stripos($item['nama_tarif'], 'Semester 1') !== false) {
+                                            $semester1 = $item['kurang_bayar'];
+                                            break;
+                                        }
+                                    }
+                                    echo 'Rp. ' . number_format($semester1, 0, ',', '.');
+                                    ?>
+                                </td>
+
+                                <!-- Tagihan SPP - Semester 2 -->
+                                <td>
+                                    <?php
+                                    $semester2 = 0;
+                                    foreach ($tagihan['spp'] as $item) {
+                                        if (stripos($item['nama_tarif'], 'Semester 2') !== false) {
+                                            $semester2 = $item['kurang_bayar'];
+                                            break;
+                                        }
+                                    }
+                                    echo 'Rp. ' . number_format($semester2, 0, ',', '.');
+                                    ?>
+                                </td>
+
+                                <!-- Pembayaran Lainnya - Seragam -->
+                                <td>
+                                    <?php
+                                    $seragam = 0;
+                                    foreach ($tagihan['lainnya'] as $item) {
+                                        if (stripos($item['nama_pembayaran'], 'Seragam') !== false) {
+                                            $seragam = $item['kurang_bayar'];
+                                            break;
+                                        }
+                                    }
+                                    echo 'Rp. ' . number_format($seragam, 0, ',', '.');
+                                    ?>
+                                </td>
+
+                                <!-- Pembayaran Lainnya - Buku -->
+                                <td>
+                                    <?php
+                                    $buku = 0;
+                                    foreach ($tagihan['lainnya'] as $item) {
+                                        if (stripos($item['nama_pembayaran'], 'Buku') !== false) {
+                                            $buku = $item['kurang_bayar'];
+                                            break;
+                                        }
+                                    }
+                                    echo 'Rp. ' . number_format($buku, 0, ',', '.');
+                                    ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="6" class="text-center">Tidak ada data untuk kelas ini.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin/libs/js-xlsx/xlsx.core.min.js"></script>

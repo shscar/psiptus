@@ -63,8 +63,9 @@ $totalDanaKeluar = $result['total_dana_keluar'] ? $result['total_dana_keluar'] :
                         <div class="info-box-content">
                             <span class="info-box-text">Traffic</span>
                             <span class="info-box-number">
-                                10
-                                <small>%</small>
+                                <!-- 10
+                                <small>%</small> -->
+                                <code>Maintance</code>
                             </span>
                         </div>
                     </div>
@@ -103,7 +104,7 @@ $totalDanaKeluar = $result['total_dana_keluar'] ? $result['total_dana_keluar'] :
                             <i class="bi bi-people-fill"></i>
                         </span>
                         <div class="info-box-content">
-                            <span class="info-box-text">Members</span>
+                            <span class="info-box-text">Siswa/i</span>
                             <span class="info-box-number">
                                 <?php echo $totalSiswa; ?>
                             </span>

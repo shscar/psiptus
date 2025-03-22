@@ -24,6 +24,8 @@ final class TarifSpp extends AbstractMigration
             ->addColumn('nominal', 'decimal', ['precision' => 10, 'scale' => 2, 'null' => false])
             ->addColumn('tahun_ajaran_id', 'integer', ['limit' => 9, 'null' => false])
             ->addColumn('semester', 'string', ['null' => true])
+            ->addColumn('priode_awal', 'date', ['null' => false])
+            ->addColumn('priode_akhir', 'date', ['null' => false])
             ->addColumn('deskripsi', 'text', ['null' => true])
             ->addColumn('status_aktif', 'boolean', ['default' => true])
             ->addTimestamps()

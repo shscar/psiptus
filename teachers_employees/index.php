@@ -4,6 +4,16 @@ ob_start();
 include __DIR__ . '/../layouts/master.php';
 $db = Database::getInstance()->getConnection();
 
+$stmt = $db->prepare("
+    SELECT u.username, g.nama_lengkap, g.profile
+    FROM users u
+    JOIN guru_staff g ON u.guru_staff_id = g.id
+    WHERE u.status = 'active'
+    ORDER BY u.last_login DESC
+");
+$stmt->execute();
+$users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 // Mengakhiri output buffering
 ob_end_flush();
 ?>
@@ -13,13 +23,13 @@ ob_end_flush();
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-6">
-                    <h3 class="mb-0">Simple Tables</h3>
+                    <h3 class="mb-0">User</h3>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            Simple Tables
+                            tec-employ
                         </li>
                     </ol>
                 </div>
@@ -27,7 +37,7 @@ ob_end_flush();
         </div>
     </div>
 
-    <!-- App Content --> 
+    <!-- App Content -->
     <div class="app-content">
         <div class="container-fluid">
 
@@ -35,40 +45,28 @@ ob_end_flush();
             <div class="card card-solid">
                 <div class="card-body pb-0">
                     <div class="row">
-                        <div class="col-12 col-sm-6 col-md-4 d-flex align-items-stretch flex-column">
-                            <div class="card bg-light d-flex flex-fill">
-                                <div class="card-header text-muted border-bottom-0 d-flex justify-content-between align-items-center w-100">
-                                    <span>Digital Strategist</span>
-                                    <a href="#" class="btn btn-sm btn-primary ml-auto">
-                                        <i class="fas fa-user"></i> View Profile
-                                    </a>
-                                </div>
-                                <div class="card-body pt-0">
-                                    <div class="row">
-                                        <div class="col-12 text-center">
-                                            <img src="../assets/dist/img/user1-128x128.jpg" alt="user-avatar" class="img-circle img-fluid">
-                                        </div>
-                                        <div class="col-12">
-                                            <h2 class="lead text-center"><b>Nicole Pearson</b></h2>
-                                            <div class="text-muted">
-                                                <p class="mb-0">
-                                                    <b>Mobile: </b> 
-                                                    081298347652
-                                                </p>
-                                                <p class="mb-0">
-                                                    <b>Email: </b> 
-                                                    example@gmail.id
-                                                </p>
-                                                <p class="mb-0">
-                                                    <b>About: </b> 
-                                                    Web Designer / UX / Graphic Artist
-                                                </p>
+
+                        <?php foreach ($users as $user): ?>
+                            <div class="col-md-8 col-lg-4 mb-4">
+                                <div class="card border-0 shadow">
+                                    <div class="card-body py-4">
+                                        <div class="d-flex">
+                                            <img style="width:48px;height:48px"
+                                                src="assets/images/profile/<?= htmlspecialchars($user['profile']) ?>"
+                                                alt="<?= htmlspecialchars($user['nama_lengkap']) ?>"
+                                                class="rounded-2 shadow">
+                                            <div class="ps-2">
+                                                <h4 class="rfs-7 ms-2"><?= htmlspecialchars($user['nama_lengkap']) ?></h4>
                                             </div>
+                                        </div>
+                                        <div class="lc-block mt-4 text-muted">
+                                            <p><b>Nama:</b> <?= htmlspecialchars($user['username']) ?></p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        <?php endforeach; ?>
+
                     </div>
                 </div>
             </div>

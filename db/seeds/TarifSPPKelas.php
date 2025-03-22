@@ -37,7 +37,7 @@ class TarifSPPKelas extends AbstractSeed
             ],
             [
                 'tarif_spp_id' => 2,
-                'kelas_id' => 3,
+                'kelas_id' => 2,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ],

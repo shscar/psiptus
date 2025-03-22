@@ -25,8 +25,10 @@ final class SiswaPembayaranLainnya extends AbstractMigration
             ->addColumn('bisa_diangsur', 'boolean', ['default' => true])
             ->addColumn('nominal', 'decimal', ['precision' => 10, 'scale' => 2, 'null' => false])
             ->addColumn('tahun_ajaran_id', 'integer', ['limit' => 9, 'null' => true])
-            ->addColumn('keterangan', 'text', ['null' => true])
             ->addColumn('semester', 'string', ['null' => true])
+            ->addColumn('priode_awal', 'date', ['null' => false])
+            ->addColumn('priode_akhir', 'date', ['null' => false])
+            ->addColumn('keterangan', 'text', ['null' => true])
             ->addColumn('status_aktif', 'boolean', ['default' => true])
             ->addTimestamps()
             ->create();
