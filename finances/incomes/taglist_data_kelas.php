@@ -29,8 +29,8 @@ function getDataByKelas($kelas_id)
     $data_by_kelas = [];
 
     // Query gabungan untuk SPP, pembayaran lainnya, dan siswa
-    $stmt = $db->prepare("    
-        SELECT 
+    $stmt = $db->prepare("
+        SELECT
             k.nama_kelas,
             k.jurusan,
             ts.id AS tarif_spp_id,

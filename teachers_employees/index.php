@@ -1,22 +1,30 @@
 <?php
-// Memulai output buffering
-ob_start();
-include __DIR__ . '/../layouts/master.php';
-$db = Database::getInstance()->getConnection();
+    // Memulai output buffering
+    ob_start();
+    include __DIR__ . '/../layouts/master.php';
+    $db = Database::getInstance()->getConnection();
 
-$stmt = $db->prepare("
-    SELECT u.username, g.nama_lengkap, g.profile
-    FROM users u
-    JOIN guru_staff g ON u.guru_staff_id = g.id
-    WHERE u.status = 'active'
-    ORDER BY u.last_login DESC
-");
-$stmt->execute();
-$users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = $db->prepare("
+        SELECT u.username, g.nama_lengkap, g.profile
+        FROM users u
+        JOIN guru_staff g ON u.guru_staff_id = g.id
+        WHERE u.status = 'active'
+        ORDER BY u.last_login DESC
+    ");
+    $stmt->execute();
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Mengakhiri output buffering
-ob_end_flush();
+    // Mengakhiri output buffering
+    ob_end_flush();
 ?>
+
+<!-- <style>
+    .lc-block img {
+        width: auto;
+        max-height: 250px;
+    }
+</style> -->
+
 <!-- App Main -->
 <main class="app-main">
     <div class="app-content-header">
@@ -43,6 +51,34 @@ ob_end_flush();
 
             <!-- Default box -->
             <div class="card card-solid">
+
+                <!-- <div class="container-fluid">
+                    <div class="row pb-4">
+                        <?php foreach ($users as $user): ?>
+                            <div class="col-md-6 col-lg-3 my-2">
+                                <div class="lc-block">
+                                    <?php
+                                        $profileImage = 'assets/images/profile/' . htmlspecialchars($user['profile']);
+                                        // Memeriksa apakah file gambar ada
+                                        if (!file_exists($profileImage) || empty($user['profile'])) {
+                                            $profileImage = 'https://placehold.co/6090x200';
+                                        }
+                                    ?>
+                                    <img src="<?= $profileImage ?>" title="" alt="<?= htmlspecialchars($user['nama_lengkap'] ?? 'No name') ?>" loading="lazy" class="img-fluid">
+                                <div class="lc-block position-relative text-center mx-2 mt-n4 py-4 bg-light shadow" style="">
+                                    <h4 editable="inline"><?= htmlspecialchars($user['nama_lengkap']) ?></h4>
+                                    <p editable="inline" class="small"> <?= htmlspecialchars($user['username']) ?></p>
+                                    <p editable="inline" class="small">Illustrator Designer</p>
+                                    <div class="nav justify-content-center">
+                                        <i class="bi bi-whatsapp ms-1 me-1"></i>
+                                        <i class="bi bi-linkedin ms-1 me-1"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div> -->
+
                 <div class="card-body pb-0">
                     <div class="row">
 

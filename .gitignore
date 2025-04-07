@@ -14,3 +14,4 @@ assets/images/dana_pengeluaran/*
 # Mengecualikan file dari pengabaian
 !assets/images/dana_pemasukkan/transaction-receip.png
 !assets/images/dana_pengeluaran/transaction-receip.png
+.qodo
