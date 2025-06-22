@@ -21,18 +21,19 @@ final class User extends AbstractMigration
     {
         $table = $this->table('users');
         $table->addColumn('guru_staff_id', 'integer')
-              ->addColumn('username', 'string', ['limit' => 50])
-              ->addColumn('email', 'string', ['limit' => 100])
-              ->addColumn('password', 'string', ['limit' => 255])
-              ->addColumn('last_login', 'timestamp', ['null' => true])
-              ->addColumn('status', 'enum', ['values' => ['active', 'inactive', 'blocked'], 'default' => 'active'])
-              ->addColumn('role', 'enum', ['values' => ['user', 'admin', 'super_admin'], 'default' => 'user'])
-              ->addColumn('reset_token', 'string', ['limit' => 255, 'null' => true])
-              ->addColumn('token_expiry', 'timestamp', ['null' => true])
-              ->addTimestamps()
-              ->addIndex(['username'], ['unique' => true])
-              ->addIndex(['email'], ['unique' => true])
-              ->create();
+            ->addColumn('username', 'string', ['limit' => 50])
+            ->addColumn('email', 'string', ['limit' => 100])
+            ->addColumn('password', 'string', ['limit' => 255])
+            ->addColumn('last_login', 'timestamp', ['null' => true])
+            ->addColumn('last_logout', 'timestamp', ['null' => true])
+            ->addColumn('status', 'enum', ['values' => ['active', 'inactive', 'blocked'], 'default' => 'active'])
+            ->addColumn('role', 'enum', ['values' => ['user', 'admin', 'super_admin'], 'default' => 'user'])
+            ->addColumn('reset_token', 'string', ['limit' => 255, 'null' => true])
+            ->addColumn('token_expiry', 'timestamp', ['null' => true])
+            ->addTimestamps()
+            ->addIndex(['username'], ['unique' => true])
+            ->addIndex(['email'], ['unique' => true])
+            ->create();
 
     }
 }

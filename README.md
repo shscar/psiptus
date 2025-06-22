@@ -17,3 +17,6 @@ Membuat folder
 Instalasi Library PhpSpreadsheet
 
 - composer require phpoffice/phpspreadsheet
+
+Runnig
+php -S localhost:8000

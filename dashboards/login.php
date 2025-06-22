@@ -5,8 +5,11 @@ ob_start();
 // echo ini_get('session.save_path');
 
 // include __DIR__ . '/../layouts/master.php';
+
+// Dapatkan koneksi database
 $db = Database::getInstance()->getConnection();
 
+// Konfigurasi session yang sama dengan login
 ini_set('session.cookie_lifetime', 86400); // 1 hari
 ini_set('session.gc_maxlifetime', 86400);
 session_set_cookie_params(86400);

@@ -4,6 +4,7 @@
 $routes = [
     '/dashboard' => '/dashboards/index.php',
     '/' => '/dashboards/login.php',
+    '/logout' => '/dashboards/logout.php',
     '/test' => '/testing/index.php',
     '/test2' => '/testing/index2.php',
     '/test3' => '/testing/index3.php',
